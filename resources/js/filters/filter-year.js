@@ -24,14 +24,14 @@ export function setupYearFilterRecords(table, defaultYear) {
     // Check if we're on archive page
     const isArchivePage = window.location.pathname.includes('/archive');
     const apiUrl = isArchivePage ? '/api/getArchiveYears' : '/api/getRecordYears';
-    
+
     fetch(apiUrl)
         .then(res => res.json())
         .then(years => {
             const menuList = yearMenu.querySelector('ul');
 
             menuList.innerHTML = `
-                <li class="dropdown-item px-3 py-2 cursor-pointer hover:bg-gray-100"
+                <li class="year-filter-dropdown-item px-3 py-2 cursor-pointer hover:bg-gray-100"
                     data-value="all">
                     All Years
                 </li>
@@ -39,7 +39,7 @@ export function setupYearFilterRecords(table, defaultYear) {
 
             years.forEach(year => {
                 menuList.insertAdjacentHTML('beforeend', `
-                    <li class="dropdown-item px-3 py-2 cursor-pointer hover:bg-gray-100"
+                    <li class="year-filter-dropdown-item px-3 py-2 cursor-pointer hover:bg-gray-100"
                         data-value="${year}">
                         ${year}
                     </li>
@@ -47,7 +47,7 @@ export function setupYearFilterRecords(table, defaultYear) {
             });
 
             // ✅ USER ACTION = stage filter and refresh status counts
-            menuList.querySelectorAll('.dropdown-item').forEach(item => {
+            menuList.querySelectorAll('.year-filter-dropdown-item').forEach(item => {
                 item.addEventListener('click', () => {
                     const value = item.dataset.value;
                     yearLabel.textContent = item.textContent.trim();
@@ -55,7 +55,7 @@ export function setupYearFilterRecords(table, defaultYear) {
 
                     // Stage the year filter (don't apply yet)
                     window.stageFilter('year', value);
-                    
+
                     // Trigger status filter refresh with new year
                     if (window.refreshStatusFilter) {
                         window.refreshStatusFilter(value);

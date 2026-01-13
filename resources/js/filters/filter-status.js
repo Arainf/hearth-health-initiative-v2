@@ -11,7 +11,7 @@ export function setupStatusFilter(table, initialStatus = null, initialYear = 'al
         // Disable dropdown and show loading state
         dropdownBtn.disabled = true;
         dropdownBtn.classList.add('opacity-50', 'cursor-not-allowed');
-        
+
         // Show loading in menu
         const menuList = dropdownMenu.querySelector('ul');
         menuList.innerHTML = `
@@ -27,7 +27,7 @@ export function setupStatusFilter(table, initialStatus = null, initialYear = 'al
         // Check if we're on archive page
         const isArchivePage = window.location.pathname.includes('/archive');
         const archivedParam = isArchivePage ? '&archived=true' : '&archived=false';
-        const apiUrl = year && year !== 'all' 
+        const apiUrl = year && year !== 'all'
             ? `/api/getStatusCount?year=${year}${archivedParam}`
             : `/api/getStatusCount?${archivedParam}`;
 
@@ -35,7 +35,7 @@ export function setupStatusFilter(table, initialStatus = null, initialYear = 'al
             .then(res => res.json())
             .then(data => {
                 menuList.innerHTML = `
-                    <li class="dropdown-item flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-gray-100" data-value="all">
+                    <li class="status-filter-dropdown-item flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-gray-100" data-value="all">
                         <span class="inline-block rounded-full h-3 w-3 bg-gray-400"></span> All
                     </li>
                 `;
@@ -47,10 +47,10 @@ export function setupStatusFilter(table, initialStatus = null, initialYear = 'al
                         'not evaluated': '#9ca3af'
                     };
                     const color = colorMap[status.status_name.toLowerCase()] || '#6b7280';
-                    const formattedValue = status.status_name.toLowerCase().replace(/\s+/g, '-');
+                    const formattedValue = status.status_name.toLowerCase();
 
                     menuList.insertAdjacentHTML('beforeend', `
-                        <li class="dropdown-item flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-gray-100"
+                        <li class="status-filter-dropdown-item flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-gray-100"
                             data-value="${formattedValue}">
                             <span class="inline-block rounded-full h-3 w-3" style="background-color:${color}"></span>
                             ${status.status_name}
@@ -74,7 +74,7 @@ export function setupStatusFilter(table, initialStatus = null, initialYear = 'al
                 dropdownBtn.classList.remove('opacity-50', 'cursor-not-allowed');
 
                 // Event listeners
-                menuList.querySelectorAll('.dropdown-item').forEach(item => {
+                menuList.querySelectorAll('.status-filter-dropdown-item').forEach(item => {
                     item.addEventListener('click', () => {
                         const value = item.dataset.value;
                         // Extract just the status name without the count

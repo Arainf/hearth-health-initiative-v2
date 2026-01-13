@@ -10,8 +10,6 @@ const ai_Access = document.body.dataset.aiAccess === '1';
 const ai_Ready = document.body.dataset.aiReady === '1';
 
 
-
-
 /* ===============================
    STATE & URL MANAGEMENT
 ================================ */
@@ -269,7 +267,7 @@ const table = $("#records-table").DataTable({
             className: "text-center",
             render: r => {
                 const hasGenerated = r.generated_id && r.generated_id !== null && r.generated_id !== '';
-                const hasDoctorAprroval = r.doctor !== null && r.doctor !== '';
+                const hasDoctorApproval = r.doctor !== null && r.doctor !== '';
 
                 const generatingButton = `
                 <div id="generateBtn-${r.id}" class="generate-btn hidden">
@@ -293,15 +291,15 @@ const table = $("#records-table").DataTable({
                 // View button - blue (only if generated)
                 const viewBtn =
                     `<button class="hhi-btn hhi-btn-view icon-only view-generated-btn" ${!hasGenerated ? "disabled" : ' '}
-                            title="View Evaluation"
+                            title="${!hasGenerated ? "No Evaluation" : 'View Evaluation'}"
                             data-id="${r.generated_id}">
-                        <i class="fa-solid fa-eye"></i>
+                       <i class="fa-solid fa-magnifying-glass"></i>
                     </button>`
 
 
                 // Evaluate button - purple (only if not generated)
                 const evaluateBtn = !hasGenerated && ai_Access && ai_Ready
-                    ? `<button class="hhi-btn hhi-btn-primary icon-only evaluate-btn"
+                    ? `<button class="hhi-btn hhi-btn-evaluate icon-only evaluate-btn"
                             title="Evaluate with AI"
                             data-index="${r.counter}"
                             data-record-id="${r.id}">
@@ -309,15 +307,15 @@ const table = $("#records-table").DataTable({
                     </button>`
                     : '';
 
-                // Print button - green (only if generated)
-                const printBtnStyled = hasDoctorAprroval
-                    ? `<button class="hhi-btn hhi-btn-edit icon-only"
+
+                const printBtnStyled = hasDoctorApproval
+                    ? `<button class="hhi-btn hhi-btn-print icon-only"
                             title="Print"
                             onclick="printRow('${r.id}')">
                         <i class="fa-solid fa-print"></i>
                     </button>`
                     : hasGenerated ? `<button
-                            class="hhi-btn icon-only bg-transparent border border-gray-200 text-gray-400 opacity-50 cursor-not-allowed"
+                            class="hhi-btn hhi-btn-print icon-only bg-transparent border border-gray-200 text-gray-400 opacity-50 cursor-not-allowed"
                             title="Need Approval from a Doctor"
                             disabled
                         >
@@ -522,6 +520,11 @@ $(document).on('click', '.toggle-edit', function(e) {
         .removeClass('radio-readonly')
         .addClass('radio-editable');
 
+    function getRadioBool($row, field) {
+        const val = $row.find(`input[data-field="${field}"]:checked`).val();
+        return val === '1';
+    }
+
 
     // Store original values
     originalRecordData[recordId] = {
@@ -530,9 +533,9 @@ $(document).on('click', '.toggle-edit', function(e) {
         systolic_bp: $row.find('[data-field="systolic_bp"]').val(),
         fbs: $row.find('[data-field="fbs"]').val(),
         hba1c: $row.find('[data-field="hba1c"]').val(),
-        hypertension: $row.find('[data-field="hypertension"]').is(':checked'),
-        diabetes: $row.find('[data-field="diabetes"]').is(':checked'),
-        smoking: $row.find('[data-field="smoking"]').is(':checked'),
+        hypertension: getRadioBool($row, 'hypertension'),
+        diabetes: getRadioBool($row, 'diabetes'),
+        smoking: getRadioBool($row, 'smoking'),
     };
 
     // Show/hide buttons
@@ -550,6 +553,15 @@ $(document).on('click', '.cancel-edit-btn', function(e) {
     const $row = $(this).closest('.record-edit-container');
     const original = originalRecordData[recordId];
 
+    function restoreRadio($row, field, originalValue) {
+        $row.find(`input[data-field="${field}"]`).prop('checked', false);
+
+        const target = originalValue ? '1' : '0';
+        $row.find(`input[data-field="${field}"][value="${target}"]`)
+            .prop('checked', true);
+    }
+
+
     if (original) {
         // Restore original values
         $row.find('[data-field="cholesterol"]').val(original.cholesterol);
@@ -557,12 +569,9 @@ $(document).on('click', '.cancel-edit-btn', function(e) {
         $row.find('[data-field="systolic_bp"]').val(original.systolic_bp);
         $row.find('[data-field="fbs"]').val(original.fbs);
         $row.find('[data-field="hba1c"]').val(original.hba1c);
-        $row.find('[data-field="hypertension"]').prop('checked', original.hypertension);
-        $row.find('[data-field="diabetes"]').prop('checked', original.diabetes);
-        $row.find('[data-field="smoking"]').prop('checked', original.smoking);
-
-        // Update risk badges
-        updateRiskBadges($row, recordId);
+        restoreRadio($row, 'hypertension', original.hypertension);
+        restoreRadio($row, 'diabetes', original.diabetes);
+        restoreRadio($row, 'smoking', original.smoking);
     }
 
     // Disable fields
@@ -644,9 +653,6 @@ $(document).on('click', '.save-record-btn', function(e) {
                 .removeClass('radio-editable');
 
 
-            // Update risk badges
-            updateRiskBadges($row, recordId);
-
             // Show/hide buttons
             $row.find('.toggle-edit').removeClass('hidden');
             $row.find('.save-record-btn').addClass('hidden');
@@ -663,44 +669,6 @@ $(document).on('click', '.save-record-btn', function(e) {
             $btn.prop('disabled', false).html('<i class="fa-solid fa-save mr-1"></i> Save');
         }
     });
-});
-
-// Update risk badges when checkboxes change
-$(document).on('change', '.risk-field', function() {
-    const $row = $(this).closest('[data-record-id]');
-    const recordId = $row.data('record-id');
-    updateRiskBadges($row, recordId);
-});
-
-function updateRiskBadges($row, recordId) {
-    $row.find('.risk-checkbox').each(function() {
-        const $checkbox = $(this).find('.risk-field');
-        const isChecked = $checkbox.is(':checked');
-        const $badge = $(this);
-
-        if (isChecked) {
-            $badge.removeClass('badge-outline text-gray-400 border-gray-300')
-                  .addClass('badge-needs-attention');
-            $badge.find('i').removeClass('fa-xmark').addClass('fa-check');
-        } else {
-            $badge.removeClass('badge-needs-attention')
-                  .addClass('badge-outline text-gray-400 border-gray-300');
-            $badge.find('i').removeClass('fa-check').addClass('fa-xmark');
-        }
-    });
-}
-
-// Risk checkbox click handler
-$(document).on('click', '.risk-checkbox', function(e) {
-    e.preventDefault();
-    e.stopPropagation();
-
-    const $checkbox = $(this).find('.risk-field');
-    if ($checkbox.length === 0) return;
-    if ($checkbox.prop('disabled')) return;
-
-    $checkbox.prop('checked', !$checkbox.prop('checked'));
-    $checkbox.trigger('change');
 });
 
 /* ===============================
@@ -831,12 +799,36 @@ window.addEventListener('popstate', () => {
 /* ===============================
    INIT
 ================================ */
-$(document).ready(() => {
-    // Initialize search input from state
-    if (state.search) {
-        $searchInput.val(state.search);
-    }
 
-    // Sync filter button state
-    syncFilterButton();
+$searchInput.on("input", () => {
+    const searchTerm = $searchInput.val().trim();
+    stageFilter("search", searchTerm);
+    setFilterButtonMode(searchTerm.length > 0 ? 'search' : 'reset');
+
 });
+
+$(document).on(
+    "click",
+    ".year-filter-dropdown-item, #year-filter-menu .dropdown-item",
+    function () {
+        const value = $(this).data("value");
+
+        stageFilter("year", value);
+
+        setFilterButtonMode("search");
+
+    }
+);
+
+
+$(document).on(
+    "click",
+    ".status-filter-dropdown-item, #status-filter-menu .dropdown-item",
+    function () {
+        const status = $(this).data("value");
+
+        stageFilter("status", status);
+        setFilterButtonMode("search");
+
+    }
+);

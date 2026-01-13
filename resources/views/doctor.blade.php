@@ -7,6 +7,14 @@
             <div class="flex justify-between items-center mb-4">
                 <p class="circular text-lg tracking-tighter">Doctor Dashboard</p>
 
+
+                <x-filter_search id="record-search" placeholder="Search record" width="w-80" />
+
+                <div class="flex flex-row gap-1">
+                    <x-filter_year id="year-filter" />
+                    <x-filter_status id="status-filter" />
+                    <x-filter_reset />
+                </div>
             </div>
         </div>
 
@@ -135,38 +143,47 @@
         overflow-y-auto
         whitespace-pre-line
         leading-relaxed
-        max-w-4xl mx-auto
+        max-w-4xl mx-auto w-[8.27in]
         bg-white
         relative
     "
             contenteditable="false"
         >
-            <!-- Loading Skeleton -->
-            <div id="panelSkeleton" class="space-y-4 animate-pulse">
-                <div class="h-4 bg-gray-200 rounded w-3/4"></div>
-                <div class="h-4 bg-gray-200 rounded w-full"></div>
-                <div class="h-4 bg-gray-200 rounded w-5/6"></div>
-                <div class="h-4 bg-gray-200 rounded w-2/3"></div>
-                <div class="h-4 bg-gray-200 rounded w-full"></div>
+
+            <!-- Loading Overlay -->
+            <div
+                id="panelLoading"
+                class="
+            absolute inset-0
+            bg-white/80
+            flex items-center justify-center
+            z-50
+            hidden
+        "
+            >
+                <div class="flex flex-col items-center gap-3">
+                    <i class="fa-solid fa-circle-notch fa-spin text-2xl text-purple-700"></i>
+                    <span class="text-sm text-gray-600 font-medium">
+                Loading generated report…
+            </span>
+                </div>
             </div>
+
+            <!-- Actual content goes here -->
         </div>
+
 
         <!-- FOOTER -->
         <div
             id="panelFooter"
             class="px-6 py-4 border-t bg-gray-50 flex justify-end gap-4 hidden"
         >
-            <button
-                id="panelCancelEdit"
-                class="hhi-btn hhi-btn-cancel text-md "
-            >
-                Cancel
-            </button>
 
             <button
                 id="panelSaveBtn"
                 class="px-6 py-3 hhi-btn hhi-btn-save text-md "
             >
+                <i class="fas fa-save mr-2"></i>
                 Save
             </button>
 
@@ -174,6 +191,7 @@
                 id="panelSaveApproveBtn"
                 class="px-6 py-3 hhi-btn hhi-btn-save-approve text-md "
             >
+                <i class="fa-solid fa-check"></i>
                 Save & Approve
             </button>
         </div>
@@ -210,11 +228,7 @@
 
 
 <script>
-
-
-    function  printRow(patientId){
+    function printRow(patientId){
         window.open(`/export/pdf/${patientId}`, "_blank");
     }
-
-
 </script>

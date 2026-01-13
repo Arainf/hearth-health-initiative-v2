@@ -13,25 +13,25 @@
 
 <x-app-layout>
 
-    <div class="relative flex flex-col min-h-screen h-auto w-full rounded-xl bg-[#FCFDFE] px-2 pt-2  border-2 shadow-xl border-gray-100">
+    <div class="relative flex flex-col min-h-screen h-auto w-full rounded-xl bg-[#F9F8F6] px-2 pt-2  border-2 shadow-xl border-gray-100">
 
 
         {{-- Header --}}
-        <div class="flex flex-row bg-white px-6 py-3 z-20 sticky top-0 justify-between">
+        <div class="flex flex-row px-6 py-3 z-20 sticky top-0 justify-between">
             <div class="flex items-center">
-                <p class="circular text-lg tracking-tighter">Heart Health Initiative Form</p>
+                <p class="circular text-3xl tracking-tighter">Heart Health Initiative Form</p>
             </div>
 
 
-            <x-secondary-button id="goDashboardBtn2">
-                Back to Dashboard
-            </x-secondary-button>
+            <button id="goDashboardBtn2" class="hhi-btn-back hhi-btn">
+                <i class="fa-solid fa-house mr-2"></i> Back to Dashboard
+            </button>
 
         </div>
 
 
         <!-- FORM -->
-        <form id="mainForm" method="POST" action="{{ route('records.store') }}" class="space-y-8">
+        <form id="mainForm" method="POST" action="{{ route('records.store') }}" class="space-y-8 p-6">
             @csrf
             <input type="hidden" id="patient_id" name="patient_id">
             <input type="hidden" id="staff_id" name="staff_id" value="{{ Auth::user()->id }}">
@@ -41,14 +41,14 @@
                 <!-- LEFT SIDE ---------------------------------------------->
                 <div class="space-y-6">
 
-                    <section id="patientInfoSection" class="card p-6 h-full relative">
+                    <section id="patientInfoSection" class="card p-6 h-full relative shadow-lg">
 
                         <div id="patientOverlay"
                              class="absolute inset-0 bg-black/40 rounded-xl hidden z-10"></div>
 
                         <div class="flex items-center justify-between mb-4">
                             <h2 class="text-lg font-semibold">Patient Information</h2>
-                            <x-secondary-button id="editPatientBtn" class=" text-sm hidden z-20">Edit</x-secondary-button>
+                            <button id="editPatientBtn" class=" hhi-btn-edit hhi-btn text-sm hidden z-20"> <i class="fa-solid fa-pen-to-square mr-2"></i>Edit</button>
                         </div>
 
                         <!-- EXPANDED FORM ONLY (no summary) -->
@@ -140,14 +140,14 @@
                 <!-- RIGHT SIDE ---------------------------------------------->
                 <div class="space-y-6">
 
-                    <section id="familyHistorySection" class="card p-6 relative">
+                    <section id="familyHistorySection" class="card p-6 relative shadow-lg">
 
                         <div id="familyOverlay"
                              class="absolute inset-0 bg-black/40 rounded-xl hidden z-10"></div>
 
                         <div class="flex justify-between items-center mb-4">
                             <h2 class="text-lg font-semibold">Family History</h2>
-                            <x-secondary-button id="editFamilyBtn" type="button" class="z-20 text-sm hidden">Edit</x-secondary-button>
+                            <button id="editFamilyBtn" type="button" class="z-20 text-sm hidden hhi-btn-edit hhi-btn"> <i class="fa-solid fa-pen-to-square mr-2"></i>Edit</button>
                         </div>
 
                         <div id="familyForm">
@@ -166,7 +166,7 @@
                     </section>
 
                     <!-- RISK FACTORS -->
-                    <section class="card p-6">
+                    <section class="card p-6 shadow-lg">
                         <div class="flex justify-between mb-4">
                             <h2 class="text-lg font-semibold">Risk Factors</h2>
                         </div>
@@ -204,8 +204,9 @@
                     <!-- SAVE BUTTON -->
                     <div class="flex justify-end">
                         <button id="saveBtn" type="button"
-                                class="px-6 py-3 rounded-xl bg-blue-600 text-white shadow-sm hover:bg-blue-700">
-                            Save Record
+                                class="px-4 py-2 hhi-btn hhi-btn-save text-lg ">
+                            <i class="fas fa-save mr-2"></i>
+                            Save
                         </button>
                     </div>
                 </div>
@@ -228,7 +229,7 @@
                 <div class="flex flex-col items-center gap-3">
                     <div class="w-8 h-8 border-4 border-gray-200 border-t-blue-600 rounded-full animate-spin"></div>
                     <span class="text-sm text-gray-600 font-medium">
-                        Loading records…
+                        Saving records
                     </span>
                 </div>
             </div>
@@ -242,8 +243,10 @@
             <p class="text-sm text-gray-600 mb-4">What would you like to do next?</p>
 
             <div class="flex justify-end gap-3">
-                <button id="createAnotherBtn" class="px-4 py-2 bg-gray-100 rounded-md hover:bg-gray-200">Create another</button>
-                <button id="goDashboardBtn" class="px-4 py-2 bg-blue-600 text-white rounded-md">Back to dashboard</button>
+                <button id="createAnotherBtn" class="px-4 py-2 hhi-btn-create-another hhi-btn">Create another</button>
+                <button id="goDashboardBtn" class="hhi-btn-back hhi-btn">
+                    <i class="fa-solid fa-house mr-2"></i> Back to Dashboard
+                </button>
             </div>
         </div>
     </div>

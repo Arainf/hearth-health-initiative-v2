@@ -88,19 +88,10 @@ const table = $("#patient-records-table").DataTable({
     {
         data: 9,
         className: "text-center",
-        width: "10%",           // Status
-        render: s => {
-            const map = {
-                Approved: 'green',
-                Pending: 'orange',
-                Rejected: 'red'
-            };
-            const c = map[s] ?? 'gray';
-            return `<span class="px-2 py-1 text-xs rounded-full bg-${c}-100 text-${c}-800">${s}</span>`;
-        }
+        width: "12%",           // Status
     },
 
-    { data: 10, width: "12%" }, // Created
+    { data: 10, width: "10%" }, // Created
 
   {
     data: 11,
@@ -134,7 +125,7 @@ const table = $("#patient-records-table").DataTable({
     }
 }
 
-]       
+]
 
 });
 

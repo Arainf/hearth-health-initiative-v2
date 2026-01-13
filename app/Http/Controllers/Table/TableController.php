@@ -96,6 +96,7 @@ class TableController extends Controller
             default    => 'badge-not-evaluated',
         };
 
+
         $doctorName = '';
         if ($doctor) {
             $doctorName = '
@@ -105,7 +106,7 @@ class TableController extends Controller
         ';
             }
 
-            $status = '
+        $status = '
         <div class="flex flex-col items-center">
             <span class="badge ' . $color . '">
                 ' . e($row->status_name) . '
@@ -414,9 +415,39 @@ class TableController extends Controller
 
     foreach ($rows as $row) {
 
-        $status = DB::table('status')
+        $statusName = DB::table('status')
             ->where('id', $row->status_id)
             ->value('status_name');
+
+        $doctor = DB::table('users')
+            ->where('id', $row->approved_by)
+            ->value('name');
+
+        /* Status badge */
+        $color = match (strtolower($statusName)) {
+            'approved' => 'badge-approved',
+            'pending'  => 'badge-pending',
+            default    => 'badge-not-evaluated',
+        };
+
+        $doctorName = '';
+        if ($doctor) {
+            $doctorName = '
+            <div class="text-[11px] text-gray-400 mt-1">
+                by ' . e($doctor) . '
+            </div>
+        ';
+        }
+
+        $status = '
+        <div class="flex flex-col items-center">
+            <span class="badge ' . $color . '">
+                ' . $statusName . '
+            </span>
+            ' . $doctorName . '
+        </div>
+    ';
+
 
         $data[] = [
             $counter++,                // #

@@ -78,35 +78,6 @@
                 </div>
             </x-navigation.nav-link>
 
-            <!-- change it to archive records -->
-            <!-- Compare
-            <x-navigation.nav-link
-                :href="route('compare')"
-                :active="request()->routeIs('compare')"
-                :style="2"
-                title="Compare Records"
-            >
-                <div
-                    class="flex items-center w-full"
-                    :class="sidebarCollapsed ? 'justify-center' : ''"
-                >
-                    <i class="
-                        fa-solid fa-code-compare w-5 transition-colors
-                        {{ request()->routeIs('compare')
-                            ? 'text-indigo-600'
-                            : 'text-gray-400 group-hover:text-indigo-600'
-                        }}
-                    "></i>
-
-                    <span
-                        x-show="!sidebarCollapsed"
-                        x-transition
-                        class="ml-4 text-sm font-medium  overflow-hidden text-nowrap"
-                    >
-                        Compare Records
-                    </span>
-                </div>
-            </x-navigation.nav-link> -->
 
             <!-- Patients -->
             <x-navigation.nav-link
@@ -168,33 +139,33 @@
                 </x-navigation.nav-link>
 
                 <!-- Archive Records -->
-                <x-navigation.nav-link
-                    :href="route('archive')"
-                    :active="request()->routeIs('archive')"
-                    :style="2"
-                    title="Archive Records"
-                >
-                    <div
-                        class="flex items-center w-full"
-                        :class="sidebarCollapsed ? 'justify-center' : ''"
-                    >
-                        <i class="
-                            fa-solid fa-box-archive w-5 transition-colors
-                            {{ request()->routeIs('archive')
-                                ? 'text-purple-600'
-                                : 'text-gray-400 group-hover:text-purple-600'
-                            }}
-                        "></i>
+{{--                <x-navigation.nav-link--}}
+{{--                    :href="route('archive')"--}}
+{{--                    :active="request()->routeIs('archive')"--}}
+{{--                    :style="2"--}}
+{{--                    title="Archive Records"--}}
+{{--                >--}}
+{{--                    <div--}}
+{{--                        class="flex items-center w-full"--}}
+{{--                        :class="sidebarCollapsed ? 'justify-center' : ''"--}}
+{{--                    >--}}
+{{--                        <i class="--}}
+{{--                            fa-solid fa-box-archive w-5 transition-colors--}}
+{{--                            {{ request()->routeIs('archive')--}}
+{{--                                ? 'text-purple-600'--}}
+{{--                                : 'text-gray-400 group-hover:text-purple-600'--}}
+{{--                            }}--}}
+{{--                        "></i>--}}
 
-                        <span
-                            x-show="!sidebarCollapsed"
-                            x-transition
-                            class="ml-4 text-sm font-medium"
-                        >
-                            Archive
-                        </span>
-                    </div>
-                </x-navigation.nav-link>
+{{--                        <span--}}
+{{--                            x-show="!sidebarCollapsed"--}}
+{{--                            x-transition--}}
+{{--                            class="ml-4 text-sm font-medium"--}}
+{{--                        >--}}
+{{--                            Archive--}}
+{{--                        </span>--}}
+{{--                    </div>--}}
+{{--                </x-navigation.nav-link>--}}
             @endif
 
 

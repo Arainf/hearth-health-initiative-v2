@@ -1,5 +1,7 @@
 import $ from "jquery";
 import DataTable from "datatables.net-dt";
+import { setupYearFilterRecords } from "@/filters/filter-year.js";
+import { setupStatusFilter } from "@/filters/filter-status.js";
 
 window.$ = window.jQuery = $;
 
@@ -14,13 +16,36 @@ let isEditMode = false;
 /* ===============================
    STATE & URL MANAGEMENT
 ================================ */
+const state = {
+    status: new URLSearchParams(window.location.search).get('status') || 'all',
+    year: new URLSearchParams(window.location.search).get('year') || new Date().getFullYear(),
+    search: new URLSearchParams(window.location.search).get('search') || ''
+};
+
+const originalState = {
+    status: state.status,
+    year: state.year,
+    search: state.search
+};
 
 
 const generatingRecords = new Set();
 
+const pending = {
+    status: null,
+    year: null,
+    search: null
+};
 
+function updateURL() {
+    const params = new URLSearchParams();
+    if (state.status && state.status !== 'all') params.set('status', state.status);
+    if (state.year && state.year !== 'all') params.set('year', state.year);
+    if (state.search) params.set('search', state.search);
 
-
+    const newUrl = `${window.location.pathname}?${params.toString()}`;
+    window.history.pushState({}, '', newUrl);
+}
 
 /* ===============================
    SIDE PANEL
@@ -28,7 +53,7 @@ const generatingRecords = new Set();
 
 let currentGeneratedId = null;
 let currentRecordId = null;
-let originalPanelContent = '';
+let originalPanelContent = ``;
 let panelEditMode = false;
 
 function openGeneratedPanel() {
@@ -37,14 +62,231 @@ function openGeneratedPanel() {
 
 function closeGeneratedPanel() {
     $("#generatedPanel").addClass("translate-x-full");
-    $("#panelContent").attr("contenteditable", "false");
-    $("#panelFooter").addClass("hidden");
+    contentFillers(false);
+    editBtnState(true);
     panelEditMode = false;
     currentGeneratedId = null;
     currentRecordId = null;
 }
+function contentFillers(enabled) {
+    $("#panelContent").attr("contenteditable", enabled).html(originalPanelContent);
+    $("#panelFooter").toggleClass("hidden", !enabled);
+}
+
+function editBtnState(state){
+    console.log()
+    if (state) {
+        isEditMode = false;
+        contentFillers(isEditMode);
+        $("#panelEditBtn").html('<i class="fa-solid fa-edit mr-1"></i> Edit');
+    } else {
+        isEditMode = true;
+        contentFillers(isEditMode);
+        $("#panelEditBtn").html('<i class="fa-solid fa-times mr-1"></i> Cancel');
+    }
+}
+
+$("#panelEditBtn").on("click", function() {
+    editBtnState(isEditMode);
+});
+
+$("#closeGeneratedPanel").on("click", () => {
+    originalPanelContent = ` `;
+    closeGeneratedPanel();
+});
+
+$("#saveAndApproveBtn").on("click", function() {
+    $("#approveModal").removeClass("hidden");
+});
+
+$("#cancelApproveBtn").on("click", function() {
+    $("#approveModal").addClass("hidden");
+});
+
+function showSuccess(title, message) {
+    $("#successTitle").text(title);
+    $("#successMessage").text(message);
+    $("#successModal").removeClass("hidden");
+}
+
+$("#closeSuccessBtn").on("click", function() {
+    $("#successModal").addClass("hidden");
+});
+
+$("#closeModal").on("click", function() {
+    $("#reportModal").addClass("hidden");
+    currentRecordId = null;
+    originalContent = '';
+    isEditMode = false;
+});
+
+$("#cancelEditBtn").on("click", function() {
+    $("#editToggleBtn").click();
+});
 
 
+$("#reportModal").on("click", function(e) {
+    if (e.target === this) {
+        $(this).addClass("hidden");
+        currentRecordId = null;
+        originalContent = '';
+        isEditMode = false;
+    }
+});
+
+function setPanelLoading(isLoading) {
+    $("#panelSkeleton").toggle(isLoading);
+    $("#panelContent").toggleClass("opacity-50", isLoading);
+}
+
+/* ===============================
+   VIEW/EDIT GENERATED TEXT
+================================ */
+
+$(document).on("click", ".view-generated-btn", function (e) {
+    e.stopPropagation();
+
+    const $tr = $(this).closest("tr");
+    const rowData = table.row($tr).data();
+
+    currentGeneratedId = $(this).data("id");
+    currentRecordId = rowData.id
+
+    $("#panelRecordId").text(`Generated ID #${currentGeneratedId}`);
+    openGeneratedPanel();
+    setPanelLoading(true);
+    contentFillers(false);
+
+    fetch(`/api/getGeneratedContent/${currentGeneratedId}`)
+        .then(res => res.json())
+        .then(res => {
+            originalPanelContent = res.generated_text || "No generated content.";
+            $("#panelContent").text(originalPanelContent);
+
+            const isApproved = res.status_id === 1;
+            if (!isApproved) {
+                $("#panelEditBtn").removeClass("hidden");
+            }
+        })
+        .catch(() => {
+            $("#panelContent").text("Failed to load content.");
+        })
+        .finally(() => {
+            setPanelLoading(false);
+        });
+});
+
+
+// Save only
+$("#panelSaveBtn").on("click", async function () {
+    if (!currentRecordId) return;
+
+    const $btn = $(this);
+    const content = $("#panelContent").text();
+
+    if (content.trim() === originalPanelContent.trim()) {
+        alert("No changes to save.");
+        return;
+    }
+
+    try {
+        $btn.prop("disabled", true).text("Saving…");
+
+        const res = await fetch(`/api/saveRecord/${currentRecordId}`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content")
+            },
+            body: JSON.stringify({ content })
+        });
+
+        if (!res.ok) {
+            throw new Error(`Save failed (${res.status})`);
+        }
+
+        const data = await res.json();
+
+        if (!data.success && !data.updated) {
+            throw new Error("Server did not confirm save");
+        }
+
+        originalPanelContent = content;
+        closeGeneratedPanel();
+
+        showSuccess("Saved", "Generated report updated.");
+        table.ajax.reload(null, false);
+
+    } catch (err) {
+        console.error("Save error:", err);
+        alert("Failed to save report. Please try again.");
+    } finally {
+        $btn.prop("disabled", false).text("Save");
+    }
+});
+
+
+// Save & approve
+$("#panelSaveApproveBtn").on("click", async function () {
+    if (!currentGeneratedId || !currentRecordId) return;
+
+    const $btn = $(this);
+    const content = $("#panelContent").text();
+
+    try {
+        $btn.prop("disabled", true).text("Saving & approving…");
+
+        // 1️⃣ Save content
+        const saveRes = await fetch(`/api/saveRecord/${currentRecordId}`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content")
+            },
+            body: JSON.stringify({ content })
+        });
+
+        if (!saveRes.ok) {
+            throw new Error(`Save failed (${saveRes.status})`);
+        }
+
+        const saveData = await saveRes.json();
+
+        if (!saveData.success && !saveData.updated) {
+            throw new Error("Server did not confirm save");
+        }
+
+        // 2️⃣ Approve record
+        const approveRes = await fetch(`/api/statusUpdate`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content")
+            },
+            body: JSON.stringify({
+                id: currentRecordId,
+                status: 1,
+                approved: user_id
+            })
+        });
+
+        if (!approveRes.ok) {
+            throw new Error(`Approve failed (${approveRes.status})`);
+        }
+
+        closeGeneratedPanel();
+        showSuccess("Approved", "Record saved and approved.");
+
+        table.ajax.reload();
+        loadStatusCounts();
+
+    } catch (err) {
+        console.error("Save & approve error:", err);
+        alert("Failed to save and approve. Please try again.");
+    } finally {
+        $btn.prop("disabled", false).text("Save & Approve");
+    }
+});
 /* ===============================
    LOADING
 ================================ */
@@ -64,7 +306,7 @@ function hideLoading() {
    LOAD STATUS COUNTS
 ================================ */
 function loadStatusCounts() {
-    const year = 'all';
+    const year = state.year;
     const apiUrl = year !== 'all'
         ? `/api/getStatusCount?year=${year}&archived=false`
         : `/api/getStatusCount?archived=false`;
@@ -99,8 +341,126 @@ function loadStatusCounts() {
 }
 
 
+/* ===============================
+   FILTER BUTTON STATE
+================================ */
+const $filterBtn = $("#reset-filters");
+const $searchIcon = $("#filter-search-icon");
+const $resetIcon = $("#filter-reset-icon");
+const $searchInput = $("#record-search");
+
+function setFilterButtonMode(mode) {
+    if (mode === "reset") {
+        $filterBtn
+            .attr("data-mode", "reset")
+            .removeClass("bg-blue-600 hover:bg-blue-700 border-blue-600 text-white")
+            .addClass("bg-gray-100 hover:bg-gray-200 border-gray-300 text-gray-700");
+
+        $searchIcon.addClass("hidden").css("display", "none");
+        $resetIcon.removeClass("hidden").css("display", "");
+    } else {
+        $filterBtn
+            .attr("data-mode", "search")
+            .removeClass("bg-gray-100 hover:bg-gray-200 border-gray-300 text-gray-700")
+            .addClass("bg-blue-600 hover:bg-blue-700 border-blue-600 text-white");
+
+        $resetIcon.addClass("hidden").css("display", "none");
+        $searchIcon.removeClass("hidden").css("display", "");
+    }
+}
+
+function hasActiveFilters() {
+    const currentYear = new Date().getFullYear();
+
+    return (
+        (state.status && state.status !== 'all') ||
+        (state.year && state.year !== currentYear) ||
+        (state.search && state.search.trim() !== '')
+    );
+}
+
+function syncFilterButton() {
+    // Show reset icon if filters are active, search icon if not
+    setFilterButtonMode(hasActiveFilters() ? 'reset' : 'search');
+}
+
+function resetFilters() {
+    const currentYear = new Date().getFullYear();
+
+    // Reset state
+    state.status = 'all';
+    state.year   = currentYear;
+    state.search = '';
+
+    // Clear pending
+    pending.status = null;
+    pending.year   = null;
+    pending.search = null;
+
+    // Reset UI
+    $searchInput.val('');
+    $("#status-filter-label").text('All');
+    $("#year-filter-label").text(currentYear);
+
+    updateURL();
+    syncFilterButton();
+
+    // Reload dependent filters
+    if (window.refreshStatusFilter) {
+        window.refreshStatusFilter(currentYear);
+    }
+
+    table.ajax.reload();
+}
 
 
+function stageFilter(type, value) {
+    pending[type] = value;
+}
+
+function applyFilters(filters = {}) {
+    // Update state from filters or pending
+    if (filters.status !== undefined) {
+        state.status = filters.status;
+        pending.status = null;
+    } else if (pending.status !== null) {
+        state.status = pending.status;
+        pending.status = null;
+    }
+
+    if (filters.year !== undefined) {
+        state.year = filters.year;
+        pending.year = null;
+    } else if (pending.year !== null) {
+        state.year = pending.year;
+        pending.year = null;
+    }
+
+    if (filters.search !== undefined) {
+        state.search = filters.search;
+        pending.search = null;
+    } else if (pending.search !== null) {
+        state.search = pending.search;
+        pending.search = null;
+    }
+
+    // Update URL
+    updateURL();
+
+    // Update UI
+    syncFilterButton();
+    loadStatusCounts()
+    // Apply filters to DataTable
+    table.ajax.reload();
+}
+
+function applyPendingFilters() {
+    applyFilters({
+        status: pending.status !== null ? pending.status : undefined,
+        year: pending.year !== null ? pending.year : undefined,
+        search: pending.search !== null ? pending.search : undefined
+    });
+}
 /* ===============================
    DATATABLE INIT
 ================================ */
@@ -128,10 +488,10 @@ const table = $("#records-table").DataTable({
         url: "/table/records",
         type: "GET",
         data: d => {
-            d.search =  '';
-            d.status = 'pending';
-            d.year   =  'all';
-            loadStatusCounts()
+            d.search = state.search || '';
+            d.status = state.status || Date.now();
+            d.year   = state.year || 'all';
+            loadStatusCounts();
             showLoading();
         },
         complete: hideLoading
@@ -213,9 +573,9 @@ const table = $("#records-table").DataTable({
                 // View button - blue (only if generated)
                 const viewBtn =
                     `<button class="hhi-btn hhi-btn-view icon-only view-generated-btn" ${!hasGenerated ? "disabled" : ' '}
-                            title="View Evaluation"
+                            title="${!hasGenerated ? "No Evaluation" : 'View Evaluation'}"
                             data-id="${r.generated_id}">
-                        <i class="fa-solid fa-eye"></i>
+                       <i class="fa-solid fa-magnifying-glass"></i>
                     </button>`
 
 
@@ -229,15 +589,16 @@ const table = $("#records-table").DataTable({
                     </button>`
                     : '';
 
-                // Print button - green (only if generated)
+
+
                 const printBtnStyled = hasDoctorApproval && hasGenerated
-                    ? `<button class="hhi-btn hhi-btn-edit icon-only"
+                    ? `<button class="hhi-btn hhi-btn-print icon-only"
                             title="Print"
                             onclick="printRow('${r.id}')">
                         <i class="fa-solid fa-print"></i>
                     </button>`
-                    :  hasGenerated ? `<button
-                            class="hhi-btn icon-only bg-transparent border border-gray-200 text-gray-400 opacity-50 cursor-not-allowed"
+                    : hasGenerated ? `<button
+                            class="hhi-btn hhi-btn-print icon-only bg-transparent border border-gray-200 text-gray-400 opacity-50 cursor-not-allowed"
                             title="Need Approval from a Doctor"
                             disabled
                         >
@@ -252,6 +613,9 @@ const table = $("#records-table").DataTable({
                         ${viewBtn}
                         ${evaluateBtn}
                         ${printBtnStyled}
+                        <button class="hhi-btn hhi-btn-secondary icon-only row-toggle">
+                            <i class="fa-solid fa-chevron-down"></i>
+                        </button>
                     </div>
 
                 </div>
@@ -265,304 +629,456 @@ const table = $("#records-table").DataTable({
 window.table = table;
 
 
+window.stageFilter = stageFilter;
+window.applyPendingFilters = applyPendingFilters;
+window.getCurrentYear = () => state.year;
+window.getPendingYear = () => pending.year;
+
+setupYearFilterRecords(table, state.year === 'all' ? null : state.year);
+setupStatusFilter(table, state.status, state.year);
 
 
-/* ===============================
-   VIEW/EDIT GENERATED TEXT
-================================ */
-
-$(document).on("click", ".view-generated-btn", function (e) {
-    e.stopPropagation();
-
-    const $tr = $(this).closest("tr");
-    const rowData = table.row($tr).data();
-
-    currentGeneratedId = $(this).data("id");
-    currentRecordId = rowData.id
-
-    $("#panelRecordId").text(`Generated ID #${currentGeneratedId}`);
-    openGeneratedPanel();
-    setPanelLoading(true);
-    setPanelEditMode(false);
-
-    fetch(`/api/getGeneratedContent/${currentGeneratedId}`)
-        .then(res => res.json())
-        .then(res => {
-            originalPanelContent = res.generated_text || "No generated content.";
-            $("#panelContent").text(originalPanelContent);
-
-            const isApproved = res.status_id === 1;
-            if (!isApproved) {
-                $("#panelEditBtn").removeClass("hidden");
-            }
-        })
-        .catch(() => {
-            $("#panelContent").text("Failed to load content.");
-        })
-        .finally(() => {
-            setPanelLoading(false);
-        });
+$searchInput.off('input').on('input', () => {
+    const searchTerm = $searchInput.val().trim();
+    stageFilter('search', searchTerm);
 });
 
+$filterBtn.off('click').on('click', (e) => {
+    e.preventDefault();
+    const mode = $filterBtn.attr("data-mode");
 
-
-// Enable edit
-$("#panelEditBtn").on("click", function () {
-    setPanelEditMode(true);
-    $("#panelContent").focus();
-});
-
-
-// Cancel edit
-$("#panelCancelEdit").on("click", function () {
-    $("#panelContent").text(originalPanelContent);
-    setPanelEditMode(false);
-});
-
-
-// Save only
-$("#panelSaveBtn").on("click", async function () {
-    if (!currentRecordId) return;
-
-    const $btn = $(this);
-    const content = $("#panelContent").text();
-
-    if (content.trim() === originalPanelContent.trim()) {
-        alert("No changes to save.");
-        return;
-    }
-
-    try {
-        $btn.prop("disabled", true).text("Saving…");
-
-        const res = await fetch(`/api/saveRecord/${currentRecordId}`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content")
-            },
-            body: JSON.stringify({ content })
-        });
-
-        if (!res.ok) {
-            throw new Error(`Save failed (${res.status})`);
-        }
-
-        const data = await res.json();
-
-        if (!data.success && !data.updated) {
-            throw new Error("Server did not confirm save");
-        }
-
-        originalPanelContent = content;
-        setPanelEditMode(false);
-
-        showSuccess("Saved", "Generated report updated.");
-        table.ajax.reload(null, false);
-
-    } catch (err) {
-        console.error("Save error:", err);
-        alert("Failed to save report. Please try again.");
-    } finally {
-        $btn.prop("disabled", false).text("Save");
-    }
-});
-
-
-// Save & approve
-$("#panelSaveApproveBtn").on("click", async function () {
-    if (!currentGeneratedId || !currentRecordId) return;
-
-    const $btn = $(this);
-    const content = $("#panelContent").text();
-
-    try {
-        $btn.prop("disabled", true).text("Saving & approving…");
-
-        // 1️⃣ Save content
-        const saveRes = await fetch(`/api/saveRecord/${currentRecordId}`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content")
-            },
-            body: JSON.stringify({ content })
-        });
-
-        if (!saveRes.ok) {
-            throw new Error(`Save failed (${saveRes.status})`);
-        }
-
-        const saveData = await saveRes.json();
-
-        if (!saveData.success && !saveData.updated) {
-            throw new Error("Server did not confirm save");
-        }
-
-        // 2️⃣ Approve record
-        const approveRes = await fetch(`/api/statusUpdate`, {
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content")
-            },
-            body: JSON.stringify({
-                id: currentRecordId,
-                status: 1,
-                approved: user_id
-            })
-        });
-
-        if (!approveRes.ok) {
-            throw new Error(`Approve failed (${approveRes.status})`);
-        }
-
-        closeGeneratedPanel();
-        showSuccess("Approved", "Record saved and approved.");
-
-        table.ajax.reload();
-        loadStatusCounts();
-
-    } catch (err) {
-        console.error("Save & approve error:", err);
-        alert("Failed to save and approve. Please try again.");
-    } finally {
-        $btn.prop("disabled", false).text("Save & Approve");
-    }
-});
-
-
-// Close panel
-$("#closeGeneratedPanel").on("click", () => {
-    setPanelEditMode(false);
-    closeGeneratedPanel();
-});
-
-
-
-/* ===============================
-   EDIT TOGGLE
-================================ */
-$("#panelEditBtn").on("click", function() {
-    if (isEditMode) {
-        // Cancel edit
-        $("#panelContent").text(originalPanelContent);
-        $("#panelContent").attr("contenteditable", "false");
-        $("#panelFooter").addClass("hidden");
-        isEditMode = false;
-        $(this).html('<i class="fa-solid fa-edit mr-1"></i> Edit');
+    if (mode === "reset") {
+        // Reset all filters
+        resetFilters();
     } else {
-        // Enable edit
-        $("#panelContent").attr("contenteditable", "true");
-        $("#panelContent").focus();
-        $("#panelFooter").removeClass("hidden");
-        isEditMode = true;
-        $(this).html('<i class="fa-solid fa-times mr-1"></i> Cancel');
+        // Search mode - apply all pending filters
+        applyPendingFilters();
     }
 });
 
-/* ===============================
-   SAVE EDITED TEXT
-================================ */
-$("#saveEditBtn").on("click", function() {
-    if (!currentRecordId) return;
+window.addEventListener('popstate', () => {
+    const params = new URLSearchParams(window.location.search);
+    const currentYear = new Date().getFullYear();
 
-    const content = $("#modalContent").text();
-    const btn = this;
-    btn.disabled = true;
-    btn.textContent = "Saving...";
-
-    fetch(`/api/saveRecord/${currentRecordId}`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').content
-        },
-        body: JSON.stringify({ content })
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.success || data.updated) {
-            originalContent = content;
-            showSuccess("Changes saved successfully!", "Your edits have been saved.");
-            $("#editToggleBtn").click();
-            table.ajax.reload();
-        } else {
-            alert("Failed to save changes.");
-        }
-    })
-    .catch(err => {
-        console.error('Error saving:', err);
-        alert("Failed to save changes.");
-    })
-    .finally(() => {
-        btn.disabled = false;
-        btn.textContent = "Save Changes";
+    applyFilters({
+        status: params.get('status') || 'all',
+        year: params.get('year') || currentYear,
+        search: params.get('search') || ''
     });
 });
 
+
+
+
+$searchInput.on("input", () => {
+    const searchTerm = $searchInput.val().trim();
+    stageFilter("search", searchTerm);
+    setFilterButtonMode(searchTerm.length > 0 ? 'search' : 'reset');
+
+});
+
+$(document).on(
+    "click",
+    ".year-filter-dropdown-item, #year-filter-menu .dropdown-item",
+    function () {
+        const value = $(this).data("value");
+
+        stageFilter("year", value);
+
+        setFilterButtonMode("search");
+
+    }
+);
+
+
+$(document).on(
+    "click",
+    ".status-filter-dropdown-item, #status-filter-menu .dropdown-item",
+    function () {
+        const status = $(this).data("value");
+
+        stageFilter("status", status);
+        setFilterButtonMode("search");
+
+    }
+);
+
+
+
 /* ===============================
-   SAVE AND APPROVE
+   ROW EXPAND
 ================================ */
-$("#saveAndApproveBtn").on("click", function() {
-    $("#approveModal").removeClass("hidden");
-});
+$("#records-table tbody").on("click", ".row-toggle", function (e) {
+    e.stopPropagation();
 
-$("#cancelApproveBtn").on("click", function() {
-    $("#approveModal").addClass("hidden");
-});
+    const tr   = $(this).closest("tr");
+    const row  = table.row(tr);
+    const icon = $(this).find("i");
 
-/* ===============================
-   SUCCESS MODAL
-================================ */
-function showSuccess(title, message) {
-    $("#successTitle").text(title);
-    $("#successMessage").text(message);
-    $("#successModal").removeClass("hidden");
-}
-
-$("#closeSuccessBtn").on("click", function() {
-    $("#successModal").addClass("hidden");
-});
-
-/* ===============================
-   CLOSE MODAL
-================================ */
-$("#closeModal").on("click", function() {
-    $("#reportModal").addClass("hidden");
-    currentRecordId = null;
-    originalContent = '';
-    isEditMode = false;
-});
-
-$("#cancelEditBtn").on("click", function() {
-    $("#editToggleBtn").click();
-});
-
-// Close modal on outside click
-$("#reportModal").on("click", function(e) {
-    if (e.target === this) {
-        $(this).addClass("hidden");
-        currentRecordId = null;
-        originalContent = '';
-        isEditMode = false;
+    if (row.child.isShown()) {
+        row.child.hide();
+        tr.removeClass("shown");
+        icon.removeClass("rotate-180");
+    } else {
+        row.child(formatExpandedRow(row.data())).show();
+        tr.addClass("shown");
+        icon.addClass("rotate-180");
     }
 });
 
+/* ===============================
+   EXPANDED ROW TEMPLATE
+================================ */
+function formatExpandedRow(data) {
+    const recordId = data.id;
+    let extendedActions = ``;
 
+    if(!data.generated_id){
+        extendedActions =`
+            <!-- ACTIONS -->
+            <div id="extended-actions-${recordId}"  class="absolute top-3 right-3 flex gap-2 ">
+                <button class="hhi-btn hhi-btn-outline text-xs toggle-edit" data-record-id="${recordId}">
+                    <i class="fa-solid fa-pen mr-1"></i> Edit
+                </button>
+                <button class="hhi-btn hhi-btn-primary text-xs hidden save-record-btn" data-record-id="${recordId}">
+                    Save
+                </button>
+                <button class="hhi-btn hhi-btn-secondary text-xs hidden cancel-edit-btn" data-record-id="${recordId}">
+                    Cancel
+                </button>
+            </div>`
+    }
 
+    return `
+        <div class="bg-white border border-gray-200 rounded-lg p-4 text-sm relative record-edit-container"
+             data-record-id="${recordId}">
+           ${extendedActions}
+            <!-- MAIN GRID -->
+            <div class="grid gap-6" style="grid-template-columns: repeat(3, 1fr); ">
 
-function setPanelLoading(isLoading) {
-    $("#panelSkeleton").toggle(isLoading);
-    $("#panelContent")
-        .attr("contenteditable", false)
-        .toggleClass("opacity-50", isLoading);
+                <!-- LEFT: INPUTS (2 columns) -->
+                <div class="col-span-2 grid grid-cols-2 gap-4">
+                    ${renderEditableInput("Cholesterol", "cholesterol", data.cholesterol, recordId)}
+                    ${renderEditableInput("HDL", "hdl_cholesterol", data.hdl_cholesterol, recordId)}
+
+                    ${renderEditableInput("Systolic BP", "systolic_bp", data.systolic_bp, recordId)}
+                    ${renderEditableInput("FBS", "fbs", data.fbs, recordId)}
+
+                    <div class="col-span-2">
+                        ${renderEditableInput("HbA1c", "hba1c", data.hba1c, recordId)}
+                    </div>
+                </div>
+
+                <!-- RIGHT: RISK FACTORS -->
+                <div class="space-y-4 col-start-3">
+                    ${renderRiskRadio("Hypertension Tx", "hypertension", data.hypertension, recordId)}
+                    ${renderRiskRadio("Diabetes M", "diabetes", data.diabetes, recordId)}
+                    ${renderRiskRadio("Current Smoker", "smoking", data.smoking, recordId)}
+                </div>
+            </div>
+        </div>
+    `;
 }
 
-function setPanelEditMode(enabled) {
-    $("#panelContent").attr("contenteditable", enabled);
-    $("#panelFooter").toggleClass("hidden", !enabled);
-    $("#panelEditBtn").toggleClass("hidden", enabled);
+
+function renderEditableInput(label, fieldName, value, recordId) {
+    return `
+        <div>
+            <label class="block min:text-md text-gray-500 mb-1 text-start">${label}</label>
+            <input type="number"
+                   step="0.01"
+                   class="record-field w-full px-3 py-2 text-sm bg-gray-100 border rounded disabled:bg-gray-100"
+                   data-field="${fieldName}"
+                   data-record-id="${recordId}"
+                   value="${value ?? ""}"
+                   disabled />
+        </div>
+    `;
+}
+function renderRiskRadio(label, fieldName, value, recordId) {
+    const yesChecked = value ? 'checked' : '';
+    const noChecked = !value ? 'checked' : '';
+
+    return `
+        <div>
+            <div class="text-sm font-medium text-gray-600 mb-2 text-start">
+                ${label}
+            </div>
+
+            <div class="flex gap-4">
+                <!-- YES -->
+                <label class="
+                    flex items-center gap-3 px-3 py-2 rounded-lg border
+                    text-base font-medium select-none
+                    radio-readonly border-gray-300
+                ">
+                    <input type="radio"
+                           class="risk-field radio-readonly radio-yes w-5 h-5"
+                           name="${fieldName}-${recordId}"
+                           data-field="${fieldName}"
+                           value="1"
+                           ${yesChecked}>
+                    Yes
+                </label>
+
+                <!-- NO -->
+                <label class="
+                    flex items-center gap-3 px-3 py-2 rounded-lg border
+                    text-base font-medium select-none
+                    radio-readonly border-gray-300
+                ">
+                    <input type="radio"
+                           class="risk-field radio-readonly radio-no w-5 h-5"
+                           name="${fieldName}-${recordId}"
+                           data-field="${fieldName}"
+                           value="0"
+                           ${noChecked}>
+                    No
+                </label>
+            </div>
+        </div>
+    `;
 }
 
+/* ===============================
+   EDIT FUNCTIONALITY
+================================ */
+let originalRecordData = {};
+
+// Toggle edit mode
+$(document).on('click', '.toggle-edit', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const recordId = $(this).data('record-id');
+    const $row = $(this).closest('.record-edit-container');
+
+    // Enable all fields
+    $row.find('.record-field')
+        .prop('disabled', false)
+        .removeClass('bg-gray-50')
+        .addClass('bg-white border-blue-300');
+
+    $row.find('.risk-field, .risk-field')
+        .removeClass('radio-readonly')
+        .addClass('radio-editable');
+
+    $row.find('.risk-field').closest('label')
+        .removeClass('radio-readonly')
+        .addClass('radio-editable');
+
+    function getRadioBool($row, field) {
+        const val = $row.find(`input[data-field="${field}"]:checked`).val();
+        return val === '1';
+    }
+
+
+    // Store original values
+    originalRecordData[recordId] = {
+        cholesterol: $row.find('[data-field="cholesterol"]').val(),
+        hdl_cholesterol: $row.find('[data-field="hdl_cholesterol"]').val(),
+        systolic_bp: $row.find('[data-field="systolic_bp"]').val(),
+        fbs: $row.find('[data-field="fbs"]').val(),
+        hba1c: $row.find('[data-field="hba1c"]').val(),
+        hypertension: getRadioBool($row, 'hypertension'),
+        diabetes: getRadioBool($row, 'diabetes'),
+        smoking: getRadioBool($row, 'smoking'),
+    };
+
+
+    // Show/hide buttons
+    $(this).addClass('hidden');
+    $row.find('.save-record-btn').removeClass('hidden');
+    $row.find('.cancel-edit-btn').removeClass('hidden');
+});
+
+// Cancel edit
+$(document).on('click', '.cancel-edit-btn', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const recordId = $(this).data('record-id');
+    const $row = $(this).closest('.record-edit-container');
+    const original = originalRecordData[recordId];
+
+    function restoreRadio($row, field, originalValue) {
+        $row.find(`input[data-field="${field}"]`).prop('checked', false);
+
+        const target = originalValue ? '1' : '0';
+        $row.find(`input[data-field="${field}"][value="${target}"]`)
+            .prop('checked', true);
+    }
+
+
+    if (original) {
+        // Restore original values
+        $row.find('[data-field="cholesterol"]').val(original.cholesterol);
+        $row.find('[data-field="hdl_cholesterol"]').val(original.hdl_cholesterol);
+        $row.find('[data-field="systolic_bp"]').val(original.systolic_bp);
+        $row.find('[data-field="fbs"]').val(original.fbs);
+        $row.find('[data-field="hba1c"]').val(original.hba1c);
+        restoreRadio($row, 'hypertension', original.hypertension);
+        restoreRadio($row, 'diabetes', original.diabetes);
+        restoreRadio($row, 'smoking', original.smoking);
+
+    }
+
+    // Disable fields
+    $row.find('.record-field')
+        .prop('disabled', true)
+        .removeClass('bg-white border-blue-300')
+        .addClass('bg-gray-50');
+
+    $row.find('.risk-field')
+        .addClass('radio-readonly')
+        .removeClass('radio-editable');
+
+    $row.find('.risk-field').closest('label')
+        .addClass('radio-readonly')
+        .removeClass('radio-editable');
+
+
+    // Show/hide buttons
+    $row.find('.toggle-edit').removeClass('hidden');
+    $row.find('.save-record-btn').addClass('hidden');
+    $row.find('.cancel-edit-btn').addClass('hidden');
+
+    delete originalRecordData[recordId];
+});
+
+// Save record
+$(document).on('click', '.save-record-btn', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const recordId = $(this).data('record-id');
+    const $row = $(this).closest('.record-edit-container');
+    const $btn = $(this);
+
+
+    function boolFromRadio($row, field) {
+        const val = $row.find(`input[data-field="${field}"]:checked`).val();
+        return val === '1';
+    }
+
+    function numOrNull(v) {
+        const n = parseFloat(v);
+        return Number.isFinite(n) ? n : null;
+    }
+
+    // Collect data
+    const data = {
+        cholesterol: numOrNull($row.find('[data-field="cholesterol"]').val()),
+        hdl_cholesterol: numOrNull($row.find('[data-field="hdl_cholesterol"]').val()),
+        systolic_bp: numOrNull($row.find('[data-field="systolic_bp"]').val()),
+        fbs: numOrNull($row.find('[data-field="fbs"]').val()),
+        hba1c: numOrNull($row.find('[data-field="hba1c"]').val()),
+        hypertension: boolFromRadio($row, 'hypertension'),
+        diabetes: boolFromRadio($row, 'diabetes'),
+        smoking: boolFromRadio($row, 'smoking'),
+    };
+
+
+    // Show loading
+    $btn.prop('disabled', true).html('<i class="fa-solid fa-spinner fa-spin mr-1"></i> Saving...');
+
+    $.ajax({
+        url: `/api/records/${recordId}`,
+        type: 'PUT',
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+            'Content-Type': 'application/json'
+        },
+        data: JSON.stringify(data),
+        success: () => {
+            // Disable fields
+            $row.find('.record-field').prop('disabled', true).removeClass('bg-white border-blue-300').addClass('bg-gray-50');
+            $row.find('.risk-field')
+                .addClass('radio-readonly')
+                .removeClass('radio-editable');
+
+            $row.find('.risk-field').closest('label')
+                .addClass('radio-readonly')
+                .removeClass('radio-editable');
+
+
+            // Show/hide buttons
+            $row.find('.toggle-edit').removeClass('hidden');
+            $row.find('.save-record-btn').addClass('hidden');
+            $row.find('.cancel-edit-btn').addClass('hidden');
+
+            // Reload table to reflect changes
+            table.ajax.reload(null, false);
+
+            delete originalRecordData[recordId];
+        },
+        error: (xhr) => {
+            const errorMsg = xhr.responseJSON?.error || 'Failed to save record';
+            alert(errorMsg);
+            $btn.prop('disabled', false).html('<i class="fa-solid fa-save mr-1"></i> Save');
+        }
+    });
+});
+
+
+/* ===============================
+   EVALUATE RECORD
+================================ */
+
+
+$(document).on('click', '.evaluate-btn', async function (e) {
+    e.stopPropagation();
+
+    const recordId = $(this).data('record-id');
+    const $btn = $(this);
+
+    // Prevent double-click on same row
+    if (generatingRecords.has(recordId)) return;
+
+    generatingRecords.add(recordId);
+
+    // 🔥 IMMEDIATE UI FEEDBACK (same as your old behavior)
+    $(`#generateBtn-${recordId}`).addClass("is-active").removeClass("hidden");
+    $(`#actionsBtn-${recordId}`).addClass("is-hidden");
+
+    $btn.prop('disabled', true)
+        .html('<i class="fa-solid fa-spinner fa-spin"></i>');
+
+    try {
+        await $.ajax({
+            url: `/api/evaluate/${recordId}`,
+            type: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
+        });
+
+        // job finished
+        generatingRecords.delete(recordId);
+
+        // restore UI
+        $(`#generateBtn-${recordId}`).removeClass("is-active").addClass("hidden");
+        $(`#actionsBtn-${recordId}`).removeClass("is-hidden");
+
+        // 🔄 reload AFTER completion (won’t block others)
+        table.ajax.reload(null, false);
+
+    } catch (xhr) {
+        generatingRecords.delete(recordId);
+
+        const errorMsg =
+            xhr.responseJSON?.error ||
+            xhr.responseJSON?.message ||
+            'Failed to generate evaluation';
+
+        alert(errorMsg);
+
+        // restore UI on error
+        $(`#generateBtn-${recordId}`).removeClass("is-active").addClass("hidden");
+        $(`#actionsBtn-${recordId}`).removeClass("is-hidden");
+
+        $btn.prop('disabled', false)
+            .html('<i class="fa-solid fa-brain"></i>');
+    }
+});
 

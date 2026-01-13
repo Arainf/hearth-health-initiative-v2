@@ -1,5 +1,12 @@
 @vite(['resources/css/table.css','resources/js/patients-show.js'])
 
+
+<style>
+    table.dataTable thead tr > th:nth-child(8) {
+        text-align: center !important;
+    }
+</style>
+
 <x-app-layout>
 <div class="w-full h-full relative">
 
@@ -14,7 +21,7 @@
             <button
                 class="hhi-btn hhi-btn-back"
                 onclick="window.location='{{ route('patient') }}'"
-            >   
+            >
                 Back
             </button>
         </div>

@@ -13,7 +13,7 @@
     <div id="{{ $id }}-menu"
          class="hidden absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg">
         <ul class="py-1 text-sm text-gray-700">
-            <li class="dropdown-item flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-gray-100"
+            <li class="{{ $id }}-dropdown-item flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-gray-100"
                 data-value="all">
                 All Years
             </li>

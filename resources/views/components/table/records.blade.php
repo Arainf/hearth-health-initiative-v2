@@ -13,6 +13,10 @@
         text-align: left !important;
     }
 
+    table.dataTable thead tr > th:nth-child(2) {
+        text-align: center !important;
+    }
+
     table.dataTable thead tr > th:last-child {
         text-align: left !important;
     }

@@ -53,7 +53,7 @@ const table = $("#patients-nav").DataTable({
 
 window.table = table;
 
-$("#record-search").on("input", function () {
+$("#record-search , #last_name, #first_name, #middle_name").on("input", function () {
     table.search(this.value).draw();
 });
 
