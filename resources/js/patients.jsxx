@@ -1,0 +1,423 @@
+import $ from 'jquery';
+import {setupSearchFilterPatients} from "./filters/filter-search.js";
+import { setupYearFilterPatients } from "@/filters/filter-year.js";
+import { TabulatorFull as Tabulator } from "tabulator-tables";
+
+const patientFilters = {
+    birthDate: null,   // { from, to }
+    age: null,         // { min, max }
+    gender: []
+};
+
+
+
+let currentStatus = "all";
+let currentYear = "all";
+
+function showLoading() {
+    $('#loadingModal').removeClass('hidden');
+}
+
+function hideLoading() {
+    $('#loadingModal').addClass('hidden');
+}
+
+window.$ = window.jQuery = $;
+
+initTabulator();
+
+function applyPatientFilters() {
+    const filters = [];
+
+    if (patientFilters.birthDate) {
+        filters.push(
+            { field: "birth_date", type: ">=", value: patientFilters.birthDate.from },
+            { field: "birth_date", type: "<=", value: patientFilters.birthDate.to }
+        );
+    }
+
+    if (patientFilters.age) {
+        filters.push(
+            { field: "age", type: ">=", value: patientFilters.age.min },
+            { field: "age", type: "<=", value: patientFilters.age.max }
+        );
+    }
+
+    // Gender filter
+    if (patientFilters.gender.length) {
+        filters.push({
+            field: "sex",
+            type: "in",
+            value: patientFilters.gender
+        });
+    }
+
+
+
+
+
+
+    filters.length ? table.setFilter(filters) : table.clearFilter();
+    updateFilterCount();
+}
+
+function initTabulator() {
+
+    const template = document.createElement('template');
+    template.innerHTML = '<div class="loader"></div>';
+    const dataLoaderLoading = template.content.firstChild;
+
+    window.table = new Tabulator("#patients", {
+        ajaxURL: "/table/patients",
+        dataLoaderLoading: dataLoaderLoading,
+        responsiveLayout:"collapse", 
+        ajaxConfig: {
+            method: "GET",
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+        },
+        ajaxRequesting: function () {
+            showLoading();
+            return true;
+        },
+        ajaxResponse: function (url, params, response) {
+            hideLoading();
+            return response;
+        },
+        height: "100%",
+        rowHeight: 40,
+        layout: "fitColumns",
+        resizableColumns: false,
+        columnDefaults: { resizable: false },
+        pagination: "local",
+        movableColumns: false,
+        paginationSize: 20,
+        paginationCounter: "rows",
+        columns: [
+            {
+                title: "Patient Name",
+                field: "patient_name",
+                widthGrow: 2,
+                responsive: 0,
+                headerSort: false,
+                formatter: function (cell) {
+                    const p = cell.getRow().getData();
+                    if (!p) return "—";
+                    return `${p.last_name}, ${p.first_name} ${p.middle_name || ''}`;
+                }
+            },
+            {
+                title: "Patient_name",
+                field: "patient_name_filter",
+                visible: false,
+                mutator: function(value, data, type, mutatorParams){
+                    const p = data;
+                    if (!p) return "—";
+                    return `${p.last_name}, ${p.first_name} ${p.middle_name || ''}`;
+                },
+            },
+            {
+                title: "Unit",
+                field: "unit",
+                headerSort: false,
+                responsive: 2, widthGrow: 1
+            },
+            {
+                title: "Phone",
+                field: "phone_number",
+                headerSort: false,
+                responsive: 2, widthGrow: 1
+            },
+            {
+                title: "Gender",
+                field: "sex",
+                headerSort: false,
+                responsive: 2, widthGrow: 1
+            },
+            { title: "Age", field: "age", headerSort: false },
+            {
+                title: "Birth Day",
+                field: "birth_date",
+                headerSort: false,
+                formatter: function (cell) {
+                    const date = new Date(cell.getValue());
+                    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+                }
+            },
+
+            // -----------------------------
+            // 3 DOT ACTION MENU
+            // -----------------------------
+            {
+                title: "Actions",
+                field: "actions",
+                headerSort: false,
+                responsive: 0,
+                formatter: function (cell) {
+                const data = cell.getRow().getData();
+                const id = data.id;
+
+                return `
+                    <div class="action-buttons flex gap-2 justify-end items-center" style="margin: -7px;">
+                    <button class="px-2 py-1 rounded hover:bg-blue-100"
+                            title="View"
+                            data-patient-id="${id}"
+                            onclick="event.stopPropagation(); window.viewPatient && window.viewPatient(${id});">
+                        <i class="fa-solid fa-eye text-gray-700"></i>
+                    </button>
+                    <button class="px-2 py-1 rounded hover:bg-blue-100"
+                            title="Edit"
+                            data-patient-id="${id}"
+                            onclick="event.stopPropagation(); window.editPatient && window.editPatient(${id});">
+                        <i class="fa-solid fa-pen text-gray-700"></i>
+                    </button>
+                    <button class="px-2 py-1 rounded hover:bg-red-100"
+                            title="Delete"
+                            data-patient-id="${id}"
+                            onclick="event.stopPropagation(); window.deletePatient && window.deletePatient(${id});">
+                        <i class="fa-solid fa-trash text-red-600"></i>
+                    </button>
+                    </div>
+                `;
+                },
+            }
+        ],
+    });
+
+    // Filters
+    setupSearchFilterPatients(table, applyPatientFilters);
+
+    table.setSort([
+        {column:"patient_name", dir:"asc"},
+    ]);
+}
+
+
+/* -----------------------------------------------------------
+   REMOVE ANY CURRENT MENUS
+----------------------------------------------------------- */
+function removeFloatingMenus() {
+    $(".floating-action-menu").remove();
+}
+
+/* -----------------------------------------------------------
+   CREATE FLOATING MENU (APPENDED TO BODY)
+----------------------------------------------------------- */
+function buildFloatingMenu(id) {
+    const $menu = $(`
+        <div class="floating-action-menu" id="floating-action-menu-${id}" style="
+            position:absolute;
+            min-width:180px;
+            background:#fff;
+            border:1px solid rgba(0,0,0,0.1);
+            box-shadow:0 6px 18px rgba(0,0,0,0.12);
+            border-radius:10px;
+            z-index:999999;
+            padding:6px 0;
+        ">
+            <button data-action="view" class="fam-item" style="display:flex;gap:8px;align-items:center;width:100%;padding:10px 12px;border:none;background:transparent;text-align:left;cursor:pointer;">
+                <i class="fa-solid fa-eye text-blue-600 w-4"></i> View Details
+            </button>
+            <button data-action="edit" class="fam-item" style="display:flex;gap:8px;align-items:center;width:100%;padding:10px 12px;border:none;background:transparent;text-align:left;cursor:pointer;">
+                <i class="fa-solid fa-pen text-green-600 w-4"></i> Edit Patient
+            </button>
+
+            <button data-action="delete" class="fam-item text-red-600" style="display:flex;gap:8px;align-items:center;width:100%;padding:10px 12px;border:none;background:transparent;text-align:left;cursor:pointer;">
+                <i class="fa-solid fa-trash w-4"></i> Delete
+            </button>
+        </div>
+    `);
+
+    // Action handlers
+    $menu.on("click", ".fam-item", function (e) {
+        e.stopPropagation();
+        const action = $(this).data("action");
+
+        removeFloatingMenus();
+
+        if (action === "view") window.viewPatient(id);
+        if (action === "edit") window.editPatient(id);
+        if (action === "new") window.newRecord(id);
+        if (action === "delete") window.deletePatient(id);
+    });
+
+    return $menu;
+}
+
+/* -----------------------------------------------------------
+   MAIN TOGGLE FUNCTION
+----------------------------------------------------------- */
+window.toggleActionMenu = function (id, btn) {
+    const $btn = $(btn);
+
+    // Close other menus
+    removeFloatingMenus();
+
+    // Create new menu
+    const $menu = buildFloatingMenu(id);
+    $("body").append($menu);
+
+    // Position menu
+    const rect = $btn[0].getBoundingClientRect();
+
+    const menuWidth = $menu.outerWidth();
+    let left = rect.right - menuWidth + window.scrollX;
+    if (left < 10) left = rect.left + window.scrollX;
+
+    let top = rect.bottom + 6 + window.scrollY;
+
+    $menu.css({ top: top, left: left });
+
+    // Prevent menu from closing when clicked inside
+    $menu.on("click", function (e) {
+        e.stopPropagation();
+    });
+};
+
+/* -----------------------------------------------------------
+   CLOSE MENUS ON CLICK OUTSIDE
+----------------------------------------------------------- */
+$(document).on("click touchstart", function (e) {
+    if (!$(e.target).closest(".action-toggle").length &&
+        !$(e.target).closest(".floating-action-menu").length) {
+        removeFloatingMenus();
+    }
+});
+
+/* Close menus on scroll or resize */
+$(window).on("scroll resize", function () {
+    removeFloatingMenus();
+});
+
+
+$("#reset-filters").click(function () {
+    currentStatus = "all";
+    currentYear = "all";
+    table.clearFilter();
+
+    $("#record-search").val("");
+    $("#year-filter-label").text("All Years");
+});
+
+
+// Toggle panel
+document.getElementById("filter-btn").onclick = (e) => {
+    e.stopPropagation();
+    document.getElementById("filter-panel").classList.toggle("hidden");
+};
+
+document.addEventListener("click", (e) => {
+    const panel = document.getElementById("filter-panel");
+    const btn = document.getElementById("filter-btn");
+    if (!panel.contains(e.target) && !btn.contains(e.target)) {
+        panel.classList.add("hidden");
+    }
+});
+
+// Apply filters
+document.getElementById("apply-filters").onclick = () => {
+
+    const bf = document.getElementById("birth-from").value;
+    const bt = document.getElementById("birth-to").value;
+    patientFilters.birthDate = (bf && bt) ? { from: bf, to: bt } : null;
+
+    const minAge = document.getElementById("age-min").value;
+    const maxAge = document.getElementById("age-max").value;
+
+    // ✅ ADD THIS VALIDATION HERE
+    if (minAge && maxAge && Number(minAge) > Number(maxAge)) {
+        alert("Invalid age range");
+        return;
+    }
+
+    patientFilters.age = (minAge && maxAge)
+        ? { min: minAge, max: maxAge }
+        : null;
+
+    patientFilters.gender = [...document.querySelectorAll(".gender-filter:checked")]
+        .map(el => el.value);
+
+    applyPatientFilters();
+    document.getElementById("filter-panel").classList.add("hidden");
+};
+
+
+// Clear
+document.getElementById("reset-filters").onclick = () => {
+    patientFilters.birthDate = null;
+    patientFilters.age = null;
+    patientFilters.gender = [];
+
+    document.querySelectorAll("#filter-panel input").forEach(i => {
+        if (i.type === "checkbox" || i.type === "radio") i.checked = false;
+        else i.value = "";
+    });
+
+    table.clearFilter();
+    updateFilterCount();
+};
+
+
+// Badge
+function updateFilterCount() {
+    let count = 0;
+    if (patientFilters.birthDate) count++;
+    if (patientFilters.age) count++;
+    if (patientFilters.gender.length) count++;
+
+    const badge = document.getElementById("filter-count");
+    badge.textContent = count;
+    badge.classList.toggle("hidden", count === 0);
+}
+
+
+let deleteTargetId = null;
+
+window.deletePatient = function (id) {
+    deleteTargetId = id;
+    $("#deleteModal").removeClass("hidden");
+};
+
+// Cancel
+$("#cancelDelete").on("click", function () {
+    deleteTargetId = null;
+    $("#deleteModal").addClass("hidden");
+});
+
+// Confirm
+$("#confirmDelete").on("click", function () {
+    if (!deleteTargetId) return;
+
+    $.ajax({
+        url: `/api/patient/delete/${deleteTargetId}`,
+        type: "DELETE",
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        },
+        success: function () {
+            table.deleteRow(deleteTargetId);
+            deleteTargetId = null;
+            $("#deleteModal").addClass("hidden");
+        },
+        error: function () {
+            alert("Failed to delete patient.");
+        }
+    });
+});
+
+
+$("#deleteModal").on("click", function (e) {
+    if (e.target === this) {
+        $(this).addClass("hidden");
+        deleteTargetId = null;
+    }
+});
+
+
+
+window.viewPatient = id => window.location.href = `${window.routes.patientView}/${id}`;
+window.editPatient = id => window.location.href = `${window.routes.patientEdit}/${id}/edit`;
+
+
+

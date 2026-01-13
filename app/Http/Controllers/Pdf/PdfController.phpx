@@ -1,0 +1,110 @@
+<?php
+
+namespace App\Http\Controllers\Pdf;
+
+use App\Http\Controllers\Controller;
+use App\Models\Records;
+use Barryvdh\DomPDF\Facade\Pdf;
+
+
+class PdfController extends Controller
+{
+    public function export($id)
+    {
+        $record = Records::with('generated_report')->findOrFail($id);
+
+        if (!$record->generated_report) {
+            abort(404, 'No generated report found for this record.');
+        }
+
+        $data = [
+            'content' => $record->generated_report->generated_text, // content from generated report
+        ];
+
+//        TEMPLATE PDF
+
+        $html = '
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>Heart Health Initiative</title>
+    </head>
+    <style>
+    @page {
+       margin-top: 0.3in;
+       margin-bottom: 0in;
+       margin-left: 0.5in;
+       margin-right: 0.5in;
+    }
+</style>
+    <header>
+            <div style="text-align:center; margin-bottom:20px;">
+                <h2 style="
+                    font-size:40px;
+                    font-weight:bold;
+                    margin:0;
+                    display:flex;
+                    justify-content:center;
+                    align-items:center;
+                ">
+                    <img src="' . public_path("img/document_logo.png") . '" style="height:40px; width:auto;">
+                    Heart Health Initiative
+                </h2>
+
+                <p style="font-family:Helvetica, sans-serif; line-height: 14px; font-size:12px; margin:-5px 0 30px 0;">
+                    A Primary TeleMedicine Health Program<br>
+                    Ateneo de Zamboanga University
+                </p>
+
+                <hr style="border:none; height:2px; background:black; margin-bottom:20px;">
+            </div>
+    </header>
+    <body style=" font-family:Arial, sans-serif;">
+              <div style="
+                    -webkit-column-count: 2;
+                    -moz-column-count: 2;
+                    column-count: 2;
+
+                    -webkit-column-gap: 40px;
+                    -moz-column-gap: 40px;
+                    column-gap: 40px;
+
+                    white-space: pre-wrap;
+                    word-break: break-word;
+                    font-size: 12pt;
+                ">
+                ' . $data['content'] . '
+            </div>
+        </div>
+    </body>
+    <footer>
+        <div style="
+            position:absolute;
+            right:0;
+            width:100%;
+            text-align:right;
+            font-size:13px;
+        ">
+            <div>
+                <img src="' . public_path("img/tex_signature.jpg") . '" style="height:0.8in; width:auto;"><br>
+                <p style="margin:5px 0 0 0;">
+                    Fr. Alberto B. Paurom MD SJ<br>
+                    Lic# 60679
+                </p>
+            </div>
+        </div>
+    </footer>
+    </html>
+    ';
+
+
+
+        $pdf = Pdf::loadHTML($html)->setPaper('A4', 'portrait');
+
+//        $pdf = Pdf::loadView('pdf.pdf_hhi', $data);
+
+        // Download as PDF
+        return $pdf->download("HHI_Report_{$record->id}.pdf");
+    }
+}

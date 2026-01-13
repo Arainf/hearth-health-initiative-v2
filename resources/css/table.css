@@ -1,0 +1,169 @@
+/* ----------------------------------------------------
+   BASE TABLE — clean border, soft corners
+---------------------------------------------------- */
+.tabulator {
+    border: 1px solid #e5e7eb !important; /* gray-200 */
+    border-radius: 10px !important;
+    overflow: hidden !important;
+    background: white !important;
+}
+
+/* ----------------------------------------------------
+   HEADER — plain, clean, minimalist
+---------------------------------------------------- */
+
+
+.tabulator-headers {
+      /* off-white */
+    border-bottom: 1px solid #e5e7eb !important;
+    height: 45px !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    display: flex ;
+    align-items: center;
+
+}
+
+.tabulator-col {
+    background: transparent !important;
+    height: 100% !important;
+
+}
+
+.tabulator-col{
+    border-right: none !important;
+}
+
+.tabulator-col-title {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #374151;          /* gray-700 */
+    padding-left: 10px;
+    margin: 6px 0;
+    letter-spacing: -0.1px;
+}
+
+/* ----------------------------------------------------
+   ROWS — flat & clean
+---------------------------------------------------- */
+.tabulator-row {
+    background: white !important;
+    border-bottom: 1px solid #f5f5f5 !important;
+    transition: background-color 0.18s ease;
+}
+
+.tabulator-row:hover {
+    background: #f8fafc !important;  /* slate-50 */
+}
+
+.tabulator-row.tabulator-selected {
+    background: #eef2f7 !important;  /* soft blue-gray */
+}
+
+
+
+/* ----------------------------------------------------
+   CELL — smooth padding, clean text
+---------------------------------------------------- */
+.tabulator-cell {
+    padding: 12px 14px !important;
+    font-size: 0.9rem;
+    color: #374151; /* gray-700 */
+}
+
+/* ----------------------------------------------------
+   PAGINATION — minimal pills
+---------------------------------------------------- */
+.tabulator-paginator {
+    background: white !important;
+    padding: 12px;
+}
+
+.tabulator-page {
+    min-width: 34px !important;
+    height: 34px !important;
+    border-radius: 7px !important;
+    border: 1px solid #e5e7eb !important;
+    margin: 0 3px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #374151;
+    transition: all 0.15s ease;
+    font-size: 0.85rem;
+}
+
+.tabulator-page:hover {
+    background: #f3f4f6;
+}
+
+.tabulator-page.active {
+    background: #111827 !important;
+    color: white !important;
+    border-color: #111827 !important;
+}
+
+.tabulator-footer-contents{
+    background: white !important;
+}
+
+
+/* ----------------------------------------------------
+   3-DOTS MENU — minimalist
+---------------------------------------------------- */
+.action-toggle {
+    width: 34px;
+    height: 34px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background .15s ease;
+}
+
+.action-toggle:hover {
+    background: #f3f4f6;
+}
+
+/* ----------------------------------------------------
+   FLOATING ACTION MENU — clean, minimal
+---------------------------------------------------- */
+.floating-action-menu {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+    animation: fadeIn 0.12s ease-out;
+    overflow: hidden;
+}
+
+.fam-item {
+    font-size: 0.9rem;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #374151;
+    background: transparent;
+    width: 100%;
+    border: none;
+    text-align: left;
+    cursor: pointer;
+}
+
+.fam-item:hover {
+    background: #f3f4f6;
+}
+
+.fam-item i {
+    width: 16px;
+    text-align: center;
+}
+
+/* fade animation */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-2px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+

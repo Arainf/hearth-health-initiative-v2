@@ -1,0 +1,261 @@
+/* ===============================
+   COMPACT BORDERED CARD TABLE
+   WITH FULL GRID (VERTICAL + HORIZONTAL)
+   =============================== */
+
+
+.dt-scroll-head {
+  will-change: width;
+}
+
+.dt-scroll-body {
+  will-change: scroll-position;
+}
+
+/* ================= WRAPPER ================= */
+.dataTables_wrapper {
+  position: relative;
+  height: 100%;
+}
+
+/* Scrollable body */
+.dataTables_scrollBody {
+  max-height: calc(100vh - 260px);
+  overflow-y: auto !important;
+}
+
+/* ================= HEADER ================= */
+.dt-scroll-head table.dataTable {
+  border-collapse: collapse !important;
+}
+
+.dt-scroll-head table.dataTable thead th {
+  background: #f8fafc;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  padding: 10px 12px;
+  text-align: start;
+
+  border-top: 1px solid #e5e7eb;
+  border-bottom: 1px solid #e5e7eb;
+  border-right: 1px solid #e5e7eb;
+}
+
+.dt-scroll-head table.dataTable thead th:first-child {
+  border-left: 1px solid #e5e7eb;
+  text-align: center;
+}
+
+.dt-scroll-head table.dataTable thead th:last-child {
+  text-align: start;
+}
+
+/* Hide duplicate header in body */
+.dt-scroll-body thead {
+  display: none !important;
+}
+
+/* ================= TABLE BASE ================= */
+table.dataTable {
+  border-collapse: separate !important;
+  border-spacing: 0 6px !important;
+  background: transparent;
+}
+
+/* ================= ROW ================= */
+table.dataTable tbody tr {
+  background: transparent !important;
+}
+
+/* ================= CELLS ================= */
+table.dataTable tbody tr > td {
+  background: #ffffff;
+  padding: 5px 12px !important;
+  font-size: 13px;
+  color: #0f172a;
+  vertical-align: middle;
+  text-align: start;
+
+  /* FULL GRID */
+  border-top: 1px solid #e5e7eb;
+  border-bottom: 1px solid #e5e7eb;
+  border-right: 1px solid #e5e7eb;
+
+  transition: background .15s ease;
+}
+
+/* Left border */
+table.dataTable tbody tr > td:first-child {
+  border-left: 3px solid #e5e7eb;
+  text-align: center;
+}
+
+table.dataTable tbody tr > td:last-child {
+  text-align: center;
+}
+
+/* ================= HOVER ================= */
+table.dataTable tbody tr:hover > td {
+  background: #f8fafc;
+}
+
+/* Accent bar on hover */
+table.dataTable tbody tr:hover > td:first-child {
+  border-left-color: #0ea5e9;
+}
+
+/* ================= NUMERIC ================= */
+table.dataTable td.dt-type-numeric {
+  text-align: start;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ================= ACTIONS ================= */
+td.text-end {
+  text-align: right;
+  vertical-align: middle;
+}
+
+/* Inner flex only */
+.dt-actions {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+/* Icon buttons */
+.hhi-btn.icon-only {
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: all .15s ease;
+}
+
+.hhi-btn.icon-only:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.1);
+}
+
+/* ================= PAGINATION ================= */
+.dataTables_paginate {
+  position: sticky;
+  bottom: 0;
+  background: #ffffff;
+  padding: 8px 0;
+  border-top: 1px solid #e5e7eb;
+  z-index: 10;
+}
+
+/* Pagination buttons */
+.dataTables_paginate .paginate_button {
+  border-radius: 6px !important;
+  border: 1px solid #e5e7eb !important;
+  padding: 4px 10px !important;
+  margin: 0 3px;
+  font-size: 13px;
+  background: white !important;
+}
+
+.dataTables_paginate .paginate_button.current {
+  background: #2563eb !important;
+  color: white !important;
+  border-color: #2563eb !important;
+}
+
+/* ================= SEARCH & LENGTH ================= */
+.dataTables_filter input,
+.dataTables_length select {
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+  padding: 5px 10px;
+  font-size: 13px;
+}
+
+/* ================= BADGES ================= */
+.dt-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 999px;
+}
+
+.dt-badge-success { background: #dcfce7; color: #166534; }
+.dt-badge-warning { background: #fef3c7; color: #92400e; }
+.dt-badge-danger  { background: #fee2e2; color: #991b1b; }
+
+
+
+/* ===============================
+   RESPONSIVE TABLE HEADER FIX
+   =============================== */
+
+/* Prevent header overflow */
+.dt-scroll-head {
+  overflow: hidden;
+}
+
+/* Allow wrapping in header */
+.dt-scroll-head table.dataTable thead th {
+  white-space: normal !important;
+  line-height: 1.3;
+  word-break: break-word;
+}
+
+/* Keep body cells aligned with header */
+.dt-scroll-body table.dataTable {
+  table-layout: fixed;
+}
+
+/* Ensure consistent column widths */
+.dt-scroll-head table.dataTable,
+.dt-scroll-body table.dataTable {
+  width: 100% !important;
+}
+
+/* ===============================
+   MOBILE / SMALL SCREENS
+   =============================== */
+@media (max-width: 1024px) {
+
+  /* Reduce padding to save space */
+  .dt-scroll-head table.dataTable thead th {
+    padding: 8px 8px;
+    font-size: 11px;
+  }
+
+  table.dataTable tbody tr > td {
+    padding: 6px 8px !important;
+    font-size: 12px;
+  }
+
+  /* Make action column tighter */
+  table.dataTable tbody tr > td:last-child,
+  .dt-scroll-head table.dataTable thead th:last-child {
+    width: 110px !important;
+    min-width: 110px !important;
+    max-width: 110px !important;
+  }
+}
+
+/* ===============================
+   ACTION BUTTON CONSISTENCY
+   =============================== */
+td.text-end {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+/* Prevent uneven row heights */
+table.dataTable tbody tr {
+  height: 48px;
+}
