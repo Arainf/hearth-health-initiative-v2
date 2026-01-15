@@ -3,6 +3,24 @@ import DataTable from "datatables.net-dt";
 import { setupYearFilterRecords } from "@/filters/filter-year.js";
 import { setupStatusFilter } from "@/filters/filter-status.js";
 
+// import { Editor} from "@tiptap/core";
+// import StarterKit from "@tiptap/starter-kit";
+//
+// let editor = null;
+//
+// function initEditor(content) {
+//     if (editor) {
+//         editor.commands.setContent(content);
+//         return;
+//     }
+//
+//     editor = new Editor({
+//         element: document.querySelector("#panelContent"),
+//         extensions: [StarterKit],
+//         content,
+//         editable: false
+//     });
+// }
 window.$ = window.jQuery = $;
 
 const ai_Access = document.body.dataset.aiAccess === '1';
@@ -73,18 +91,39 @@ function contentFillers(enabled) {
     $("#panelFooter").toggleClass("hidden", !enabled);
 }
 
-function editBtnState(state){
-    console.log()
-    if (state) {
-        isEditMode = false;
-        contentFillers(isEditMode);
-        $("#panelEditBtn").html('<i class="fa-solid fa-edit mr-1"></i> Edit');
-    } else {
-        isEditMode = true;
-        contentFillers(isEditMode);
-        $("#panelEditBtn").html('<i class="fa-solid fa-times mr-1"></i> Cancel');
+// function editBtnState(state){
+//     console.log()
+//     if (state) {
+//         isEditMode = false;
+//         contentFillers(isEditMode);
+//         $("#panelEditBtn").html('<i class="fa-solid fa-edit mr-1"></i> Edit');
+//     } else {
+//         isEditMode = true;
+//         contentFillers(isEditMode);
+//         $("#panelEditBtn").html('<i class="fa-solid fa-times mr-1"></i> Cancel');
+//     }
+// }
+
+function editBtnState(isEditing) {
+    isEditMode = !isEditing;
+
+    window.TipTap.setEditable(isEditMode);
+
+    $("#panelFooter").toggleClass("hidden", !isEditMode);
+    $("#editorToolbar").toggleClass("hidden", !isEditMode);
+
+    $("#panelEditBtn").html(
+        isEditMode
+            ? '<i class="fa-solid fa-times mr-1"></i> Cancel'
+            : '<i class="fa-solid fa-edit mr-1"></i> Edit'
+    );
+
+    // CANCEL → restore original
+    if (!isEditMode) {
+        window.TipTap.setContent(originalPanelContent);
     }
 }
+
 
 $("#panelEditBtn").on("click", function() {
     editBtnState(isEditMode);
@@ -134,6 +173,19 @@ $("#reportModal").on("click", function(e) {
     }
 });
 
+
+function aiTextToHtml(text) {
+    return text
+        .replace(/^([A-Z ].{10,})$/gm, '<h1>$1</h1>')
+        .replace(/^([A-F]\.\s+.*)$/gm, '<h2>$1</h2>')
+        .replace(/^- (.*)$/gm, '<li>$1</li>')
+        .replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>')
+        .replace(/^(\d+)\.\s+(.*)$/gm, '<li>$2</li>')
+        .replace(/(<li>.*<\/li>)/gs, '<ol>$1</ol>')
+        .replace(/^(?!<h|<ul|<ol|<li)(.+)$/gm, '<p>$1</p>');
+}
+
+
 function setPanelLoading(isLoading) {
     $("#panelSkeleton").toggle(isLoading);
     $("#panelContent").toggleClass("opacity-50", isLoading);
@@ -161,7 +213,8 @@ $(document).on("click", ".view-generated-btn", function (e) {
         .then(res => res.json())
         .then(res => {
             originalPanelContent = res.generated_text || "No generated content.";
-            $("#panelContent").text(originalPanelContent);
+            // $("#panelContent").text(originalPanelContent);
+            window.TipTap.setContent(originalPanelContent);
 
             const isApproved = res.status_id === 1;
             if (!isApproved) {
@@ -182,7 +235,8 @@ $("#panelSaveBtn").on("click", async function () {
     if (!currentRecordId) return;
 
     const $btn = $(this);
-    const content = $("#panelContent").text();
+    // const content = $("#panelContent").text();
+    const content = window.TipTap.getHTML();
 
     if (content.trim() === originalPanelContent.trim()) {
         alert("No changes to save.");
@@ -231,7 +285,9 @@ $("#panelSaveApproveBtn").on("click", async function () {
     if (!currentGeneratedId || !currentRecordId) return;
 
     const $btn = $(this);
-    const content = $("#panelContent").text();
+    // const content = $("#panelContent").text();
+
+    const content = window.TipTap.getHTML();
 
     try {
         $btn.prop("disabled", true).text("Saving & approving…");

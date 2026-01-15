@@ -37,7 +37,7 @@ class ApiController extends Controller
         $validated = $request->validate([
             'id' => 'required|exists:records,id',
             'status' => 'required|integer|exists:status,id',
-            'approved' => 'nullable|integer|exists:status,id',
+            'approved' => 'nullable|string|max:255',
         ]);
 
         $record = Records::findOrFail($validated['id']);

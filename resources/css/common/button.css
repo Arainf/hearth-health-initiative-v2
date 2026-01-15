@@ -421,3 +421,68 @@
     background-color: #e2e8f0;   /* slate-200 */
     border-color: #93c5fd;       /* blue-300 */
 }
+
+
+/* === TOOLBAR BUTTON === */
+.toolbar-btn {
+    @apply
+    inline-flex items-center justify-center
+    w-9 h-9
+    rounded-md
+    text-gray-600
+    transition-all duration-150 ease-out
+    hover:bg-gray-100
+    active:bg-gray-200;
+}
+
+/* Active formatting (bold, italic, etc.) */
+.toolbar-btn.is-active {
+    @apply bg-purple-100 text-purple-600;
+}
+
+/* Icons inside buttons */
+.toolbar-btn img {
+    @apply w-4 h-4 opacity-80;
+}
+
+.toolbar-btn:hover img {
+    @apply opacity-100;
+}
+
+/* === DROPDOWN PANEL === */
+.toolbar-dropdown {
+    @apply
+    absolute mt-2 min-w-[160px]
+    bg-white
+    border border-gray-200
+    rounded-lg
+    shadow-lg
+    p-1
+    z-50;
+}
+
+/* Dropdown items */
+.dropdown-item {
+    @apply
+    flex items-center gap-3
+    px-3 py-2
+    text-sm text-gray-700
+    rounded-md
+    transition
+    hover:bg-gray-100
+    w-full text-left;
+}
+
+.dropdown-item img {
+    @apply w-4 h-4 opacity-70;
+}
+
+/* Divider */
+.toolbar-divider {
+    @apply h-5 w-px bg-gray-300 mx-1;
+}
+
+/* Smooth dropdown animation */
+[x-cloak] {
+    display: none !important;
+}

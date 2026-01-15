@@ -49,6 +49,37 @@
         <!-- ================= NAV LINKS ================= -->
         <div class="flex flex-col gap-2 flex-1 mt-3">
 
+
+            @if (Auth::user()->is_doctor)
+                <!--Doctor  -->
+                <x-navigation.nav-link
+                    :href="route('doctor')"
+                    :active="request()->routeIs('doctor') "
+                    :style="5"
+                    title="Doctors"
+                >
+                    <div
+                        class="flex items-center w-full"
+                        :class="sidebarCollapsed ? 'justify-center' : ''"
+                    >
+                        <i class="
+                            fa-solid fa-stethoscope w-5 transition-colors
+                            {{ request()->routeIs('doctor')
+                                ? 'text-cyan-700'
+                                : 'text-gray-400 group-hover:text-cyan-700'
+                            }}
+                        "></i>
+
+                        <span
+                            x-show="!sidebarCollapsed"
+                            x-transition
+                            class="ml-4 text-sm font-medium"
+                        >
+                            Doctor
+                        </span>
+                    </div>
+                </x-navigation.nav-link>
+            @else
             <!-- Records -->
             <x-navigation.nav-link
                 :href="route('dashboard')"
@@ -77,7 +108,7 @@
                     </span>
                 </div>
             </x-navigation.nav-link>
-
+            @endif
 
             <!-- Patients -->
             <x-navigation.nav-link
@@ -169,36 +200,7 @@
             @endif
 
 
-            @if (Auth::user()->is_doctor)
-                <!--Doctor  -->
-                <x-navigation.nav-link
-                    :href="route('doctor')"
-                    :active="request()->routeIs('doctor') "
-                    :style="5"
-                    title="Doctors"
-                >
-                    <div
-                        class="flex items-center w-full"
-                        :class="sidebarCollapsed ? 'justify-center' : ''"
-                    >
-                        <i class="
-                            fa-solid fa-stethoscope w-5 transition-colors
-                            {{ request()->routeIs('doctor')
-                                ? 'text-cyan-700'
-                                : 'text-gray-400 group-hover:text-cyan-700'
-                            }}
-                        "></i>
 
-                        <span
-                            x-show="!sidebarCollapsed"
-                            x-transition
-                            class="ml-4 text-sm font-medium"
-                        >
-                            Doctor
-                        </span>
-                    </div>
-                </x-navigation.nav-link>
-            @endif
         </div>
 
         <!-- ================= QUICK ACTIONS ================= -->

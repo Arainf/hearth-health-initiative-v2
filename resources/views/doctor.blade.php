@@ -1,4 +1,4 @@
-@vite(['resources/css/table.css','resources/js/doctor.js'])
+@vite(['resources/css/table.css','resources/js/doctor.js','resources/js/tip-tap/index.js'])
 
 <x-app-layout>
     <div class="relative flex flex-col h-screen bg-[#f9fbfc] px-2 pt-2 overflow-hidden">
@@ -100,102 +100,7 @@
     </div>
 
     <!-- RIGHT SLIDE PANEL (Generated Report Editor) -->
-    <div
-        id="generatedPanel"
-        class="
-        fixed inset-0
-        z-50
-        transform translate-x-full
-        transition-transform duration-300 ease-in-out
-        flex flex-col bg-gray-200
-    "
-    >
-        <!-- HEADER -->
-        <div class="flex items-center justify-between px-6 py-2 border-b bg-gray-50">
-            <div>
-                <h3 class="text-lg font-semibold">Generated Report</h3>
-                <p class="text-sm text-gray-500" id="panelRecordId"></p>
-            </div>
-
-            <div class="flex gap-3">
-                <button
-                    id="panelEditBtn"
-                    class="hhi-btn hhi-btn-edit-neutral px-4 text-md"
-                ><i class="fa-solid fa-edit mr-1"></i>
-                   Edit
-                </button>
-
-                <button
-                    id="closeGeneratedPanel"
-                    class="px-4 py-3 hhi-btn hhi-btn-close text-md"
-                >
-                    ✕
-                </button>
-            </div>
-        </div>
-
-        <!-- BODY -->
-        <div
-            id="panelContent"
-            class="
-        flex-1 px-10 py-8
-        text-base text-gray-800
-        overflow-y-auto
-        whitespace-pre-line
-        leading-relaxed
-        max-w-4xl mx-auto w-[8.27in]
-        bg-white
-        relative
-    "
-            contenteditable="false"
-        >
-
-            <!-- Loading Overlay -->
-            <div
-                id="panelLoading"
-                class="
-            absolute inset-0
-            bg-white/80
-            flex items-center justify-center
-            z-50
-            hidden
-        "
-            >
-                <div class="flex flex-col items-center gap-3">
-                    <i class="fa-solid fa-circle-notch fa-spin text-2xl text-purple-700"></i>
-                    <span class="text-sm text-gray-600 font-medium">
-                Loading generated report…
-            </span>
-                </div>
-            </div>
-
-            <!-- Actual content goes here -->
-        </div>
-
-
-        <!-- FOOTER -->
-        <div
-            id="panelFooter"
-            class="px-6 py-4 border-t bg-gray-50 flex justify-end gap-4 hidden"
-        >
-
-            <button
-                id="panelSaveBtn"
-                class="px-6 py-3 hhi-btn hhi-btn-save text-md "
-            >
-                <i class="fas fa-save mr-2"></i>
-                Save
-            </button>
-
-            <button
-                id="panelSaveApproveBtn"
-                class="px-6 py-3 hhi-btn hhi-btn-save-approve text-md "
-            >
-                <i class="fa-solid fa-check"></i>
-                Save & Approve
-            </button>
-        </div>
-    </div>
+   <x-rich-editor.main/>
 
 
     <!-- SUCCESS MODAL -->

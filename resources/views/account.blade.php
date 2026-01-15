@@ -12,16 +12,17 @@
         </div>
 
         <!-- SEARCH BAR -->
-        <div class="flex items-center w-full bg-white px-6 py-3 border-b border-gray-300 sticky top-[56px] z-10 justify-between">
-            <div>
-                <x-filter_search id="record-search" placeholder="Search account" width="w-80" />
-            </div>
+        <div class="flex items-end w-full bg-white px-6 py-3 border-b border-gray-300 sticky top-[56px] z-10 justify-end">
+{{--            <div>--}}
+{{--                <x-filter_search id="record-search" placeholder="Search account" width="w-80" />--}}
+{{--            </div>--}}
             @can('isAdmin')
-                <x-secondary-button
+                <button
                     type="button"
+                    class="hhi-btn hhi-btn-create-another"
                     onclick="window.location='{{ route('accounts.create') }}'">
                     Create Account
-                </x-secondary-button>
+                </button>
             @endcan
         </div>
 

@@ -79,14 +79,7 @@ class TableController extends Controller
     $counter = 0;
     foreach ($rows as $row) {
 
-        $staff = DB::table('users')
-            ->where('id', $row->staff_id)
-            ->value('name');
-
-        $doctor = DB::table('users')
-            ->where('id', $row->approved_by)
-            ->value('name');
-
+        $doctor = $row->approved_by;
 
 
         /* Status badge */
@@ -132,7 +125,7 @@ class TableController extends Controller
                 'age'        => $row->age,
             ],
 
-            'staff' => $staff,
+            'staff' => $row->staff_id,
             'doctor' => $doctor,
 
             // metrics (used by dropdown)
@@ -419,9 +412,7 @@ class TableController extends Controller
             ->where('id', $row->status_id)
             ->value('status_name');
 
-        $doctor = DB::table('users')
-            ->where('id', $row->approved_by)
-            ->value('name');
+        $doctor = $row->approved_by;
 
         /* Status badge */
         $color = match (strtolower($statusName)) {

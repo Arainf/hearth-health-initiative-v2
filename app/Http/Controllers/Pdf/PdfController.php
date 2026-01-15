@@ -73,9 +73,7 @@ class PdfController extends Controller
         /* ===============================
            CONTENT (SINGLE COLUMN)
         =============================== */
-        $mpdf->WriteHTML(
-            '<div class="content">' . nl2br(e($content)) . '</div>'
-        );
+        $mpdf->WriteHTML(nl2br($content));
 
         return $mpdf->Output(
             "HHI_Report_{$record->id}.pdf",

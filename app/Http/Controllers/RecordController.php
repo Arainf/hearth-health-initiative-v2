@@ -15,7 +15,7 @@ class RecordController extends Controller
     {
         // VALIDATION
         $validator = Validator::make($request->all(), [
-            'staff_id' => 'required',
+            'staff_id' => 'required|string',
             'last_name' => 'required|string',
             'first_name' => 'required|string',
             'middle_name' => 'nullable|string',

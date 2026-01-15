@@ -34,7 +34,7 @@
         <form id="mainForm" method="POST" action="{{ route('records.store') }}" class="space-y-8 p-6">
             @csrf
             <input type="hidden" id="patient_id" name="patient_id">
-            <input type="hidden" id="staff_id" name="staff_id" value="{{ Auth::user()->id }}">
+            <input type="hidden" id="staff_id" name="staff_id" value="{{ Auth::user()->name }}">
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
 

@@ -22,13 +22,14 @@
             </p>
         </div>
 
-        <x-button.button
-            variant="ghost"
+        <button
+            class="hhi-btn hhi-btn-back"
             id="backBtn"
             type="button"
         >
+
             Back
-        </x-button.button>
+        </button>
     </div>
 
     {{-- CONTENT --}}

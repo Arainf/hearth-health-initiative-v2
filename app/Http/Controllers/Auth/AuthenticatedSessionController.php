@@ -28,6 +28,11 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        // Check if the authenticated user is a doctor
+        if (auth()->user()->is_doctor) {
+            return redirect()->intended(route('doctor', absolute: false));
+        }
+
         return redirect()->intended(route('dashboard', absolute: false));
     }
 
