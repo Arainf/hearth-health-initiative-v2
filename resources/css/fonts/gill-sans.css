@@ -1,0 +1,41 @@
+@font-face {
+    font-family: 'Gill Sans';
+    src: url('../../fonts/gill-sans/GillSans.otf') format('opentype');
+    font-weight: 400;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Gill Sans';
+    src: url('../../fonts/gill-sans/Gill Sans Italic.otf') format('opentype');
+    font-weight: 400;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'Gill Sans';
+    src: url('../../fonts/gill-sans/Gill Sans Bold.otf') format('opentype');
+    font-weight: 700;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Gill Sans';
+    src: url('../../fonts/gill-sans/Gill Sans Bold Italic.otf') format('opentype');
+    font-weight: 700;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'Gill Sans';
+    src: url('../../fonts/gill-sans/Gill Sans Medium.otf') format('opentype');
+    font-weight: 500;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Gill Sans';
+    src: url('../../fonts/gill-sans/Gill Sans Light.otf') format('opentype');
+    font-weight: 300;
+    font-style: normal;
+}

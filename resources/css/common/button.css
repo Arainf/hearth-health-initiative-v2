@@ -48,11 +48,23 @@
     border-color: #93c5fd;       /* blue-300 */
 
     font-weight: 600;
+    width: auto;
+    white-space: nowrap;
+
+    transition: padding 2s ease-in-out, min-width 2s ease-in-out;
 }
 
 .hhi-btn-view:hover {
     background-color: #bfdbfe;   /* blue-200 */
 }
+
+/* loading state */
+.hhi-btn-view.is-loading {
+    min-width: 100px; /* adjust kung gaano kalapad */
+}
+
+
+
 
 /* ===============================
    PRINT / PDF
@@ -427,7 +439,7 @@
 .toolbar-btn {
     @apply
     inline-flex items-center justify-center
-    w-9 h-9
+    w-10 h-12
     rounded-md
     text-gray-600
     transition-all duration-150 ease-out
@@ -457,6 +469,8 @@
     border border-gray-200
     rounded-lg
     shadow-lg
+    left-12
+    top-0
     p-1
     z-50;
 }
@@ -479,7 +493,7 @@
 
 /* Divider */
 .toolbar-divider {
-    @apply h-5 w-px bg-gray-300 mx-1;
+    @apply h-px w-8 bg-gray-300 my-1;
 }
 
 /* Smooth dropdown animation */

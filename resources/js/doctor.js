@@ -3,25 +3,15 @@ import DataTable from "datatables.net-dt";
 import { setupYearFilterRecords } from "@/filters/filter-year.js";
 import { setupStatusFilter } from "@/filters/filter-status.js";
 
-// import { Editor} from "@tiptap/core";
-// import StarterKit from "@tiptap/starter-kit";
-//
-// let editor = null;
-//
-// function initEditor(content) {
-//     if (editor) {
-//         editor.commands.setContent(content);
-//         return;
-//     }
-//
-//     editor = new Editor({
-//         element: document.querySelector("#panelContent"),
-//         extensions: [StarterKit],
-//         content,
-//         editable: false
-//     });
-// }
+import { createTiptapEditor } from "@/tip-tap/index.js";
+
+
+let reportEditor = null
+
 window.$ = window.jQuery = $;
+
+
+
 
 const ai_Access = document.body.dataset.aiAccess === '1';
 const ai_Ready = document.body.dataset.aiReady === '1';
@@ -74,12 +64,87 @@ let currentRecordId = null;
 let originalPanelContent = ``;
 let panelEditMode = false;
 
+
+document.addEventListener('DOMContentLoaded', () => {
+    reportEditor = createTiptapEditor({
+        element: document.querySelector('[x-ref="editor"]'),
+        rulerElement: document.getElementById('pageRuler'),
+        content: originalPanelContent,
+        editable: false,
+    });
+
+    reportEditor.editor.on('update', () => {
+        updatePreview(reportEditor.getHTML())
+    })
+
+    // ✅ expose ONLY what the UI needs
+    window.ReportEditor = {
+        undo: () => reportEditor.undo(),
+        redo: () => reportEditor.redo(),
+        toggleBold: () => reportEditor.toggleBold(),
+        toggleItalic: () => reportEditor.toggleItalic(),
+        toggleUnderline: () => reportEditor.toggleUnderline(),
+        toggleStrike: () => reportEditor.toggleStrike(),
+        toggleHeading: l => reportEditor.toggleHeading(l),
+        toggleSize: s => reportEditor.toggleSize(s),
+        toggleBulletList: () => reportEditor.toggleBulletList(),
+        toggleOrderedList: () => reportEditor.toggleOrderedList(),
+        setAlign: a => reportEditor.setAlign(a),
+        setEditable: v => reportEditor.setEditable(v),
+        getHTML: () => reportEditor.getHTML(),
+        setContent: html => reportEditor.setContent(html),
+    };
+});
+
+$('#togglePreview').on('click', () => {
+    $('#printPreview').parent().toggleClass('hidden')
+})
+
+
+function buildPrintHTML(content) {
+    return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+    <style>
+        /*body {*/
+        /*    font-family: Arial, sans-serif;*/
+        /*    margin: 35mm 12mm;*/
+        /*    font-size: 12pt;*/
+        /*    line-height: 1.25;*/
+        /*}*/
+        /*h1, h2, h3 { page-break-after: avoid; }*/
+        /*ul, ol { padding-left: 18px; }*/
+        .page-break { page-break-before: always; }
+    </style>
+    </head>
+    <body>
+        ${content}
+    </body>
+    </html>`;
+}
+
+let previewTimer = null
+
+function updatePreview(html) {
+    clearTimeout(previewTimer)
+
+    previewTimer = setTimeout(() => {
+        const iframe = document.getElementById('printPreview')
+        if (!iframe) return
+
+        iframe.srcdoc = buildPrintHTML(html)
+    }, 200) // debounce = smooth typing
+}
+
+
 function openGeneratedPanel() {
     $("#generatedPanel").removeClass("translate-x-full");
 }
 
 function closeGeneratedPanel() {
     $("#generatedPanel").addClass("translate-x-full");
+    $(`.view-generated-btn`).html('<i class="fa-solid fa-magnifying-glass"></i>');
     contentFillers(false);
     editBtnState(true);
     panelEditMode = false;
@@ -107,10 +172,17 @@ function contentFillers(enabled) {
 function editBtnState(isEditing) {
     isEditMode = !isEditing;
 
-    window.TipTap.setEditable(isEditMode);
+    reportEditor.setEditable(isEditMode);
 
     $("#panelFooter").toggleClass("hidden", !isEditMode);
-    $("#editorToolbar").toggleClass("hidden", !isEditMode);
+    if (isEditMode) {
+        $("#editorToolbar")
+            .css("display", "flex");
+    } else {
+        $("#editorToolbar")
+            .css("display", "none");
+    }
+
 
     $("#panelEditBtn").html(
         isEditMode
@@ -120,7 +192,7 @@ function editBtnState(isEditing) {
 
     // CANCEL → restore original
     if (!isEditMode) {
-        window.TipTap.setContent(originalPanelContent);
+        reportEditor.setContent(originalPanelContent);
     }
 }
 
@@ -197,15 +269,20 @@ function setPanelLoading(isLoading) {
 
 $(document).on("click", ".view-generated-btn", function (e) {
     e.stopPropagation();
+    $('.hhi-btn-view').prop('disabled', true);
+    $(this)
+        .addClass('is-loading')
+        .html('<i class="fa-solid fa-spinner fa-spin mr-1"></i><span>Preparing</span>').prop('disabled' , true);
 
     const $tr = $(this).closest("tr");
+
     const rowData = table.row($tr).data();
 
     currentGeneratedId = $(this).data("id");
     currentRecordId = rowData.id
 
     $("#panelRecordId").text(`Generated ID #${currentGeneratedId}`);
-    openGeneratedPanel();
+
     setPanelLoading(true);
     contentFillers(false);
 
@@ -214,12 +291,19 @@ $(document).on("click", ".view-generated-btn", function (e) {
         .then(res => {
             originalPanelContent = res.generated_text || "No generated content.";
             // $("#panelContent").text(originalPanelContent);
-            window.TipTap.setContent(originalPanelContent);
-
+            // window.TipTap.setContent(originalPanelContent);
+            reportEditor.setContent(originalPanelContent);
+            openGeneratedPanel();
             const isApproved = res.status_id === 1;
             if (!isApproved) {
                 $("#panelEditBtn").removeClass("hidden");
             }
+
+            $('.hhi-btn-view').prop('disabled', false);
+            $(this)
+                .removeClass('is-loading')
+                .html('<i class="fa-solid fa-magnifying-glass"></i>');
+
         })
         .catch(() => {
             $("#panelContent").text("Failed to load content.");
@@ -236,7 +320,7 @@ $("#panelSaveBtn").on("click", async function () {
 
     const $btn = $(this);
     // const content = $("#panelContent").text();
-    const content = window.TipTap.getHTML();
+    const content = reportEditor.getHTML();
 
     if (content.trim() === originalPanelContent.trim()) {
         alert("No changes to save.");
@@ -287,7 +371,7 @@ $("#panelSaveApproveBtn").on("click", async function () {
     const $btn = $(this);
     // const content = $("#panelContent").text();
 
-    const content = window.TipTap.getHTML();
+    const content = reportEditor.getHTML();
 
     try {
         $btn.prop("disabled", true).text("Saving & approving…");

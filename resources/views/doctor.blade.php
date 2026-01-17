@@ -1,4 +1,4 @@
-@vite(['resources/css/table.css','resources/js/doctor.js','resources/js/tip-tap/index.js'])
+@vite(['resources/css/table.css','resources/js/doctor.js'])
 
 <x-app-layout>
     <div class="relative flex flex-col h-screen bg-[#f9fbfc] px-2 pt-2 overflow-hidden">

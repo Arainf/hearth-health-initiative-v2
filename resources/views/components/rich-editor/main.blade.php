@@ -1,3 +1,5 @@
+@vite('resources/css/rich-editor/editor.css')
+
 <div
     id="generatedPanel"
     class="
@@ -32,25 +34,46 @@
             </button>
         </div>
     </div>
-
-    <div
-        class="flex-1 bg-white overflow-y-auto"
-        x-data="tiptapEditor('')"
-    >
-        <x-rich-editor.toolbox/>
-        <!-- EDITOR CONTENT -->
-        <div class="px-10 py-8  mx-auto w-[8.27in]">
-            <div
-                x-ref="editor"
-                class="prose max-w-none focus:outline-none"
-            ></div>
+    <x-rich-editor.toolbox/>
+    <div class="flex flex-row h-full relative editor-container overflow-y-auto self-center mt-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] ">
+        <div class="bg-white w-[8.27in] mr-6 h-fit" id="editorPage" >
+            <x-rich-editor.header/>
+            <div class="px-10 py-8">
+                <div x-ref="editor" class="prose max-w-none"></div>
+            </div>
         </div>
+
+        <div class="ruler" id="pageRuler"></div>
     </div>
+
+{{--    <div class="flex gap-4 h-full relative editor-container overflow-y-auto self-center mt-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] ">--}}
+{{--        <!-- EDITOR -->--}}
+{{--        <div class="flex-1">--}}
+{{--            <div id="editorPage">--}}
+{{--                <x-rich-editor.header/>--}}
+{{--                <div class="px-10 py-8">--}}
+{{--                    <div x-ref="editor" class="prose max-w-none"></div>--}}
+{{--                </div>--}}
+{{--            </div>--}}
+{{--        </div>--}}
+{{--        <div class="ruler" id="pageRuler"></div>--}}
+{{--        <!-- PRINT PREVIEW -->--}}
+{{--        <div class="w-[8.27in] bg-gray-100 border-l">--}}
+{{--            <iframe--}}
+{{--                id="printPreview"--}}
+{{--                class="w-full h-full bg-white shadow"--}}
+{{--            ></iframe>--}}
+{{--        </div>--}}
+{{--    </div>--}}
+
+
+
+
 
     <!-- FOOTER -->
     <div
         id="panelFooter"
-        class="px-6 py-4 border-t bg-gray-50 flex justify-end gap-4 hidden"
+        class="px-6 py-4 border-t bg-transparent  flex justify-end gap-4 hidden"
     >
 
         <button

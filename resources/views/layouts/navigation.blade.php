@@ -79,7 +79,7 @@
                         </span>
                     </div>
                 </x-navigation.nav-link>
-            @else
+            @endif
             <!-- Records -->
             <x-navigation.nav-link
                 :href="route('dashboard')"
@@ -108,7 +108,7 @@
                     </span>
                 </div>
             </x-navigation.nav-link>
-            @endif
+
 
             <!-- Patients -->
             <x-navigation.nav-link

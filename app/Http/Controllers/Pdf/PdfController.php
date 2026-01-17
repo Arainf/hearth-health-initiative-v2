@@ -16,6 +16,7 @@ class PdfController extends Controller
             abort(404, 'No generated report found for this record.');
         }
 
+        // ✅ TipTap HTML
         $content = $record->generated_report->generated_text;
 
         $mpdf = new Mpdf([
@@ -42,6 +43,7 @@ class PdfController extends Controller
                 </p>
                 <hr style="border:1px solid #000;">
             </div>
+
         ');
 
         /* ===============================
@@ -56,24 +58,52 @@ class PdfController extends Controller
         ');
 
         /* ===============================
-           STYLES
+           STYLES (MATCH TIPTAP)
         =============================== */
         $mpdf->WriteHTML('
             <style>
-                .content {
+                body {
                     font-family: Arial, sans-serif;
                     font-size: 12pt;
-                    line-height: 1.20;
+                    line-height: 1.4;
+                }
+
+                h1 { font-size: 20pt; margin-bottom: 12px; }
+                h2 { font-size: 16pt; margin-top: 18px; margin-bottom: 8px; }
+                h3 { font-size: 14pt; margin-top: 14px; margin-bottom: 6px; }
+
+                p {
+                    margin: 4px 0;
                     text-align: justify;
-                    white-space: pre-wrap;
+                }
+
+                ul, ol {
+                    margin-left: 18px;
+                    margin-bottom: 8px;
+                }
+
+                li {
+                    margin-bottom: 4px;
+                }
+
+                strong { font-weight: bold; }
+                em { font-style: italic; }
+
+                img {
+                    max-width: 100%;
+                }
+
+                /* Optional: page-break helpers */
+                .page-break {
+                    page-break-after: always;
                 }
             </style>
         ');
 
         /* ===============================
-           CONTENT (SINGLE COLUMN)
+           CONTENT (PURE HTML)
         =============================== */
-        $mpdf->WriteHTML(nl2br($content));
+        $mpdf->WriteHTML($content);
 
         return $mpdf->Output(
             "HHI_Report_{$record->id}.pdf",
