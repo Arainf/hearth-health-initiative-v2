@@ -1,6 +1,6 @@
 <button id="reset-filters"
         data-mode="search"
-        title="Search / Reset"
+        title="Reset"
         class="group flex items-center gap-2 px-4 py-2 text-sm font-medium
                rounded-md transition-all border
                bg-gray-800 text-white border-gray-800
@@ -9,8 +9,8 @@
                dark:hover:bg-gray-600 dark:hover:border-gray-600">
 
     <!-- SEARCH ICON -->
-    <i id="filter-search-icon"
-       class="fa-solid fa-magnifying-glass block text-[var(--clr-text-a20)]"></i>
+    {{-- <i id="filter-search-icon"
+       class="fa-solid fa-magnifying-glass block text-[var(--clr-text-a20)]"></i> --}}
 
     <!-- RESET ICON -->
     <i id="filter-reset-icon"
