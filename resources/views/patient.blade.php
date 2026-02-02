@@ -13,7 +13,12 @@
 
             <div class="flex flex-row gap-1">
                 <x-filters />
+
+                <!--Reset Tag: filter_reset.php-->
                 <x-filter_reset />
+
+                <!--Search Tag: search_patient.php-->
+                <x-search_button />
             </div>
 
         </div>
