@@ -10,10 +10,11 @@ class trashController extends Controller
     public static function encrypt(string $trash)
     {
         $encrypted = $trash;
-
         if(env('APP_DEBUG') == false){
             $encrypted = base64_encode(hash_hmac('sha256', $trash, config('app.key')));
         }
+
+        $encrypted = base64_encode(hash_hmac('sha256', $trash, config('app.key')));
 
         return ($encrypted);
     }

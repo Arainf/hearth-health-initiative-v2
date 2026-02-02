@@ -10,8 +10,27 @@
                 <x-filter_search id="record-search" placeholder="Search record" width="w-80" />
 
                 <div class="flex flex-row gap-1">
-                    <x-filter_year id="year-filter" />
-                    <x-filter_status id="status-filter" />
+                    <x-dropdown
+                        name="year-filter"
+                        :options="$years"
+                        selected="{{$currentYear}}"
+                        all-value="all"
+                        all-display="all years"
+                        class="dropdown form-control"
+                    />
+
+                    <x-dropdown
+                        name="status-filter"
+                        :options="$status"
+                        selected="all status"
+                        all-value="all"
+                        all-display="all status"
+
+                        value-key="id"
+                        label-key="status_name"
+                        count-key="count"
+                        class="dropdown form-control"
+                    />
                     <x-filter_reset />
                 </div>
             </div>

@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Http\Controllers\Doctor;
+namespace App\Http\Controllers\Pages;
 
 use App\Http\Controllers\Controller;
 use App\Services\DropdownService;
 
-class DoctorPage extends Controller
+class DoctorPageController extends Controller
 {
     public function index()
     {

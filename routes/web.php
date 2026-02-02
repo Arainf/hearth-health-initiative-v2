@@ -4,7 +4,8 @@ use App\Http\Controllers\AIController;
 use App\Http\Controllers\ApiController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\DeleteController;
-use App\Http\Controllers\Doctor\DoctorPage;
+use App\Http\Controllers\Pages\DashboardPageController;
+use App\Http\Controllers\Pages\DoctorPageController;
 use App\Http\Controllers\Dump\trashController;
 use App\Http\Controllers\PatientController;
 use App\Http\Controllers\Pdf\PdfController;
@@ -60,10 +61,6 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->name('dashboard');
-
     Route::get('/compare', function () {
         return view('compare');
     })->name('compare');
@@ -98,11 +95,14 @@ Route::middleware(['auth', 'can:isAdmin'])->group(function () {
         ->name('accounts.store');
 });
 
-
-Route::middleware(['auth', 'verified'])->group(function () {
-    $doctorSlug = trashController::encrypt('doctor');
-    Route::get("/{$doctorSlug}", [DoctorPage::class, 'index'])->name('doctor');
+Route::middleware('auth')->group(function () {
+    $doctor = trashController::encrypt('doctor');
+    Route::get("/{$doctor}", [DoctorPageController::class, 'index'])->name('doctor');
 });
 
+Route::middleware('auth')->group(function () {
+    $dashboard = trashController::encrypt('dashboard');
+    Route::get("/{$dashboard}", [DashboardPageController::class, 'index'])->name('dashboard');
+});
 
 require __DIR__.'/auth.php';

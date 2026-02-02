@@ -2,7 +2,7 @@ import $ from "jquery";
 import DataTable from "datatables.net-dt";
 
 import { setupYearFilterRecords } from "@/filters/filter-year.js";
-import { setupStatusFilter } from "@/filters/filter-status.js";
+import { setupStatusFilterRecords } from "@/filters/filter-status.js";
 import { formatExpandedRow } from "@/utilities/table-expanded-form.js";
 
 window.$ = window.jQuery = $;
@@ -355,8 +355,8 @@ window.getCurrentYear = () => state.year;
 window.getPendingYear = () => pending.year;
 
 // Initialize filters
-setupYearFilterRecords(table, state.year === 'all' ? null : state.year);
-setupStatusFilter(table, state.status, state.year);
+setupYearFilterRecords( state.year === 'all' ? null : state.year);
+setupStatusFilterRecords(state.status);
 
 
 /* ===============================

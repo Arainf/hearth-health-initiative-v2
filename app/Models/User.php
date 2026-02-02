@@ -71,6 +71,11 @@ class User extends Authenticatable
         return $this->is_doctor;
     }
 
+    public function is_Admin(): bool
+    {
+        return $this->is_admin;
+    }
+
     public function getAiReadyAttribute(): bool
     {
         return $this->canUseAI();
