@@ -32,6 +32,9 @@
                         class="dropdown form-control"
                     />
                     <x-filter_reset />
+
+                    <!--Search Tag: search_patient.php-->
+                    <x-search_button />
                 </div>
             </div>
         </div>
