@@ -1,6 +1,11 @@
 
 @import 'common/badge.css'; /* Badge CSS */
 @import 'common/button.css'; /* Button CSS */
+@import 'common/animation.css';
+@import 'common/dropdown.css';
+
+@import 'colors.css';
+
 @font-face {
     font-family: 'Circular';
     src: url('../fonts/CircularStd-Bold.ttf') format('truetype');
@@ -22,13 +27,31 @@
     }
 }
 
+
+/* ===============================
+   DESIGN SYSTEM — COLORS (Light Theme)
+   =============================== */
+
+
+/* ===============================
+   UTILITY CLASSES
+   =============================== */
+.bg-card { background-color: var(--bg-card); }
+.bg-hover { background-color: var(--bg-hover); }
+.border-border { border-color: var(--color-border); }
+.text-muted { color: var(--text-muted); }
+.text-primary { color: var(--text-primary); }
+
+
+
+
+
 .fa-spin {
     animation: fa-spin 1s infinite linear !important;
 }
 
 .circular{
     font-family: 'Circular';
-    color: black;
 }
 
 /* OPTIONAL: subtle modal animation */
@@ -128,53 +151,8 @@ html, body {
 
 }
 
-.dt-layout-start {
-    justify-content: flex-start;
-}
-
-.dt-layout-end {
-    justify-content: flex-end;
-}
 
 
-
-/* Pagination container */
-.dt-paging nav {
-    display: flex;
-    gap: 6px;
-    align-items: center;
-    margin-top: 15px;
-    justify-content: flex-end;
-}
-
-/* Pagination buttons */
-.dt-paging-button {
-    min-width: 32px;
-    height: 32px;
-    padding: 0 10px;
-    border-radius: 6px;
-    border: 1px solid #e5e7eb;
-    background: #fff;
-    cursor: pointer;
-}
-
-/* Hover */
-.dt-paging-button:hover:not(.disabled):not(.current) {
-    background: #f3f4f6;
-}
-
-/* Active page */
-.dt-paging-button.current {
-    background: #2563eb;
-    color: #fff;
-    border-color: #2563eb;
-}
-
-/* Disabled */
-.dt-paging-button.disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-}
 
 .action-wrapper {
     display: flex;
@@ -318,6 +296,45 @@ label:has(input[type="radio"]:checked.radio-no) {
 
 .CENTER {
     justify-items: center !important;
+}
+
+
+.record-field.is-editing {
+    background-color: var(--clr-surface-a0);
+    border-color: var(--accent-primary);
+    color: var(--clr-text-a0);
+}
+
+.record-field:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--btn-focus-ring);
+}
+
+/* default (readonly handled by disabled attribute) */
+.record-field {
+    background-color: var(--clr-surface-a0);
+    color: var(--clr-text-a0);
+    border-color: var(--clr-surface-a30);
+}
+
+/* disabled state */
+.record-field:disabled {
+    background-color: var(--clr-surface-a10);
+    color: var(--clr-text-a50);
+    cursor: not-allowed;
+}
+
+/* edit mode */
+.record-field.is-editing {
+    background-color: var(--clr-surface-a0);
+    border-color: var(--accent-primary);
+    color: var(--clr-text-a0);
+}
+
+/* focus */
+.record-field:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--btn-focus-ring);
 }
 
 

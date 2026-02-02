@@ -1,12 +1,12 @@
 <nav
     :class="sidebarCollapsed ? 'w-[80px]' : 'w-full'"
     class="
+        bg-[var(--clr-surface-a10)]
+        border-[var(--clr-surface-a30)]
         h-full
         rounded-xl
         border
-        bg-[#FCFDFE]
         shadow-lg
-        border-gray-100
         flex
         flex-col
         justify-between
@@ -36,12 +36,12 @@
                     window.table?.columns.adjust();
                 }, 320);
                 "
-                class="p-2 rounded-lg hover:bg-gray-100 transition"
+                class="p-2 rounded-lg hover:bg-[var(--clr-surface-a20)] transition"
                 title="Toggle sidebar"
             >
                 <i
-                    class="fa-solid fa-chevron-right text-gray-500 transition-transform duration-300"
-                    :class="sidebarCollapsed ? 'rotate-0 pr-2' : 'rotate-180 pl-2'"
+                    class="fa-solid fa-chevron-right text-[var(--badge-disabled-text)] transition-transform duration-300"
+                    :class="sidebarCollapsed ? 'rotate-0 pr-1' : 'rotate-180 pl-1'"
                 ></i>
             </button>
         </div>
@@ -54,19 +54,19 @@
                 <!--Doctor  -->
                 <x-navigation.nav-link
                     :href="route('doctor')"
-                    :active="request()->routeIs('doctor') "
+                    :active="request()->routeIs('doctor')"
                     :style="5"
                     title="Doctors"
                 >
                     <div
-                        class="flex items-center w-full"
+                        class="flex items-center w-full "
                         :class="sidebarCollapsed ? 'justify-center' : ''"
                     >
                         <i class="
                             fa-solid fa-stethoscope w-5 transition-colors
                             {{ request()->routeIs('doctor')
-                                ? 'text-cyan-700'
-                                : 'text-gray-400 group-hover:text-cyan-700'
+                                 ? 'text-[var(--accent-5)]'
+                                : 'text-[var(--badge-disabled-text)] group-hover:text-[var(--accent-5)]'
                             }}
                         "></i>
 
@@ -94,8 +94,8 @@
                     <i class="
                         fa-regular fa-folder-open w-5 transition-colors
                         {{ request()->routeIs('dashboard') || request()->routeIs('compare')
-                            ? 'text-[#F1AE00]'
-                            : 'text-gray-400 group-hover:text-[#F1AE00]'
+                             ? 'text-[var(--accent-1)]'
+                             : 'text-[var(--badge-disabled-text)] group-hover:text-[var(--accent-1)]'
                         }}
                     "></i>
 
@@ -124,8 +124,8 @@
                     <i class="
                         fa-solid fa-user-group w-5 transition-colors
                         {{ request()->routeIs('patient') || request()->routeIs('patientFiles')
-                            ? 'text-green-600'
-                            : 'text-gray-400 group-hover:text-green-600'
+                            ? 'text-[var(--accent-3)]'
+                            : 'text-[var(--badge-disabled-text)] group-hover:text-[var(--accent-3)]'
                         }}
                     "></i>
 
@@ -154,15 +154,15 @@
                         <i class="
                             fa-solid fa-user-shield w-5 transition-colors
                             {{ request()->routeIs('account')
-                                ? 'text-red-600'
-                                : 'text-gray-400 group-hover:text-red-600'
+                                ? 'text-[var(--accent-4)]'
+                                : 'text-[var(--badge-disabled-text)] group-hover:text-[var(--accent-4)]'
                             }}
                         "></i>
 
                         <span
                             x-show="!sidebarCollapsed"
                             x-transition
-                            class="ml-4 text-sm font-medium"
+                            class="ml-4 text-sm font-medium "
                         >
                             Accounts
                         </span>
@@ -203,9 +203,8 @@
 
         </div>
 
-        <!-- ================= QUICK ACTIONS ================= -->
         <div x-show="!sidebarCollapsed" x-transition>
-            <p class="text-xs font-semibold text-gray-400 uppercase mb-2 px-1">
+            <p class="text-xs font-semibold text-[var(--text-secondary)] uppercase mb-2 px-1">
                 Quick Actions
             </p>
 
@@ -213,55 +212,61 @@
 
                 <a
                     href="{{ route('form') }}"
-                    class="flex flex-col items-center justify-center p-3 rounded-lg bg-[#F1AE00]/10 hover:bg-[#F1AE00]/20 transition"
+                    class="flex flex-col items-center justify-center p-3 rounded-lg
+               bg-[var(--bg-card)] hover:bg-[var(--clr-surface-a20)] transition"
                 >
-                    <i class="fa-solid fa-user-plus text-[#F1AE00] text-lg"></i>
-                    <span class="text-xs font-medium text-gray-800 mt-1">New</span>
+                    <i class="fa-solid fa-user-plus text-[var(--accent-1)] text-lg"></i>
+                    <span class="text-xs font-medium text-[var(--text-muted)] mt-1">New</span>
                 </a>
 
                 <a
                     href="{{ route('compare') }}"
-                    class="flex flex-col items-center justify-center p-3 rounded-lg bg-[#00205B]/10 hover:bg-[#00205B]/20 transition"
+                    class="flex flex-col items-center justify-center p-3 rounded-lg
+               bg-[var(--bg-card)] hover:bg-[var(--clr-surface-a20)] transition"
                 >
-                    <i class="fa-solid fa-code-compare text-[#00205B] text-lg"></i>
-                    <span class="text-xs font-medium text-gray-800 mt-1">Compare</span>
+                    <i class="fa-solid fa-code-compare text-[var(--accent-2)] text-lg"></i>
+                    <span class="text-xs font-medium text-[var(--text-muted)] mt-1">Compare</span>
                 </a>
 
             </div>
+
         </div>
 
           <div x-show="sidebarCollapsed" x-transition>
-            <div class="grid grid-rows-2 gap-3">
+              <div class="grid grid-rows-2 gap-3">
 
-                <a
-                    href="{{ route('form') }}"
-                    class="flex flex-col items-center justify-center p-2 rounded-lg bg-[#F1AE00]/10 hover:bg-[#F1AE00]/20 transition"
-                >
-                    <i class="fa-solid fa-user-plus text-[#F1AE00] text-lg"></i>
-                </a>
+                  <a
+                      href="{{ route('form') }}"
+                      class="flex flex-col items-center justify-center p-2 rounded-lg
+               bg-[var(--bg-card)] hover:bg-[var(--bg-card-hover)] transition"
+                  >
+                      <i class="fa-solid fa-user-plus text-[var(--accent-1)] text-lg"></i>
+                  </a>
 
-                <a
-                    href="{{ route('compare') }}"
-                    class="flex flex-col items-center justify-center p-2 rounded-lg bg-[#00205B]/10 hover:bg-[#00205B]/20 transition"
-                >
-                    <i class="fa-solid fa-code-compare text-[#00205B] text-lg"></i>
-                </a>
+                  <a
+                      href="{{ route('compare') }}"
+                      class="flex flex-col items-center justify-center p-2 rounded-lg
+               bg-[var(--bg-card)] hover:bg-[var(--bg-card-hover)] transition"
+                  >
+                      <i class="fa-solid fa-code-compare text-[var(--accent-2)] text-lg"></i>
+                  </a>
 
-            </div>
-        </div>
+              </div>
 
+          </div>
     </div>
 
-    <!-- ================= BOTTOM ================= -->
+
     <div class="m-5">
 
         <div class="flex flex-col gap-2 mb-3">
 
             <a
                 href="{{ route('profile.edit') }}"
-                class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-gray-100 transition"
+                class="flex items-center gap-3 px-3 py-2 rounded-lg
+           text-sm text-[var(--text-primary)] hover:bg-[var(--clr-surface-a20)] transition"
             >
-                <i class="fa-regular fa-user w-5 text-gray-400"></i>
+                <i class="fa-regular fa-user w-5 text-[var(--badge-disabled-text)]"></i>
                 <span x-show="!sidebarCollapsed" x-transition>Profile</span>
             </a>
 
@@ -269,16 +274,18 @@
                 @csrf
                 <button
                     type="submit"
-                    class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-red-600 hover:bg-red-50 transition"
+                    class="w-full flex items-center gap-3 px-3 py-2 rounded-lg
+               text-sm  text-[var(--danger-text)] hover:bg-[var(--red-700)] transition"
                 >
                     <i class="fa-solid fa-right-from-bracket w-5"></i>
                     <span x-show="!sidebarCollapsed" x-transition>Logout</span>
                 </button>
             </form>
 
+
         </div>
 
-        <div class="border-t border-gray-200 my-3"></div>
+        <div class="border-t border-[var(--clr-text-a10)] my-3"></div>
 
         <div class="flex items-center gap-3 overflow-hidden mt-3">
             <img
@@ -286,16 +293,16 @@
                 src="{{ asset('img/application_logo_small.webp') }}"
                 alt="user"
             >
-
             <div x-show="!sidebarCollapsed" x-transition class="flex flex-col leading-tight">
-                <span class="text-sm font-medium truncate">
-                    {{ Auth::user()->name }}
-                </span>
-                <span class="text-xs text-gray-500 truncate">
-                    {{ Auth::user()->occupation }}
-                </span>
+        <span class="text-sm font-medium truncate text-[var(--text-primary)]">
+            {{ Auth::user()->name }}
+        </span>
+                <span class="text-xs truncate text-[var(--badge-disabled-text)]">
+            {{ Auth::user()->occupation }}
+        </span>
             </div>
         </div>
+
 
     </div>
 

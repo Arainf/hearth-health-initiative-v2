@@ -4,18 +4,18 @@ use App\Http\Controllers\AIController;
 use App\Http\Controllers\ApiController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\DeleteController;
+use App\Http\Controllers\Doctor\DoctorPage;
+use App\Http\Controllers\Dump\trashController;
+use App\Http\Controllers\PatientController;
 use App\Http\Controllers\Pdf\PdfController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RecordController;
-use App\Http\Controllers\PatientController;
 use App\Http\Controllers\Table\TableController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
         return view('auth.login');
 });
-
-
 
 Route::middleware('auth')->group(function () {
     Route::get('/table/records', [TableController::class, 'records']);
@@ -76,6 +76,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return view('form');
     })->name('form');
 
+
 });
 
 Route::middleware(['auth', 'can:isAdmin'])->group(function () {
@@ -98,10 +99,9 @@ Route::middleware(['auth', 'can:isAdmin'])->group(function () {
 });
 
 
-Route::middleware(['auth', 'can:isDoctor'])->group(function () {
-    Route::get('/doctor', function(){
-        return view('doctor');
-    })->name('doctor');
+Route::middleware(['auth', 'verified'])->group(function () {
+    $doctorSlug = trashController::encrypt('doctor');
+    Route::get("/{$doctorSlug}", [DoctorPage::class, 'index'])->name('doctor');
 });
 
 

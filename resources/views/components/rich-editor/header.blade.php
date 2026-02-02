@@ -1,6 +1,6 @@
-<div class="header-container">
+<div class="header-container opacity-50 xte">
     <div class="header">
-        <img alt="Heart Health Logo" src="{{ asset("img/document_logo.png") }}" class="h-[50px] align-middle" />
+        <img alt="Heart Health Logo" src="{{ asset("img/document_logo.png") }}" class="h-[46px] align-middle mr-2" />
         <p class="m-0 header-font">Heart Health Initiative</p>
     </div>
     <div class="sub-header">

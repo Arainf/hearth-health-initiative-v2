@@ -18,10 +18,28 @@ return new class extends Migration {
             $table->integer('age')->nullable();
             $table->string('sex')->nullable();
             $table->string('unit')->nullable();
-            $table->float('weight')->nullable();
-            $table->float('height')->nullable();
-            $table->float('bmi')->nullable();
+
+            // Changed from float to double to match SQL schema precision
+            $table->double('weight')->nullable();
+            $table->double('height')->nullable();
+            $table->double('bmi')->nullable();
+
+            // Missing column from your original file
+            // Matches: history_id bigint(20) DEFAULT NULL
+            $table->foreignId('history_id')->nullable();
+
             $table->timestamps();
+
+            // Composite Index
+            // Matches: KEY last_name (last_name, first_name, middle_name)
+            $table->index(['last_name', 'first_name', 'middle_name'], 'last_name');
+
+            // Foreign Key Constraint
+            // Matches: CONSTRAINT patients_ibfk_1 FOREIGN KEY (history_id) REFERENCES family_histories...
+            $table->foreign('history_id', 'patients_ibfk_1')
+                ->references('id')
+                ->on('family_histories')
+                ->onDelete('set null');
         });
     }
 

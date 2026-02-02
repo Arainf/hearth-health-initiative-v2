@@ -24,80 +24,74 @@
 ================================ */
 .badge-male {
    min-width: 80px;
-    background: #eef4ff;
-    color: #1d4ed8;
-    border-color: #c7d2fe;
+    background: var(--badge-male-bg);
+    color: var(--badge-male-text);
+    border-color: var(--badge-male-border);
 }
 
 .badge-female {
    min-width: 80px;
-    background: #fdf2f8;
-    color: #be185d;
-    border-color: #fbcfe8;
+    background: var(--badge-female-bg);
+    color: var(--badge-female-text);
+    border-color: var(--badge-female-border);
 }
 
 /* ===============================
    STATUS
 ================================ */
 .badge-approved {
-    background: #ecfdf5;
-    color: #047857;
-    border-color: #a7f3d0;
+    background: var(--badge-approved-bg);
+    color: var(--badge-approved-text);
+    border-color: var(--badge-approved-border);
 }
 
 .badge-pending {
-    background: #fefce8;
-    color: #92400e;
-    border-color: #fde68a;
+    background: var(--badge-pending-bg);
+    color: var(--badge-pending-text);
+    border-color: var(--badge-pending-border);
 }
 
 .badge-not-evaluated {
-    background: #f3f4f6;
-    color: #374151;
-    border-color: #d1d5db;
+    background: var(--badge-neutral-bg);
+    color: var(--badge-neutral-text);
+    border-color: var(--badge-neutral-border);
 }
 
 .badge-needs-attention {
-    background: #fef2f2;
-    color: #b91c1c;
-    border-color: #fecaca;
+    background: var(--badge-danger-bg);
+    color: var(--badge-danger-text);
+    border-color: var(--badge-danger-border);
 }
 
 .badge-enabled {
-    background: #ecfdf5;
-    color: #047857;
-    border-color: #a7f3d0;
+    background: var(--badge-approved-bg);
+    color: var(--badge-approved-text);
+    border-color: var(--badge-approved-border);
 }
 
 .badge-disabled {
-    background: #f3f4f6;
-    color: #9ca3af;
-    border-color: #d1d5db;
+    background: var(--badge-neutral-bg);
+    color: var(--badge-neutral-text);
+    border-color: var(--badge-neutral-border);
 }
 
 .badge-admin {
-    background: #fef3c7;
-    color: #92400e;
-    border-color: #fde68a;
+    background: var(--badge-admin-bg);
+    color: var(--badge-danger-text);
+    border-color: var(--badge-admin-border);
 }
-
 
 .badge-user {
-    background: #f3f4f6;
-    color: #374151;
-    border-color: #d1d5db;
+    background: var(--badge-user-bg);
+    color: var(--badge-user-text);
+    border-color: var(--badge-user-border);
 }
-
 
 .badge-doctor {
-    background: #ecfeff;
-    color: #155e75;
-    border-color: #67e8f9;
+    background: var(--badge-doctor-bg);
+    color: var(--badge-doctor-text);
+    border-color: var(--badge-doctor-border);
 }
-
-
-
-
 
 /* ===============================
    OPTIONAL STATES

@@ -32,11 +32,9 @@ class TableController extends Controller
         ->select(
             'records.*',
             'records.status_id',
-            'patients.last_name',
-            'patients.first_name',
-            'patients.middle_name',
-            'patients.unit',
-            'patients.age',
+            'records.created_at as create',
+            'patients.*',
+            'records.id as record_id',
 
             'status.status_name',
             'generated_reports.id as generated_id'
@@ -110,11 +108,11 @@ class TableController extends Controller
 
 
         /* Created */
-        $created = \Carbon\Carbon::parse($row->created_at)
-            ->format('M d, Y');
+        $created = \Carbon\Carbon::parse($row->create,)
+            ->format('F d, Y');
 
         $data[] = [
-            'id' => $row->id,
+            'id' => $row->record_id,
             'counter' => $counter,
             // patient
             'patient' => [
@@ -122,7 +120,13 @@ class TableController extends Controller
                 'last_name'  => $row->last_name,
                 'first_name' => $row->first_name,
                 'middle_name'=> $row->middle_name,
+                'suffix'    =>$row->suffix,
+                'birthday'     => $row->birth_date,
                 'age'        => $row->age,
+                'height'    => $row->height,
+                'weight'    => $row->weight,
+                'bmi'       => $row->bmi,
+                'contact'   => $row->phone_number
             ],
 
             'staff' => $row->staff_id,
@@ -146,7 +150,7 @@ class TableController extends Controller
             ],
             'status_id' => $row->status_id,
 
-            'created_at'   =>  $created,
+            'created_at'   => $created,
             'generated_id' => $row->generated_id,
         ];
 

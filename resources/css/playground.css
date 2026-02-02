@@ -3,6 +3,39 @@
    WITH FULL GRID (VERTICAL + HORIZONTAL)
    =============================== */
 
+/* Light mode (default) */
+:root {
+  --dt-bg: #ffffff;
+  --dt-bg-header: #f8fafc;
+  --dt-text: #0f172a;
+  --dt-text-header: #64748b;
+  --dt-border: #e5e7eb;
+  --dt-border-left: #e5e7eb;
+  --dt-hover: #f9fafb;
+  --dt-bg-odd: #f9fafb;
+  --dt-bg-even: #ffffff;
+  --dt-bg-paginate: #f3f4f6;
+  --dt-text-paginate: #4b5563;
+  --dt-border-paginate: #d1d5db;
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --dt-bg: #1e1e1e;
+    --dt-bg-header: #2d2d2d;
+    --dt-text: #e5e7eb;
+    --dt-text-header: #9ca3af;
+    --dt-border: #374151;
+    --dt-border-left: #121212;
+    --dt-hover: #2d3748;
+    --dt-bg-odd: #1a1a1a;
+    --dt-bg-even: #1e1e1e;
+    --dt-bg-paginate: #1f2937;
+    --dt-text-paginate: #d1d5db;
+    --dt-border-paginate: #4b5563;
+  }
+}
 
 .dt-scroll-head {
   will-change: width;
@@ -16,6 +49,7 @@
 .dataTables_wrapper {
   position: relative;
   height: 100%;
+  color: var(--dt-text);
 }
 
 /* Scrollable body */
@@ -30,22 +64,121 @@
 }
 
 .dt-scroll-head table.dataTable thead th {
-  background: #f8fafc;
-  color: #64748b;
+  background: var(--clr-surface-a20);
+  color: var(--clr-text-a30);
   font-size: 12px;
   font-weight: 600;
   text-transform: uppercase;
   padding: 10px 12px;
   text-align: start;
-
-  border-top: 1px solid #e5e7eb;
-  border-bottom: 1px solid #e5e7eb;
-  border-right: 1px solid #e5e7eb;
+  border-top: 1px solid var(--clr-surface-a30);
+  border-bottom: 1px solid var(--clr-surface-a30);
+  border-right: 1px solid var(--clr-surface-a30);
 }
 
 .dt-scroll-head table.dataTable thead th:first-child {
-  border-left: 1px solid #e5e7eb;
+  border-left: 1px solid var(--clr-surface-a30);
   text-align: center;
+}
+
+/* ================= TABLE BASE ================= */
+table.dataTable {
+  border-collapse: separate !important;
+  border-spacing: 0 6px !important;
+  background: transparent;
+  color: var(--clr-text-a0);
+}
+
+/* ================= ROW ================= */
+table.dataTable tbody tr {
+  background: transparent !important;
+}
+
+/* ================= CELLS ================= */
+table.dataTable tbody tr > td {
+  background: var(--clr-surface-a10);
+  padding: 5px 12px !important;
+  font-size: 13px;
+  color: var(--clr-text-a0);
+  vertical-align: middle;
+  text-align: start;
+  border-top: 1px solid var(--clr-surface-a30);
+  border-bottom: 1px solid var(--clr-surface-a30);
+  border-right: 1px solid var(--clr-surface-a30);
+  transition: background .15s ease;
+}
+
+/* Left border */
+table.dataTable tbody tr > td:first-child {
+  border-left: 3px solid var(--clr-surface-a30);
+  text-align: left;
+}
+
+/* Hover state */
+table.dataTable tbody tr:hover > td {
+  background: var(--clr-surface-a30);
+}
+
+/* Striped rows */
+table.dataTable.stripe tbody tr.odd > td {
+  background-color: var(--dt-bg-odd);
+}
+
+table.dataTable.stripe tbody tr.even > td {
+  background-color: var(--dt-bg-even);
+}
+
+/* Pagination */
+.dataTables_wrapper .dataTables_paginate {
+  margin-top: 1rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--dt-border);
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+  color: var(--dt-text-paginate) !important;
+  border: 1px solid var(--dt-border-paginate) !important;
+  background: var(--dt-bg-paginate) !important;
+  margin: 0 2px;
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.25rem;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button.current,
+.dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
+  background: var(--dt-bg-header) !important;
+  color: var(--dt-text-header) !important;
+  border: 1px solid var(--dt-border) !important;
+  font-weight: 600;
+}
+
+/* Search box */
+.dataTables_filter input {
+  border: 1px solid var(--dt-border) !important;
+  background: var(--dt-bg) !important;
+  color: var(--dt-text) !important;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+}
+
+/* Length menu */
+.dataTables_length select {
+  border: 1px solid var(--dt-border) !important;
+  background: var(--dt-bg) !important;
+  color: var(--dt-text) !important;
+  padding: 0.25rem;
+  border-radius: 0.25rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+  .dt-scroll-head table.dataTable thead th {
+    padding: 8px 8px;
+  }
+
+  table.dataTable tbody tr > td {
+    padding: 4px 8px !important;
+  }
 }
 
 .dt-scroll-head table.dataTable thead th:last-child {
@@ -57,53 +190,9 @@
   display: none !important;
 }
 
-/* ================= TABLE BASE ================= */
-table.dataTable {
-  border-collapse: separate !important;
-  border-spacing: 0 6px !important;
-  background: transparent;
-}
-
-/* ================= ROW ================= */
-table.dataTable tbody tr {
-  background: transparent !important;
-}
-
-/* ================= CELLS ================= */
-table.dataTable tbody tr > td {
-  background: #ffffff;
-  padding: 5px 12px !important;
-  font-size: 13px;
-  color: #0f172a;
-  vertical-align: middle;
-  text-align: start;
-
-  /* FULL GRID */
-  border-top: 1px solid #e5e7eb;
-  border-bottom: 1px solid #e5e7eb;
-  border-right: 1px solid #e5e7eb;
-
-  transition: background .15s ease;
-}
-
-/* Left border */
-table.dataTable tbody tr > td:first-child {
-  border-left: 3px solid #e5e7eb;
-  text-align: center;
-}
-
-table.dataTable tbody tr > td:last-child {
-  text-align: center;
-}
-
-/* ================= HOVER ================= */
-table.dataTable tbody tr:hover > td {
-  background: #f8fafc;
-}
-
 /* Accent bar on hover */
 table.dataTable tbody tr:hover > td:first-child {
-  border-left-color: #0ea5e9;
+  border-left-color: var(--clr-surface-a30);
 }
 
 /* ================= NUMERIC ================= */
@@ -258,4 +347,55 @@ td.text-end {
 /* Prevent uneven row heights */
 table.dataTable tbody tr {
   height: 48px;
+}
+
+
+.dt-layout-start {
+    justify-content: flex-start;
+}
+
+.dt-layout-end {
+    justify-content: flex-end;
+}
+
+
+
+/* Pagination container */
+.dt-paging nav {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    margin-top: 15px;
+    justify-content: flex-end;
+}
+
+/* Pagination buttons */
+.dt-paging-button {
+    min-width: 32px;
+    height: 32px;
+    padding: 0 10px;
+    border-radius: 6px;
+    border: 1px solid var(--clr-surface-a30);
+    background: var(--clr-surface-a10);
+    color: var(--clr-text-a0);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+/* Hover */
+.dt-paging-button:hover:not(.disabled):not(.current) {
+    background: var(--clr-surface-a20);
+}
+
+/* Active page */
+.dt-paging-button.current {
+    background: var(--accent-primary);
+    color: var(--clr-surface-a0);
+    border-color: var(--accent-primary);
+}
+
+/* Disabled */
+.dt-paging-button.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
 }

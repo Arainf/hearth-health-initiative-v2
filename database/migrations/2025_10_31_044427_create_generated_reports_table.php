@@ -9,10 +9,17 @@ return new class extends Migration {
     {
         Schema::create('generated_reports', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('records_id');
-            $table->string('generated_text');
+
+            // SQL: `generated_text` longtext NOT NULL
+            // 'longText' is required here; 'string' would truncate data at 255 chars
+            $table->longText('generated_text');
+
+            // SQL: `staff_generated` int(11) NOT NULL
             $table->integer('staff_generated');
+
+            // SQL: `staff_updates` varchar(255) NOT NULL
             $table->string('staff_updates');
+
             $table->timestamps();
         });
     }

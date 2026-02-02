@@ -150,63 +150,20 @@ class AIController extends Controller
         $ai = $this->getUserAIConfig();
 
         $systemPrompt = $ai['prompt'] . '
-                Generate the Annual Medical Report as semantic HTML only.
+                 Output rules:
+                    - HTML only
+                    - Allowed tags: p, br, strong
+                    - No Markdown or explanations
+                    - Preserve order and section labels
+                    - Each section header in its own <p>, <strong>
+                    - Use <br> between sections
+                    - Group related items into paragraphs
+                    - Do not repeat labels unnecessarily
+                    - One paragraph per grouped topic
+                    - Each field label ends with ": "
+                    - Leave blank if data is missing
+                    - Group pertinent risk factors and management items by theme rather than listing each individually.
 
-                Output rules:
-                - HTML only, no Markdown or explanations
-                - Allowed tags: h1, h2, p, ul, li, br
-                - No attributes, styles, classes, ids
-                - Do not wrap with html/head/body
-                - Preserve exact order and labels
-                - Each field label ends with ": "
-                - Leave blank if data is missing
-                - Cholesterol and FBS in mg/dL
-                - One paragraph per line (no inline <br>)
-
-                Structure (must match exactly):
-
-                <h1><strong>ANNUAL MEDICAL REPORT</strong></h1>
-                <p>Date: [Date Today]</p>
-                <br/>
-                <h2>A. Personal Information</h2>
-                <p>Name:</p>
-                <p>Unit:</p>
-                <p>Date of Birth:</p>
-                <p>Age/Sex:</p>
-                <p>Weight:</p>
-                <p>Height:</p>
-                <p>BMI:</p>
-                <p>Contact:</p>
-                <br/>
-                <h2>B. Clinical Data</h2>
-                <p>Cholesterol:</p>
-                <p>HDL:</p>
-                <p>BP:</p>
-                <p>FBS:</p>
-                <p>HbA1c:</p>
-                <br/>
-                <h2>C. CVD Risk Assessment</h2>
-                <p>10-year risk (WHO SEAR):</p>
-                <p>Pertinent risk factors:</p>
-                <ul>
-                <li></li>
-                </ul>
-                <br/>
-                <h2>D. Management Plan</h2>
-                <p>Non-drug measures:</p>
-                <ul>
-                <li></li>
-                </ul>
-                <p>Drug measures:</p>
-                <ul>
-                <li></li>
-                </ul>
-                <br/>
-                <h2>E. Follow-up Plan</h2>
-                <p>Timing and monitoring:</p>
-                <br/>
-                <h2>F. Confidentiality Note</h2>
-                <p>This report contains confidential medical information intended solely for the designated individual. Unauthorized access, use, disclosure, or distribution of its contents is strictly prohibited and may be subject to legal action. The findings and recommendations are based solely on the information available at the time of evaluation.</p>
                 ';
 
         try {
@@ -216,15 +173,16 @@ class AIController extends Controller
             ])->withHeaders([
                 'Authorization' => 'Bearer ' . $ai['api_key'],
                 'Content-Type' => 'application/json',
-            ])->post('https://router.huggingface.co/v1/chat/completions', [
-                'model' => 'openai/gpt-oss-20b',
+            ])->post('https://api.openai.com/v1/chat/completions', [
+                'model' => 'gpt-4.1',
+//                gpt-5-nano-2025-08-07
 
                 // 🔒 DETERMINISM CONTROLS
                 'temperature' => 0.0,
                 'top_p' => 1.0,
                 'frequency_penalty' => 0.0,
                 'presence_penalty' => 0.0,
-                'seed' => 42,
+                // 'max_tokens' => 1200,
 
                 'messages' => [
                     [
@@ -237,6 +195,33 @@ class AIController extends Controller
                     ],
                 ],
             ]);
+//            $response = Http::withOptions([
+//                'verify' => false,
+//                'timeout' => 300,
+//            ])->withHeaders([
+//                'Authorization' => 'Bearer ' . $ai['api_key'],
+//                'Content-Type' => 'application/json',
+//            ])->post('https://router.huggingface.co/v1/chat/completions', [
+//                'model' => 'openai/gpt-oss-20b',
+//
+//                // 🔒 DETERMINISM CONTROLS
+//                'temperature' => 0.0,
+//                'top_p' => 1.0,
+//                'frequency_penalty' => 0.0,
+//                'presence_penalty' => 0.0,
+//                'seed' => 42,
+//
+//                'messages' => [
+//                    [
+//                        'role' => 'system',
+//                        'content' => $systemPrompt,
+//                    ],
+//                    [
+//                        'role' => 'user',
+//                        'content' => 'Patient info: ' . json_encode($inputData, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
+//                    ],
+//                ],
+//            ]);
 
             // Check for HTTP errors
             if ($response->failed()) {

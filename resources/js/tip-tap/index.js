@@ -11,6 +11,7 @@ import TextAlign from '@tiptap/extension-text-align'
 import Superscript from '@tiptap/extension-superscript'
 import Subscript from '@tiptap/extension-subscript'
 import Image from '@tiptap/extension-image'
+import { TableKit } from '@tiptap/extension-table'
 import {FontSize, TextStyle} from "@tiptap/extension-text-style";
 
 /* ==============================
@@ -45,35 +46,12 @@ const PAGE_HEIGHT = 1122 // A4 @ ~96dpi
 ================================ */
 export function createTiptapEditor({
                                        element,
-                                       rulerElement = null,
                                        content = '',
                                        editable = false,
                                    }) {
     if (!element) {
         throw new Error('TipTap editor element is required')
     }
-
-    const updateRuler = () => {
-        if (!rulerElement) return
-
-        const editorEl = document.querySelector('.ProseMirror')
-        if (!editorEl) return
-
-        const contentHeight = editorEl.scrollHeight
-        const pageCount = Math.max(1, Math.ceil(contentHeight / PAGE_HEIGHT))
-
-        console.log(pageCount);
-        rulerElement.innerHTML = ''
-        rulerElement.style.height = `${pageCount * PAGE_HEIGHT}px`
-
-        for (let i = 1; i <= pageCount; i++) {
-            const marker = document.createElement('div')
-            marker.className = 'ruler-marker'
-            marker.style.top = `${i * PAGE_HEIGHT}px`
-            rulerElement.appendChild(marker)
-        }
-    }
-
 
     const editor = new Editor({
         element,
@@ -96,15 +74,8 @@ export function createTiptapEditor({
                 types: ['heading', 'paragraph'],
             }),
         ],
-        onCreate() {
-            requestAnimationFrame(updateRuler)
-        },
-        onUpdate() {
-            requestAnimationFrame(updateRuler)
-        },
-    })
 
-    window.addEventListener('resize', updateRuler)
+    })
 
     /* ==============================
        Public API
@@ -118,21 +89,24 @@ export function createTiptapEditor({
 
         setContent(html) {
             editor.commands.setContent(html, true)
-            requestAnimationFrame(updateRuler)
         },
 
         getHTML() {
             return editor.getHTML()
         },
 
-        destroy() {
-            editor.destroy()
-            window.removeEventListener('resize', updateRuler)
-        },
 
         /* Toolbar actions */
         undo() { editor.chain().focus().undo().run() },
         redo() { editor.chain().focus().redo().run() },
+
+        canUndo() {
+            return editor.can().undo()
+        },
+
+        canRedo() {
+            return editor.can().redo()
+        },
 
         toggleBold() { editor.chain().focus().toggleBold().run() },
         toggleItalic() { editor.chain().focus().toggleItalic().run() },
@@ -158,17 +132,9 @@ export function createTiptapEditor({
             editor.chain().focus().setTextAlign(align).run()
         },
 
-        insertTwoColumn() {
-            editor.chain().focus().insertContent(`
-                <two-column>
-                    <p>Left column</p>
-                    <p>Right column</p>
-                </two-column>
-            `).run()
-        },
 
         isActive(type, opts = {}) {
-            return editor.isActive(type, opts)
+           return  editor.isActive(type, opts)
         },
     }
 }

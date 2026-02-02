@@ -4,31 +4,33 @@
 ])
 
 @php
-$base = '
-    group
-    flex items-center
-    gap-4
-    px-4 py-3
-    rounded-xl
-    text-sm font-medium
-    transition-all duration-200
-';
+    $base = '
+        group
+        flex items-center
+        gap-4
+        px-4 py-3
+        rounded-xl
+        text-sm font-medium
+        transition-all duration-200
+        border
+        border-transparent
+       text-[var(--sidebar-text)]
+    ';
 
-$inactive = 'text-gray-500 hover:bg-gray-50 hover:text-gray-900';
+    $accentColors = match ($style) {
+        1 => 'text-[var(--accent-1)]',
+        2 => 'text-[var(--accent-2)]',
+        3 => 'text-[var(--accent-3)]',
+        4 => 'text-[var(--accent-4)]',
+        5 => 'text-[var(--accent-5)]',
+        default => 'text-[var(--accent-primary)]',
+    };
 
-$palette = match ($style) {
-    1 => ['bg' => 'bg-amber-50',  'text' => 'text-[#F1AE00]', 'border' => 'border-amber-200'], // Admin
-    2 => ['bg' => 'bg-indigo-50', 'text' => 'text-indigo-600', 'border' => 'border-indigo-200'], // User
-    3 => ['bg' => 'bg-green-50',  'text' => 'text-green-600', 'border' => 'border-green-200'],
-    4 => ['bg' => 'bg-red-50',    'text' => 'text-red-600',   'border' => 'border-red-200'],
-    5 => ['bg' => 'bg-cyan-50',   'text' => 'text-cyan-700',  'border' => 'border-cyan-200'], // Doctor
-    default => ['bg' => 'bg-gray-50', 'text' => 'text-gray-800', 'border' => 'border-gray-200'],
-};
+    /* Active vs Inactive */
+    $activeClasses = "bg-[var(--clr-surface-a20)] {$accentColors}";
+    $inactiveClasses = "hover:bg-[var(--clr-surface-a20)] hover:{$accentColors}";
 
-
-$activeClasses = "{$palette['bg']} {$palette['text']} border {$palette['border']}";
-
-$classes = $base . ' ' . ($active ? $activeClasses : $inactive);
+    $classes = $base . ' ' . ($active ? $activeClasses : $inactiveClasses);
 @endphp
 
 <a {{ $attributes->class([$classes]) }}>

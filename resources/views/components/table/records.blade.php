@@ -1,9 +1,4 @@
 <style>
-    /* Left border */
-    table.dataTable tbody tr > td:first-child {
-    border-left: 3px solid #e5e7eb;
-    text-align: left;
-    }
 
     table.dataTable tbody tr > td:last-child {
         text-align: center;
@@ -22,7 +17,7 @@
     }
 </style>
 
-<table id="records-table" class="table datatable w-full bg-[#f9fbfc]">
+<table id="records-table" class="table datatable w-full bg-[#f9fbfc] dark:bg-[#2c2c2e]">
     <thead>
         <tr>
             <th>Patient</th>

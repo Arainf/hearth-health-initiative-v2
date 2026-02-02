@@ -1,0 +1,292 @@
+:root {
+
+    --clr-surface-a0: #ffffff;
+    --clr-surface-a10: #f5f5f5;
+    --clr-surface-a20: #e8e8e8;
+    --clr-surface-a30: #dcdcdc;
+    --clr-surface-a40: #cfcfcf;
+    --clr-surface-a50: #bfbfbf;
+    --clr-surface-a60: #a9a9a9;
+    --clr-surface-a70: #8f8f8f;
+
+    /** Theme text colors (Light Mode) */
+    --clr-text-a0: #0f0f0f;  /* primary text */
+    --clr-text-a10: #2a2a2a;
+    --clr-text-a20: #444444;
+    --clr-text-a30: #5e5e5e;
+    --clr-text-a40: #787878;
+    --clr-text-a50: #949494;
+    --clr-text-a60: #b0b0b0;
+    --clr-text-a70: #cccccc; /* disabled / placeholder */
+
+    --text-primary: var(--clr-text-a0);
+    --text-secondary: var(--clr-text-a20);
+    --text-muted: var(--clr-text-a50);
+    --text-disabled: var(--clr-text-a70);
+
+    /* Sidebar specific */
+    --sidebar-text: var(--text-primary);
+    --sidebar-text-hover: var(--accent-primary);
+    --sidebar-icon: var(--text-muted);
+
+    --btn-focus-ring: rgba(59, 130, 246, 0.35);
+    /* === Blues === */
+    --blue-100: #dbeafe;
+    --blue-200: #bfdbfe;
+    --blue-300: #93c5fd;
+    --blue-600: #2563eb;
+    --blue-700: #1d4ed8;
+    --blue-800: #1e40af;
+    --blue-900: #1e3a8a;
+
+    --btn-view-bg: #dbeafe;
+
+    /* === Sky === */
+    --sky-100: #e0f2fe;
+    --sky-200: #bae6fd;
+    --sky-300: #7dd3fc;
+    --sky-700: #0369a1;
+    --sky-800: #075985;
+
+    /* === Purple === */
+    --purple-50: #faf5ff;
+    --purple-100: #f3e8ff;
+    --purple-600: #9333ea;
+    --purple-700: #7e22ce;
+    --purple-800: #4c1d95;
+
+    /* === Green === */
+    --green-100: #E8F5E9; /* surface tint / backgrounds */
+    --green-600: #43A047; /* primary */
+    --green-700: #388E3C; /* hover / active */
+    --green-800: #2E7D32;
+    --green-text: #ffffff;
+
+    /* === Red === */
+    --red-100: #fee2e2;
+    --red-600: #dc2626;
+    --red-700: #b91c1c;
+
+    /* === Slate / Gray === */
+    --gray-100: #f8fafc;
+    --gray-200: #f1f5f9;
+    --gray-300: #e5e7eb;
+    --gray-400: #cbd5e1;
+    --gray-500: #64748b;
+    --gray-700: #334155;
+    --gray-800: #1e293b;
+    --gray-900: #020817;
+
+    /* === Indigo === */
+    --indigo-100: #e0e7ff;
+    --indigo-200: #c7d2fe;
+    --indigo-300: #a5b4fc;
+    --indigo-400: #818cf8;
+    --indigo-800: #3730a3;
+
+
+    --badge-male-bg: #eef4ff;
+    --badge-male-text: #1d4ed8;
+    --badge-male-border: #c7d2fe;
+
+    --badge-female-bg: #fdf2f8;
+    --badge-female-text: #be185d;
+    --badge-female-border: #fbcfe8;
+
+    /* === BADGE: Status === */
+    --badge-approved-bg: #ecfdf5;
+    --badge-approved-text: #047857;
+    --badge-approved-border: #a7f3d0;
+
+    --badge-pending-bg: #fefce8;
+    --badge-pending-text: #92400e;
+    --badge-pending-border: #fde68a;
+
+    --badge-neutral-bg: #f3f4f6;
+    --badge-neutral-text: #374151;
+    --badge-neutral-border: #d1d5db;
+
+    --badge-danger-bg: #fef2f2;
+    --badge-danger-text: #b91c1c;
+    --badge-danger-border: #fecaca;
+
+    --badge-disabled-text: #9ca3af;
+
+    --badge-admin-bg: #fef3c7;
+    --badge-admin-text: #92400e;
+    --badge-admin-border: #fde68a;
+
+    --badge-doctor-bg: #ecfeff;
+    --badge-doctor-text: #155e75;
+    --badge-doctor-border: #67e8f9;
+
+    --badge-user-bg: #f3f4f6;      /* light gray background */
+    --badge-user-text: #374151;    /* dark gray text */
+    --badge-user-border: #d1d5db;
+
+    --btn-brain-bg: #f3e8ff;     /* soft lavender background */
+    --btn-brain-icon: #5b21b6;  /* deep purple icon for contrast */
+    --btn-brain-border: #c084fc;
+
+    --btn-brain-bg-hover: #e9d5ff;     /* richer lavender */
+    --btn-brain-icon-hover: #4c1d95;  /* deeper purple */
+    --btn-brain-border-hover: #a855f7;
+
+    --danger-text: var(--accent-4);
+    --danger-bg: var(--red-100);
+
+    --accent-primary: #2563eb;
+    --accent-1: #F1AE00;
+    --accent-2: #4f46e5;
+    --accent-3: #16a34a;
+    --accent-4: #dc2626;
+    --accent-5: #0e7490;
+}
+
+/* ===============================
+   DARK THEME (prefers-color-scheme)
+   =============================== */
+@media (prefers-color-scheme: dark) {
+    :root {
+
+        /** Theme surface colors */
+        --clr-surface-a0: #121212;
+        --clr-surface-a10: #282828;
+        --clr-surface-a20: #3f3f3f;
+        --clr-surface-a30: #575757;
+        --clr-surface-a40: #717171;
+        --clr-surface-a50: #8b8b8b;
+        --clr-surface-a60: #a7a7a7;
+        --clr-surface-a70: #c4c4c4;
+
+        /** Theme text colors (Dark Mode) */
+        --clr-text-a0: #ffffff;  /* primary text */
+        --clr-text-a10: #e6e6e6;
+        --clr-text-a20: #cccccc;
+        --clr-text-a30: #b3b3b3;
+        --clr-text-a40: #999999;
+        --clr-text-a50: #7f7f7f;
+        --clr-text-a60: #666666;
+        --clr-text-a70: #4d4d4d; /* disabled / placeholder */
+
+        --text-primary: var(--clr-text-a0);
+        --text-secondary: var(--clr-text-a20);
+        --text-muted: var(--clr-text-a50);
+        --text-disabled: var(--clr-text-a70);
+
+        --sidebar-text: var(--text-primary);
+        --sidebar-text-hover: var(--accent-primary);
+        --sidebar-icon: var(--text-muted);
+
+        --btn-focus-ring: rgba(96, 165, 250, 0.45);
+
+        /* === Blues === */
+        --blue-100: #1e3a8a;
+        --blue-200: #1e40af;
+        --blue-300: #2563eb;
+        --blue-600: #3b82f6;
+        --blue-700: #2563eb;
+        --blue-800: #dbeafe;
+        --blue-900: #eff6ff;
+
+        --btn-view-bg: #1a2238;
+
+        /* === Sky === */
+        --sky-100: #082f49;
+        --sky-200: #0c4a6e;
+        --sky-300: #0369a1;
+        --sky-700: #7dd3fc;
+        --sky-800: #bae6fd;
+
+        /* === Purple === */
+        --purple-50: #f5f3ff;
+        --purple-100: #4c1d95;
+        --purple-600: #a855f7;
+        --purple-700: #9333ea;
+        --purple-800: #e9d5ff;
+
+        /* === Green === */
+        --green-100: #1B5E20; /* subtle surface highlight */
+        --green-600: #66BB6A; /* primary */
+        --green-700: #57A05A; /* hover */
+        --green-800: #81C784;
+        --green-text: #ecfdf5;
+
+        /* === Red === */
+        --red-100: #7f1d1d;
+        --red-600: #ef4444;
+        --red-700: #fecaca;
+
+        /* === Slate / Gray === */
+        --gray-100: #0f172a;
+        --gray-200: #1e293b;
+        --gray-300: #334155;
+        --gray-400: #475569;
+        --gray-500: #94a3b8;
+        --gray-700: #cbd5e1;
+        --gray-800: #e5e7eb;
+        --gray-900: #f8fafc;
+
+        /* === Indigo === */
+        --indigo-100: #1e1b4b;
+        --indigo-200: #312e81;
+        --indigo-300: #4338ca;
+        --indigo-400: #6366f1;
+        --indigo-800: #e0e7ff;
+
+        --badge-male-bg: #1e3a8a;
+        --badge-male-text: #dbeafe;
+        --badge-male-border: #2563eb;
+
+        --badge-female-bg: #831843;
+        --badge-female-text: #fbcfe8;
+        --badge-female-border: #db2777;
+
+        /* === BADGE: Status === */
+        --badge-approved-bg: #2c4e45;
+        --badge-approved-text: #a7f3d0;
+        --badge-approved-border: #a7f3d0;
+
+        --badge-pending-bg: #5b4132;
+        --badge-pending-text: #fde68a;
+        --badge-pending-border: #fde68a;
+
+        --badge-neutral-bg: #1f2937;
+        --badge-neutral-text: #bed3ff;
+        --badge-neutral-border: #bed3ff;
+
+        --badge-danger-bg: #7f1d1d;
+        --badge-danger-text: #fecaca;
+        --badge-danger-border: #991b1b;
+
+        --badge-disabled-text: #6b7280;
+
+        --badge-admin-bg: #78350f;
+        --badge-admin-text: #fde68a;
+        --badge-admin-border: #92400e;
+
+        --badge-doctor-bg: #083344;
+        --badge-doctor-text: #67e8f9;
+        --badge-doctor-border: #155e75;
+
+        --btn-brain-bg: #431e64;
+        --btn-brain-icon: #ebd8ff;
+        --btn-brain-border: #7e22ce;
+
+        --btn-brain-bg-hover: #5b2a87;     /* slightly brighter purple */
+        --btn-brain-icon-hover: #f3e8ff;  /* brighter icon */
+        --btn-brain-border-hover: #a855f7;
+
+        --danger-text: var(--red-100);
+        --danger-bg: #7f1d1d; /* or another dark-friendly red bg */
+
+        --accent-primary: #3b82f6; /* brighter blue for dark surfaces */
+        --accent-1: #facc15;       /* slightly brighter amber */
+        --accent-2: #818cf8;       /* lighter indigo */
+        --accent-3: #22c55e;       /* vibrant green */
+        --accent-4: #ef4444;       /* brighter red */
+        --accent-5: #38bdf8;
+
+
+    }
+}

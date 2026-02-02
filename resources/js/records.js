@@ -3,6 +3,7 @@ import DataTable from "datatables.net-dt";
 
 import { setupYearFilterRecords } from "@/filters/filter-year.js";
 import { setupStatusFilter } from "@/filters/filter-status.js";
+import { formatExpandedRow } from "@/utilities/table-expanded-form.js";
 
 window.$ = window.jQuery = $;
 
@@ -382,116 +383,116 @@ $("#records-table tbody").on("click", ".row-toggle", function (e) {
 /* ===============================
    EXPANDED ROW TEMPLATE
 ================================ */
-function formatExpandedRow(data) {
-    const recordId = data.id;
-    let extendedActions = ``;
-
-    if(!data.generated_id){
-        extendedActions =`
-            <!-- ACTIONS -->
-            <div id="extended-actions-${recordId}"  class="absolute top-3 right-3 flex gap-2 ">
-                <button class="hhi-btn hhi-btn-outline text-xs toggle-edit" data-record-id="${recordId}">
-                    <i class="fa-solid fa-pen mr-1"></i> Edit
-                </button>
-                <button class="hhi-btn hhi-btn-primary text-xs hidden save-record-btn" data-record-id="${recordId}">
-                    Save
-                </button>
-                <button class="hhi-btn hhi-btn-secondary text-xs hidden cancel-edit-btn" data-record-id="${recordId}">
-                    Cancel
-                </button>
-            </div>`
-    }
-
-    return `
-        <div class="bg-white border border-gray-200 rounded-lg p-4 text-sm relative record-edit-container"
-             data-record-id="${recordId}">
-           ${extendedActions}
-            <!-- MAIN GRID -->
-            <div class="grid gap-6" style="grid-template-columns: repeat(3, 1fr); ">
-
-                <!-- LEFT: INPUTS (2 columns) -->
-                <div class="col-span-2 grid grid-cols-2 gap-4">
-                    ${renderEditableInput("Cholesterol", "cholesterol", data.cholesterol, recordId)}
-                    ${renderEditableInput("HDL", "hdl_cholesterol", data.hdl_cholesterol, recordId)}
-
-                    ${renderEditableInput("Systolic BP", "systolic_bp", data.systolic_bp, recordId)}
-                    ${renderEditableInput("FBS", "fbs", data.fbs, recordId)}
-
-                    <div class="col-span-2">
-                        ${renderEditableInput("HbA1c", "hba1c", data.hba1c, recordId)}
-                    </div>
-                </div>
-
-                <!-- RIGHT: RISK FACTORS -->
-                <div class="space-y-4 col-start-3">
-                    ${renderRiskRadio("Hypertension Tx", "hypertension", data.hypertension, recordId)}
-                    ${renderRiskRadio("Diabetes M", "diabetes", data.diabetes, recordId)}
-                    ${renderRiskRadio("Current Smoker", "smoking", data.smoking, recordId)}
-                </div>
-            </div>
-        </div>
-    `;
-}
-
-
-function renderEditableInput(label, fieldName, value, recordId) {
-    return `
-        <div>
-            <label class="block min:text-md text-gray-500 mb-1 text-start">${label}</label>
-            <input type="number"
-                   step="0.01"
-                   class="record-field w-full px-3 py-2 text-sm bg-gray-100 border rounded disabled:bg-gray-100"
-                   data-field="${fieldName}"
-                   data-record-id="${recordId}"
-                   value="${value ?? ""}"
-                   disabled />
-        </div>
-    `;
-}
-function renderRiskRadio(label, fieldName, value, recordId) {
-    const yesChecked = value ? 'checked' : '';
-    const noChecked = !value ? 'checked' : '';
-
-    return `
-        <div>
-            <div class="text-sm font-medium text-gray-600 mb-2 text-start">
-                ${label}
-            </div>
-
-            <div class="flex gap-4">
-                <!-- YES -->
-                <label class="
-                    flex items-center gap-3 px-3 py-2 rounded-lg border
-                    text-base font-medium select-none
-                    radio-readonly border-gray-300
-                ">
-                    <input type="radio"
-                           class="risk-field radio-readonly radio-yes w-5 h-5"
-                           name="${fieldName}-${recordId}"
-                           data-field="${fieldName}"
-                           value="1"
-                           ${yesChecked}>
-                    Yes
-                </label>
-
-                <!-- NO -->
-                <label class="
-                    flex items-center gap-3 px-3 py-2 rounded-lg border
-                    text-base font-medium select-none
-                    radio-readonly border-gray-300
-                ">
-                    <input type="radio"
-                           class="risk-field radio-readonly radio-no w-5 h-5"
-                           name="${fieldName}-${recordId}"
-                           data-field="${fieldName}"
-                           value="0"
-                           ${noChecked}>
-                    No
-                </label>
-            </div>
-        </div>
-    `;
-}
+// function formatExpandedRow(data) {
+//     const recordId = data.id;
+//     let extendedActions = ``;
+//
+//     if(!data.generated_id){
+//         extendedActions =`
+//             <!-- ACTIONS -->
+//             <div id="extended-actions-${recordId}"  class="absolute top-3 right-3 flex gap-2 ">
+//                 <button class="hhi-btn hhi-btn-outline text-xs toggle-edit" data-record-id="${recordId}">
+//                     <i class="fa-solid fa-pen mr-1"></i> Edit
+//                 </button>
+//                 <button class="hhi-btn hhi-btn-primary text-xs hidden save-record-btn" data-record-id="${recordId}">
+//                     Save
+//                 </button>
+//                 <button class="hhi-btn hhi-btn-secondary text-xs hidden cancel-edit-btn" data-record-id="${recordId}">
+//                     Cancel
+//                 </button>
+//             </div>`
+//     }
+//
+//     return `
+//         <div class="bg[var(--clr-surface-a10)]] border border-gray-200 rounded-lg p-4 text-sm relative record-edit-container"
+//              data-record-id="${recordId}">
+//            ${extendedActions}
+//             <!-- MAIN GRID -->
+//             <div class="grid gap-6" style="grid-template-columns: repeat(3, 1fr); ">
+//
+//                 <!-- LEFT: INPUTS (2 columns) -->
+//                 <div class="col-span-2 grid grid-cols-2 gap-4">
+//                     ${renderEditableInput("Cholesterol", "cholesterol", data.cholesterol, recordId)}
+//                     ${renderEditableInput("HDL", "hdl_cholesterol", data.hdl_cholesterol, recordId)}
+//
+//                     ${renderEditableInput("Systolic BP", "systolic_bp", data.systolic_bp, recordId)}
+//                     ${renderEditableInput("FBS", "fbs", data.fbs, recordId)}
+//
+//                     <div class="col-span-2">
+//                         ${renderEditableInput("HbA1c", "hba1c", data.hba1c, recordId)}
+//                     </div>
+//                 </div>
+//
+//                 <!-- RIGHT: RISK FACTORS -->
+//                 <div class="space-y-4 col-start-3">
+//                     ${renderRiskRadio("Hypertension Tx", "hypertension", data.hypertension, recordId)}
+//                     ${renderRiskRadio("Diabetes M", "diabetes", data.diabetes, recordId)}
+//                     ${renderRiskRadio("Current Smoker", "smoking", data.smoking, recordId)}
+//                 </div>
+//             </div>
+//         </div>
+//     `;
+// }
+//
+//
+// function renderEditableInput(label, fieldName, value, recordId) {
+//     return `
+//         <div>
+//             <label class="block min:text-md text-gray-500 mb-1 text-start">${label}</label>
+//             <input type="number"
+//                    step="0.01"
+//                    class="record-field w-full px-3 py-2 text-sm bg-gray-100 border rounded disabled:bg-gray-100"
+//                    data-field="${fieldName}"
+//                    data-record-id="${recordId}"
+//                    value="${value ?? ""}"
+//                    disabled />
+//         </div>
+//     `;
+// }
+// function renderRiskRadio(label, fieldName, value, recordId) {
+//     const yesChecked = value ? 'checked' : '';
+//     const noChecked = !value ? 'checked' : '';
+//
+//     return `
+//         <div>
+//             <div class="text-sm font-medium text-gray-600 mb-2 text-start">
+//                 ${label}
+//             </div>
+//
+//             <div class="flex gap-4">
+//                 <!-- YES -->
+//                 <label class="
+//                     flex items-center gap-3 px-3 py-2 rounded-lg border
+//                     text-base font-medium select-none
+//                     radio-readonly border-gray-300
+//                 ">
+//                     <input type="radio"
+//                            class="risk-field radio-readonly radio-yes w-5 h-5"
+//                            name="${fieldName}-${recordId}"
+//                            data-field="${fieldName}"
+//                            value="1"
+//                            ${yesChecked}>
+//                     Yes
+//                 </label>
+//
+//                 <!-- NO -->
+//                 <label class="
+//                     flex items-center gap-3 px-3 py-2 rounded-lg border
+//                     text-base font-medium select-none
+//                     radio-readonly border-gray-300
+//                 ">
+//                     <input type="radio"
+//                            class="risk-field radio-readonly radio-no w-5 h-5"
+//                            name="${fieldName}-${recordId}"
+//                            data-field="${fieldName}"
+//                            value="0"
+//                            ${noChecked}>
+//                     No
+//                 </label>
+//             </div>
+//         </div>
+//     `;
+// }
 
 /* ===============================
    EDIT FUNCTIONALITY
@@ -499,20 +500,20 @@ function renderRiskRadio(label, fieldName, value, recordId) {
 let originalRecordData = {};
 
 // Toggle edit mode
-$(document).on('click', '.toggle-edit', function(e) {
+$(document).on('click', '.toggle-edit', function (e) {
     e.preventDefault();
     e.stopPropagation();
 
     const recordId = $(this).data('record-id');
     const $row = $(this).closest('.record-edit-container');
 
-    // Enable all fields
+    // Enable inputs
     $row.find('.record-field')
         .prop('disabled', false)
-        .removeClass('bg-gray-50')
-        .addClass('bg-white border-blue-300');
+        .addClass('is-editing');
 
-    $row.find('.risk-field, .risk-field')
+    // Enable radios
+    $row.find('.risk-field')
         .removeClass('radio-readonly')
         .addClass('radio-editable');
 
@@ -520,11 +521,10 @@ $(document).on('click', '.toggle-edit', function(e) {
         .removeClass('radio-readonly')
         .addClass('radio-editable');
 
+    // Helper
     function getRadioBool($row, field) {
-        const val = $row.find(`input[data-field="${field}"]:checked`).val();
-        return val === '1';
+        return $row.find(`input[data-field="${field}"]:checked`).val() === '1';
     }
-
 
     // Store original values
     originalRecordData[recordId] = {
@@ -538,14 +538,15 @@ $(document).on('click', '.toggle-edit', function(e) {
         smoking: getRadioBool($row, 'smoking'),
     };
 
-    // Show/hide buttons
+    // Toggle buttons
     $(this).addClass('hidden');
     $row.find('.save-record-btn').removeClass('hidden');
     $row.find('.cancel-edit-btn').removeClass('hidden');
 });
 
+
 // Cancel edit
-$(document).on('click', '.cancel-edit-btn', function(e) {
+$(document).on('click', '.cancel-edit-btn', function (e) {
     e.preventDefault();
     e.stopPropagation();
 
@@ -554,32 +555,31 @@ $(document).on('click', '.cancel-edit-btn', function(e) {
     const original = originalRecordData[recordId];
 
     function restoreRadio($row, field, originalValue) {
-        $row.find(`input[data-field="${field}"]`).prop('checked', false);
-
         const target = originalValue ? '1' : '0';
-        $row.find(`input[data-field="${field}"][value="${target}"]`)
+        $row.find(`input[data-field="${field}"]`)
+            .prop('checked', false)
+            .filter(`[value="${target}"]`)
             .prop('checked', true);
     }
 
-
     if (original) {
-        // Restore original values
         $row.find('[data-field="cholesterol"]').val(original.cholesterol);
         $row.find('[data-field="hdl_cholesterol"]').val(original.hdl_cholesterol);
         $row.find('[data-field="systolic_bp"]').val(original.systolic_bp);
         $row.find('[data-field="fbs"]').val(original.fbs);
         $row.find('[data-field="hba1c"]').val(original.hba1c);
+
         restoreRadio($row, 'hypertension', original.hypertension);
         restoreRadio($row, 'diabetes', original.diabetes);
         restoreRadio($row, 'smoking', original.smoking);
     }
 
-    // Disable fields
+    // Disable inputs & restore theme colors
     $row.find('.record-field')
         .prop('disabled', true)
-        .removeClass('bg-white border-blue-300')
-        .addClass('bg-gray-50');
+        .removeClass('is-editing');
 
+    // Restore radios to readonly
     $row.find('.risk-field')
         .addClass('radio-readonly')
         .removeClass('radio-editable');
@@ -588,14 +588,14 @@ $(document).on('click', '.cancel-edit-btn', function(e) {
         .addClass('radio-readonly')
         .removeClass('radio-editable');
 
-
-    // Show/hide buttons
+    // Toggle buttons
     $row.find('.toggle-edit').removeClass('hidden');
     $row.find('.save-record-btn').addClass('hidden');
     $row.find('.cancel-edit-btn').addClass('hidden');
 
     delete originalRecordData[recordId];
 });
+
 
 // Save record
 $(document).on('click', '.save-record-btn', function(e) {
@@ -674,19 +674,115 @@ $(document).on('click', '.save-record-btn', function(e) {
 /* ===============================
    VIEW GENERATED TEXT MODAL
 ================================ */
+
+function setSection(data){
+
+
+    const name = [
+        data.patient.first_name ? data.patient.first_name : " " ,
+        data.patient.middle_name ? data.patient.middle_name : " ",
+        data.patient.last_name ? data.patient.last_name : " " ,
+        data.patient.suffix ? data.patient.suffix : " "
+    ]
+        .filter(Boolean)
+        .join(' ');
+
+    $(`.xte`).removeClass("opacity-50");
+    $(`#template-date`).text(data.created_at);
+    $(`#template-name`).text(name);
+    $(`#template-unit`).text(data.patient.unit);
+    $(`#template-dob`).text(data.patient.birthday);
+    $(`#template-age`).text(data.patient.age);
+    $(`#template-weight`).text(data.patient.weight);
+    $(`#template-height`).text(data.patient.height);
+    $(`#template-bmi`).text(data.patient.bmi);
+    $(`#template-contact`).text(data.patient.contact);
+
+    $(`#template-cholesterol`).text(data.cholesterol + ' mg/dl');
+    $(`#template-hdl`).text(data.hdl_cholesterol + ' mg/dl');
+    $(`#template-bp`).text(data.systolic_bp +  ' mmHg');
+    $(`#template-fbs`).text(data.fbs);
+    $(`#template-hbac`).text(data.hba1c + '%');
+}
+
+
+function clearSection(){
+    $(`.xte`).addClass("opacity-50");
+    $(`#template-date`).text('');
+    $(`#template-name`).text('');
+    $(`#template-unit`).text('');
+    $(`#template-dob`).text('');
+    $(`#template-age`).text('');
+    $(`#template-weight`).text('');
+    $(`#template-height`).text('');
+    $(`#template-bmi`).text('');
+    $(`#template-contact`).text('');
+
+    $(`#template-cholesterol`).text('');
+    $(`#template-hdl`).text('');
+    $(`#template-bp`).text('');
+    $(`#template-fbs`).text('');
+    $(`#template-hbac`).text('');
+}
+
+let originalPanelContent = ``;
+$("#closeGeneratedPanel").on("click", () => {
+    originalPanelContent = ` `;
+    closeGeneratedPanel();
+});
+
+function closeGeneratedPanel() {
+    clearSection();
+    $("#generatedPanel").addClass("translate-x-full");
+    $(`.view-generated-btn`).html('<i class="fa-solid fa-magnifying-glass"></i>');
+}
 $(document).on('click', '.view-generated-btn', function(e) {
     e.stopPropagation();
+    $('.hhi-btn-view').prop('disabled', true);
+
+    $(this)
+        .html('<i class="fa-solid fa-spinner fa-spin mr-1"></i>').prop('disabled' , true);
+
+    const $tr = $(this).closest("tr");
+    const rowData = table.row($tr).data();
     const generatedId = $(this).data('id');
 
-    $('#reportModal').removeClass('hidden');
-    $('#modalContent').text('Loading…');
+    setSection(rowData);
 
-    $.get(`/api/getGeneratedContent/${generatedId}`, res => {
-        $('#modalContent').text(res.generated_text || 'No generated content.');
-    }).fail(() => {
-        $('#modalContent').text('Error loading generated content.');
-    });
+    $("#panelRecordId").text(`Generated ID #${generatedId}`);
+
+    // $('#reportModal').removeClass('hidden');
+    // $('#modalContent').text('Loading…');
+
+
+    fetch(`/api/getGeneratedContent/${generatedId}`)
+        .then(res => res.json())
+        .then(res => {
+            originalPanelContent = res.generated_text || "No generated content.";
+            $(`#content`).html(originalPanelContent);
+            openGeneratedPanel();
+            $('.hhi-btn-view').prop('disabled', false);
+            $(this)
+                .html('<i class="fa-solid fa-magnifying-glass"></i>');
+        })
+        .catch(() => {
+            $("#panelContent").text("Failed to load content.");
+        })
+        .finally(() => {
+            setPanelLoading(false);
+        });
+
 });
+
+function openGeneratedPanel() {
+    $(`#panelEditBtn`).hide();
+    $("#generatedPanel").removeClass("translate-x-full");
+}
+
+function setPanelLoading(isLoading) {
+    $("#panelSkeleton").toggle(isLoading);
+    $("#panelContent").toggleClass("opacity-50", isLoading);
+}
 
 $('#closeModal').on('click', () => {
     $('#reportModal').addClass('hidden');

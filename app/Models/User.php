@@ -66,6 +66,10 @@ class User extends Authenticatable
             && $this->hasCompleteAIConfig();
     }
 
+    public function is_Doctor(): bool
+    {
+        return $this->is_doctor;
+    }
 
     public function getAiReadyAttribute(): bool
     {

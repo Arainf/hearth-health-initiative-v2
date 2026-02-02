@@ -5,9 +5,19 @@
         @case('navigation')
             <!-- Full sidebar logo -->
             <img
-                class="h-auto w-auto z-50 transition-all duration-300"
+                class="h-auto w-auto z-50 transition-all duration-300
+           dark:hidden"
                 src="{{ asset('img/black_line_logo.webp') }}"
-                alt="heart health initiative logo">
+                alt="logo dark mode off"
+            />
+
+            <img
+                class="h-auto w-auto z-50 transition-all duration-300
+           hidden dark:block"
+                src="{{ asset('img/white_line_logo.png') }}"
+                alt="logo dark mode on"
+            />
+
 
             @break
 

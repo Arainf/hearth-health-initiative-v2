@@ -45,6 +45,8 @@
             </div>
     </div>
 
+    <x-rich-editor.main/>
+
     <!-- VIEW GENERATED TEXT MODAL -->
     <div
         id="reportModal"

@@ -1,0 +1,33 @@
+.dropdown {
+    @apply
+    flex justify-between items-center w-full px-3 py-2
+    border border-gray-300 dark:border-gray-600 rounded-md text-sm
+    bg-white dark:bg-[#212121] shadow-sm
+    hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors
+    text-gray-700 dark:text-gray-200
+}
+
+.dropdown-menu {
+    @apply
+    absolute z-10 mt-1 w-full
+    bg-white dark:bg-[#212121]
+    border border-gray-200 dark:border-gray-700
+    rounded-md shadow-lg;
+}
+
+
+.dropdown option {
+    @apply py-2 px-3 bg-white dark:bg-[#212121] text-gray-700 dark:text-gray-200;
+}
+
+.dropdown-item {
+    @apply
+    flex items-center gap-2 px-3
+    py-2 cursor-pointer
+    dark:bg-[#212121]
+}
+
+.dropdown-item:hover {
+    color: var(--clr-text-a20);
+    background-color: var(--clr-surface-a40);
+}

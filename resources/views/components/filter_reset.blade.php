@@ -3,15 +3,17 @@
         title="Search / Reset"
         class="group flex items-center gap-2 px-4 py-2 text-sm font-medium
                rounded-md transition-all border
-               bg-blue-600 text-white border-blue-600
-               hover:bg-blue-700">
+               bg-gray-800 text-white border-gray-800
+               hover:bg-gray-700 hover:border-gray-700
+               dark:bg-gray-700 dark:border-gray-700
+               dark:hover:bg-gray-600 dark:hover:border-gray-600">
 
     <!-- SEARCH ICON -->
     <i id="filter-search-icon"
-       class="fa-solid fa-magnifying-glass block"></i>
+       class="fa-solid fa-magnifying-glass block text-[var(--clr-text-a20)]"></i>
 
     <!-- RESET ICON -->
     <i id="filter-reset-icon"
-       class="fa-solid fa-arrows-rotate hidden"
+       class="fa-solid fa-arrows-rotate hidden text-[var(--clr-text-a20)]"
        style="display: none !important;"></i>
 </button>

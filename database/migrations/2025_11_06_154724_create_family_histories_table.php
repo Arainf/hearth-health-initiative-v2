@@ -9,10 +9,13 @@ return new class extends Migration {
     {
         Schema::create('family_histories', function (Blueprint $table) {
             $table->id();
+
+            // Boolean columns matching the SQL 'tinyint(1)' and capitalized naming
             $table->boolean('Hypertension');
             $table->boolean('Diabetes');
             $table->boolean('Heart_Attack');
             $table->boolean('Cholesterol');
+
             $table->timestamps();
         });
     }
