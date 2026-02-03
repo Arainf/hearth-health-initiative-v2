@@ -3,16 +3,16 @@
 <x-app-layout>
     <x-record-sidebar id="recordSidebar" />
 
-    <div class="relative flex flex-col h-screen bg-[#f9fbfc] px-2 pt-2 overflow-hidden">
+    <div class="relative flex flex-col h-screen px-2 pt-2 overflow-hidden">
         <!-- HEADER -->
-        <div class="flex flex-col border-b border-gray-300 bg-white px-6 py-3 z-20 sticky top-0">
+        <div class="flex flex-col border-b px-6 py-3 z-20 sticky top-0">
             <div class="flex justify-between items-center">
                 <p class="circular text-lg tracking-tighter">Heart Health Accounts</p>
             </div>
         </div>
 
         <!-- SEARCH BAR -->
-        <div class="flex items-end w-full bg-white px-6 py-3 border-b border-gray-300 sticky top-[56px] z-10 justify-end">
+        <div class="flex items-end w-full px-6 py-3 border-b sticky top-[56px] z-10 justify-end">
 {{--            <div>--}}
 {{--                <x-filter_search id="record-search" placeholder="Search account" width="w-80" />--}}
 {{--            </div>--}}
@@ -56,20 +56,20 @@
 
     <!-- CONFIRM ACTION MODAL -->
     <div id="confirmModal"
-         class="fixed inset-0 z-[99999] hidden flex items-center justify-center bg-black/40 backdrop-blur-sm">
+         class="fixed inset-0 z-[99999] hidden flex items-center justify-center bg-black/40 dark:bg-black/60 backdrop-blur-sm">
 
-        <div class="bg-white w-[420px] rounded-xl shadow-xl p-6">
-            <h3 id="confirmTitle" class="text-lg font-semibold mb-2">
+        <div class="bg-white dark:bg-[#212121] dark:border dark:border-gray-600 w-[420px] rounded-xl shadow-xl p-6">
+            <h3 id="confirmTitle" class="text-lg font-semibold mb-2 text-gray-900 dark:text-gray-100">
                 Confirm action
             </h3>
 
-            <p id="confirmMessage" class="text-sm text-gray-600 mb-6">
+            <p id="confirmMessage" class="text-sm text-gray-600 dark:text-gray-400 mb-6">
                 Are you sure?
             </p>
 
             <div class="flex justify-end gap-3">
                 <button id="confirmCancelBtn"
-                        class="px-4 py-2 rounded-md bg-gray-100 hover:bg-gray-200">
+                        class="px-4 py-2 rounded-md bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200">
                     Cancel
                 </button>
 
