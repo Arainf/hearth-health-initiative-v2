@@ -28,6 +28,16 @@ class AIController extends Controller
         ];
     }
 
+    public function status()
+    {
+        $user = auth()->user();
+
+        return response()->json([
+            'ai_access' => (bool) $user?->ai_access,
+            'ai_ready' => (bool) $user?->ai_ready,
+        ]);
+    }
+
     public function check($id)
     {
         try {
