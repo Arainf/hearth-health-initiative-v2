@@ -4,14 +4,16 @@ import { setupYearFilterRecords } from "@/filters/filter-year.js";
 import { setupStatusFilterRecords } from "@/filters/filter-status.js";
 import { createTiptapEditor } from "@/tip-tap/index.js";
 import { formatExpandedRow } from "@/utilities/table-expanded-form.js";
+import { loadAiStatus } from "@/utilities/ai-status.js";
 
 
 let reportEditor = null
 
 window.$ = window.jQuery = $;
 
-const ai_Access = document.body.dataset.aiAccess === '1';
-const ai_Ready = document.body.dataset.aiReady === '1';
+let aiAccess = false;
+let aiReady = false;
+let table;
 const user_id = document.body.dataset.user;
 
 // Current record being edited/approved
@@ -584,6 +586,9 @@ function applyFilters(filters = {}) {
     syncFilterButton();
     loadStatusCounts()
     // Apply filters to DataTable
+    if (!table) {
+        return;
+    }
     table.ajax.reload();
 }
 
@@ -597,7 +602,10 @@ function applyPendingFilters() {
 /* ===============================
    DATATABLE INIT
 ================================ */
-const table = $("#records-table").DataTable({
+const initTable = async () => {
+    ({ aiAccess, aiReady } = await loadAiStatus());
+
+    table = $("#records-table").DataTable({
     serverSide: true,
     processing: false,
     pageLength: 20,
@@ -713,7 +721,7 @@ const table = $("#records-table").DataTable({
 
 
                 // Evaluate button - purple (only if not generated)
-                const evaluateBtn = !hasGenerated && ai_Access && ai_Ready
+                const evaluateBtn = !hasGenerated && aiAccess && aiReady
                     ? `<button class="hhi-btn hhi-btn-evaluate icon-only evaluate-btn"
                             title="Evaluate with AI"
 
@@ -757,9 +765,12 @@ const table = $("#records-table").DataTable({
         }
 
     ]
-});
+    });
 
-window.table = table;
+    window.table = table;
+};
+
+initTable();
 
 
 window.stageFilter = stageFilter;
@@ -1213,4 +1224,3 @@ $(document).on('click', '.evaluate-btn', async function (e) {
             .html('<i class="fa-solid fa-brain"></i>');
     }
 });
-
