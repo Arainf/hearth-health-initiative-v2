@@ -7,8 +7,30 @@ import { formatExpandedRow } from "@/utilities/table-expanded-form.js";
 
 window.$ = window.jQuery = $;
 
-const ai_Access = document.body.dataset.aiAccess === '1';
-const ai_Ready = document.body.dataset.aiReady === '1';
+let aiAccess = false;
+let aiReady = false;
+let table;
+
+async function loadAiStatus() {
+    try {
+        const response = await fetch("/api/ai/status", {
+            headers: {
+                Accept: "application/json"
+            }
+        });
+
+        if (!response.ok) {
+            console.warn("Failed to fetch AI status.");
+            return;
+        }
+
+        const data = await response.json();
+        aiAccess = data.ai_access === true || data.ai_access === 1;
+        aiReady = data.ai_ready === true || data.ai_ready === 1;
+    } catch (error) {
+        console.warn("Unable to load AI status.", error);
+    }
+}
 
 
 /* ===============================
@@ -176,6 +198,9 @@ function applyFilters(filters = {}) {
     syncFilterButton();
 
     // Apply filters to DataTable
+    if (!table) {
+        return;
+    }
     table.ajax.reload();
 }
 
@@ -193,7 +218,10 @@ function applyPendingFilters() {
 /* ===============================
    DATATABLE INIT
 ================================ */
-const table = $("#records-table").DataTable({
+const initTable = async () => {
+    await loadAiStatus();
+
+    table = $("#records-table").DataTable({
     serverSide: true,
     processing: false,
     pageLength: 20,
@@ -299,7 +327,7 @@ const table = $("#records-table").DataTable({
 
 
                 // Evaluate button - purple (only if not generated)
-                const evaluateBtn = !hasGenerated && ai_Access && ai_Ready
+                const evaluateBtn = !hasGenerated && aiAccess && aiReady
                     ? `<button class="hhi-btn hhi-btn-evaluate icon-only evaluate-btn"
                             title="Evaluate with AI"
                             data-index="${r.counter}"
@@ -341,9 +369,13 @@ const table = $("#records-table").DataTable({
             }
         }
     ]
-});
+    });
 
-window.table = table;
+    window.table = table;
+};
+
+initTable();
+
 
 /* ===============================
    FILTER MODULES

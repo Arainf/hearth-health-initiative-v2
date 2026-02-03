@@ -27,6 +27,7 @@ Route::middleware('auth')->group(function () {
     Route::put('/api/statusUpdate', [ApiController::class, 'update']);
 
     Route::get('/api/record/{id}', [ApiController::class, 'getSingleRecord']);
+    Route::get('/api/ai/status', [AIController::class, 'status']);
 
     //Get Status Count
     Route::get('/api/getStatusCount', [ApiController::class, 'countStatus']);

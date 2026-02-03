@@ -19,8 +19,6 @@
 
 <body
     data-user="{{ Auth::user()->name }}"
-    data-ai-access="{{ auth()->user()->ai_access ? '1' : '0' }}"
-    data-ai-ready="{{ auth()->user()->ai_ready ? '1' : '0' }}"
     x-data="{ sidebarCollapsed: localStorage.getItem('sidebar-collapsed') === 'true' }"
     x-init="$watch('sidebarCollapsed', v => localStorage.setItem('sidebar-collapsed', v))"
     class="
