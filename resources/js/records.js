@@ -12,6 +12,27 @@ let aiAccess = false;
 let aiReady = false;
 let table;
 
+async function loadAiStatus() {
+    try {
+        const response = await fetch("/api/ai/status", {
+            headers: {
+                Accept: "application/json"
+            }
+        });
+
+        if (!response.ok) {
+            console.warn("Failed to fetch AI status.");
+            return;
+        }
+
+        const data = await response.json();
+        aiAccess = data.ai_access === true || data.ai_access === 1;
+        aiReady = data.ai_ready === true || data.ai_ready === 1;
+    } catch (error) {
+        console.warn("Unable to load AI status.", error);
+    }
+}
+
 
 /* ===============================
    STATE & URL MANAGEMENT
@@ -199,7 +220,7 @@ function applyPendingFilters() {
    DATATABLE INIT
 ================================ */
 const initTable = async () => {
-    ({ aiAccess, aiReady } = await loadAiStatus());
+    await loadAiStatus();
 
     table = $("#records-table").DataTable({
     serverSide: true,
