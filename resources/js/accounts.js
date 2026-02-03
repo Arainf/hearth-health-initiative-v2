@@ -143,19 +143,19 @@ function buildFloatingMenu(row) {
     const isDoctor  = !!row.is_doctor;
 
     const $menu = $(`
-        <div class="floating-action-menu bg-white border shadow-xl rounded-xl py-2">
-            <button class="fam-item" data-action="toggle-admin">
+        <div class="floating-action-menu dark:bg-[#212121] dark:border-gray-600 border shadow-xl rounded-xl py-2">
+            <button class="fam-item text-gray-400" data-action="toggle-admin">
                 <i class="fa-solid fa-user-shield text-blue-600 w-4"></i>
                 ${isAdmin ? "Remove Admin" : "Make Admin"}
             </button>
 
-            <button class="fam-item" data-action="toggle-ai">
+            <button class="fam-item text-gray-400" data-action="toggle-ai">
                 <i class="fa-solid fa-brain text-green-600 w-4"></i>
                 ${hasAI ? "Disable AI Access" : "Enable AI Access"}
             </button>
 
-            <button class="fam-item" data-action="toggle-doctor">
-                <i class="fa-solid fa-stethoscope text-blue-400 w-4"></i>
+            <button class="fam-item text-gray-400" data-action="toggle-doctor">
+                <i class="fa-solid fa-stethoscope w-4"></i>
                 ${isDoctor ? "Remove Doctor" : "Make Doctor"}
             </button>
 
