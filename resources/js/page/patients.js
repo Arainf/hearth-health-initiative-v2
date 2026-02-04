@@ -70,7 +70,7 @@ const table = $("#patients").DataTable({
     `,
 
     ajax: {
-        url: "/table/patients",
+        url: window.page.table,
         type: "GET",
         data: function (d) {
             showLoading();

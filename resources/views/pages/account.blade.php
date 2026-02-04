@@ -1,4 +1,4 @@
-@vite(['resources/css/table.css','resources/js/accounts.js'])
+@vite(['resources/css/table.css','resources/js/page/accounts.js'])
 
 <x-app-layout>
     <x-record-sidebar id="recordSidebar" />
@@ -20,7 +20,7 @@
                 <button
                     type="button"
                     class="hhi-btn hhi-btn-create-another"
-                    onclick="window.location='{{ route('accounts.create') }}'">
+                    onclick="window.location='{{ route('account.create') }}'">
                     Create Account
                 </button>
             @endcan
@@ -82,4 +82,10 @@
     </div>
 
 </x-app-layout>
+
+<script>
+    window.page = {
+        table : "/table/{{$table}}"
+    }
+</script>
 

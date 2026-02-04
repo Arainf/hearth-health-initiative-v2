@@ -30,7 +30,7 @@
             @php
                 $count = null;
                 if (is_object($option) || is_array($option)) {
-                    $val    = data_get($option, $valueKey ?? 'id');
+                    $val    = data_get($option, $labelKey ?? 'id');
                     $label  = data_get($option, $labelKey ?? 'name');
                     $count  = data_get($option, $countKey ?? 'count');
 

@@ -1,4 +1,4 @@
-@vite(['resources/css/table.css','resources/js/archive.js'])
+@vite(['resources/css/table.css','resources/js/page/archive.js'])
 
 <x-app-layout>
     <div class=" relative flex flex-col h-screen bg-[#f9fbfc] px-2 pt-2 overflow-hidden">
@@ -10,9 +10,29 @@
                 <x-filter_search id="record-search" placeholder="Search archive" width="w-80" />
 
                 <div class="flex flex-row gap-1">
-                    <x-filter_year id="year-filter" />
-                    <x-filter_status id="status-filter" />
-                    <x-filter_reset />
+                    <x-dropdown
+                        name="year-filter"
+                        :options="$years"
+                        selected="{{$currentYear}}"
+                        all-value="all"
+                        all-display="all years"
+                        class="dropdown form-control"
+                    />
+
+                    <x-dropdown
+                        name="status-filter"
+                        :options="$status"
+                        selected="all status"
+                        all-value="all"
+                        all-display="all status"
+
+                        value-key="id"
+                        label-key="status_name"
+                        count-key="count"
+                        class="dropdown form-control"
+                    />
+                    <x-button.search_button onClick="applyPendingFilters()" />
+                    <x-button.reset_button onClick="resetFilters()" />
                 </div>
             </div>
         </div>
@@ -50,6 +70,10 @@
 <script>
     function printRow(patientId){
         window.open(`/export/pdf/${patientId}`, "_blank");
+    }
+
+    window.page = {
+        table : "/table/{{$table}}"
     }
 </script>
 

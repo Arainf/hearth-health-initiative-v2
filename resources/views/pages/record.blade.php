@@ -1,4 +1,4 @@
-@vite(['resources/css/table.css', 'resources/js/form.js', 'resources/js/patient-nav/patientNav.js'])
+@vite(['resources/css/table.css', 'resources/js/page/record.js', 'resources/js/patient-nav/patientNav.js'])
 
 <style>
     .card {
@@ -256,3 +256,9 @@
 @if(session('success'))
     setTimeout(() => $("#saveModal").removeClass("hidden"), 300);
 @endif
+
+<script>
+    window.page = {
+        table : "/table/{{$table}}"
+    }
+</script>

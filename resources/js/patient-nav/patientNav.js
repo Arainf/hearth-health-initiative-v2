@@ -29,7 +29,7 @@ const table = $("#patients-nav").DataTable({
     `,
 
     ajax: {
-        url: "/table/patientsNav",
+        url: window.page.table,
         type: "GET",
 
     },

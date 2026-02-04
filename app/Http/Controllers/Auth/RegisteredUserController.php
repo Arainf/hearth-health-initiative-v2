@@ -50,7 +50,7 @@ class RegisteredUserController extends Controller
         ]);
 
         return redirect()
-            ->route('accounts.create')
+            ->route('account.create')
             ->with('account_created', true);
 
     }

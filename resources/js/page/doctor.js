@@ -1,15 +1,25 @@
 import $ from "jquery";
 import DataTable from "datatables.net-dt";
-
 import { setupYearFilterRecords } from "@/filters/filter-year.js";
 import { setupStatusFilterRecords } from "@/filters/filter-status.js";
+import { createTiptapEditor } from "@/tip-tap/index.js";
 import { formatExpandedRow } from "@/utilities/table-expanded-form.js";
+
+
+// TODO: GROUP ALL THE RELATED FUNCTIONS AND COLLAPSED IT
+
+let reportEditor = null
 
 window.$ = window.jQuery = $;
 
 const ai_Access = document.body.dataset.aiAccess === '1';
 const ai_Ready = document.body.dataset.aiReady === '1';
+const user_id = document.body.dataset.user;
 
+// Current record being edited/approved
+let originalContent = '';
+let changeContent = '';
+let isEditMode = false;
 
 /* ===============================
    STATE & URL MANAGEMENT
@@ -20,10 +30,9 @@ const state = {
     search: new URLSearchParams(window.location.search).get('search') || ''
 };
 
+
 const generatingRecords = new Set();
 
-
-// Pending state for staged filter changes (not yet applied)
 const pending = {
     status: null,
     year: null,
@@ -41,69 +50,397 @@ function updateURL() {
 }
 
 /* ===============================
-   LOADING
+   SIDE PANEL
 ================================ */
-function showLoading() {
-    $("#tableLoading")
-        .removeClass("hidden -z-10")
-        .addClass("z-50");
+
+let currentGeneratedId = null;
+let currentRecordId = null;
+let originalPanelContent = ``;
+let panelEditMode = false;
+
+
+document.addEventListener('DOMContentLoaded', () => {
+    reportEditor = createTiptapEditor({
+        element: document.querySelector('[x-ref="editor"]'),
+        content: originalPanelContent,
+        editable: false,
+    });
+
+    window.ReportEditor = {
+        toggleBold: () => reportEditor.toggleBold(),
+        toggleItalic: () => reportEditor.toggleItalic(),
+        toggleUnderline: () => reportEditor.toggleUnderline(),
+        toggleStrike: () => reportEditor.toggleStrike(),
+        toggleHeading: l => reportEditor.toggleHeading(l),
+        toggleSize: s => reportEditor.toggleSize(s),
+        toggleBulletList: () => reportEditor.toggleBulletList(),
+        toggleOrderedList: () => reportEditor.toggleOrderedList(),
+        setAlign: a => reportEditor.setAlign(a),
+        setEditable: v => reportEditor.setEditable(v),
+        getHTML: () => reportEditor.getHTML(),
+        isActive: (a, opts) => reportEditor.isActive(a, opts),
+        setContent: html => reportEditor.setContent(html),
+    };
+});
+
+
+function openGeneratedPanel() {
+    $("#generatedPanel").removeClass("translate-x-full");
 }
 
-function hideLoading() {
-    $("#tableLoading")
-        .addClass("hidden -z-10")
-        .removeClass("z-50");
+function closeGeneratedPanel() {
+    clearSection();
+    $("#generatedPanel").addClass("translate-x-full");
+    $(`.view-generated-btn`).html('<i class="fa-solid fa-magnifying-glass"></i>');
+    contentFillers(false);
+    editBtnState(true);
+    panelEditMode = false;
+    currentGeneratedId = null;
+    currentRecordId = null;
 }
+function contentFillers(enabled) {
+    $("#panelContent").attr("contenteditable", enabled).html(originalPanelContent);
+}
+
+function editBtnState(isEditing) {
+    isEditMode = !isEditing;
+
+    reportEditor.setEditable(isEditMode);
+
+    if (isEditMode) {
+        $("#editorToolbar")
+            .css("display", "flex");
+    } else {
+        $("#editorToolbar")
+            .css("display", "none");
+    }
+
+
+    $("#panelEditBtn").html(
+        isEditMode
+            ? '<i class="fa-solid fa-times mr-1"></i> Cancel'
+            : '<i class="fa-solid fa-edit mr-1"></i> Edit'
+    );
+
+    // CANCEL → restore original
+    if (!isEditMode) {
+        reportEditor.setContent(originalPanelContent);
+    }
+}
+
+
+$("#panelEditBtn").on("click", function() {
+    editBtnState(isEditMode);
+});
+
+$("#closeGeneratedPanel").on("click", () => {
+    originalPanelContent = ` `;
+    closeGeneratedPanel();
+});
+
+$("#saveAndApproveBtn").on("click", function() {
+    $("#approveModal").removeClass("hidden");
+});
+
+$("#cancelApproveBtn").on("click", function() {
+    $("#approveModal").addClass("hidden");
+});
+
+function showSuccess(title, message) {
+    $("#successTitle").text(title);
+    $("#successMessage").text(message);
+    $("#successModal").removeClass("hidden");
+}
+
+$("#closeSuccessBtn").on("click", function() {
+    $("#successModal").addClass("hidden");
+});
+
+$("#closeModal").on("click", function() {
+    $("#reportModal").addClass("hidden");
+    currentRecordId = null;
+    originalContent = '';
+    isEditMode = false;
+});
+
+$("#cancelEditBtn").on("click", function() {
+    $("#editToggleBtn").click();
+});
+
+
+$("#reportModal").on("click", function(e) {
+    if (e.target === this) {
+        $(this).addClass("hidden");
+        currentRecordId = null;
+        originalContent = '';
+        isEditMode = false;
+    }
+});
+
+
+function setPanelLoading(isLoading) {
+    $("#panelSkeleton").toggle(isLoading);
+    $("#panelContent").toggleClass("opacity-50", isLoading);
+}
+
+/* ===============================
+   VIEW/EDIT GENERATED TEXT
+================================ */
+
+function setSection(data){
+    const name = [
+        data.patient.first_name ? data.patient.first_name : " " ,
+        data.patient.middle_name ? data.patient.middle_name : " ",
+        data.patient.last_name ? data.patient.last_name : " " ,
+        data.patient.suffix ? data.patient.suffix : " "
+    ]
+        .filter(Boolean)
+        .join(' ');
+
+
+    $(`#template-date`).text(data.created_at);
+    $(`#template-name`).text(name);
+    $(`#template-unit`).text(data.patient.unit);
+    $(`#template-dob`).text(data.patient.birthday);
+    $(`#template-age`).text(data.patient.age);
+    $(`#template-weight`).text(data.patient.weight);
+    $(`#template-height`).text(data.patient.height);
+    $(`#template-bmi`).text(data.patient.bmi);
+    $(`#template-contact`).text(data.patient.contact);
+
+    $(`#template-cholesterol`).text(data.cholesterol + ' mg/dl');
+    $(`#template-hdl`).text(data.hdl_cholesterol + ' mg/dl');
+    $(`#template-bp`).text(data.systolic_bp +  ' mmHg');
+    $(`#template-fbs`).text(data.fbs);
+    $(`#template-hbac`).text(data.hba1c + '%');
+}
+
+
+function clearSection(){
+    $(`#template-date`).text('');
+    $(`#template-name`).text('');
+    $(`#template-unit`).text('');
+    $(`#template-dob`).text('');
+    $(`#template-age`).text('');
+    $(`#template-weight`).text('');
+    $(`#template-height`).text('');
+    $(`#template-bmi`).text('');
+    $(`#template-contact`).text('');
+
+    $(`#template-cholesterol`).text('');
+    $(`#template-hdl`).text('');
+    $(`#template-bp`).text('');
+    $(`#template-fbs`).text('');
+    $(`#template-hbac`).text('');
+}
+
+$(document).on("click", ".view-generated-btn", function (e) {
+    e.stopPropagation();
+    $('.hhi-btn-view').prop('disabled', true);
+
+    $(this)
+        .addClass('is-loading')
+        .html('<i class="fa-solid fa-spinner fa-spin mr-1"></i><span>Preparing</span>').prop('disabled' , true);
+
+    const $tr = $(this).closest("tr");
+    const rowData = table.row($tr).data();
+
+    setSection(rowData);
+    currentGeneratedId = rowData.generated_id;
+    currentRecordId = rowData.id
+
+
+    $("#panelRecordId").text(`Generated ID #${currentGeneratedId}`);
+
+    setPanelLoading(true);
+    contentFillers(false);
+
+    fetch(`/api/getGeneratedContent/${currentGeneratedId}`)
+        .then(res => res.json())
+        .then(res => {
+            originalPanelContent = res.generated_text || "No generated content.";
+            reportEditor.setContent(originalPanelContent);
+
+            openGeneratedPanel();
+            const isApproved = res.status_id === 1;
+            if (isApproved) {
+                $("#panelSaveApproveBtn").addClass("hidden").prop('disabled', true);
+            } else {
+                $("#panelSaveApproveBtn").removeClass("hidden").prop('disabled', false);
+            }
+
+            $('.hhi-btn-view').prop('disabled', false);
+            $(this)
+                .removeClass('is-loading')
+                .html('<i class="fa-solid fa-magnifying-glass"></i>');
+
+        })
+        .catch(() => {
+            $("#panelContent").text("Failed to load content.");
+        })
+});
+
+
+// Save only
+$("#panelSaveBtn").on("click", async function () {
+    if (!currentRecordId) return;
+
+    const $btn = $(this);
+    // const content = $("#panelContent").text();
+    const content = reportEditor.getHTML();
+
+    if (content.trim() === originalPanelContent.trim()) {
+        alert("No changes to save.");
+        return;
+    }
+
+    try {
+        $btn.prop("disabled", true).text("Saving…");
+
+        const res = await fetch(`/api/saveRecord/${currentRecordId}`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content")
+            },
+            body: JSON.stringify({ content })
+        });
+
+        if (!res.ok) {
+            throw new Error(`Save failed (${res.status})`);
+        }
+
+        const data = await res.json();
+
+        if (!data.success && !data.updated) {
+            throw new Error("Server did not confirm save");
+        }
+
+        originalPanelContent = content;
+        closeGeneratedPanel();
+
+        showSuccess("Saved", "Generated report updated.");
+        table.ajax.reload(null, false);
+
+    } catch (err) {
+        console.error("Save error:", err);
+        alert("Failed to save report. Please try again.");
+    } finally {
+        $btn.prop("disabled", false).text("Save");
+    }
+});
+
+
+// Save & approve
+$("#panelSaveApproveBtn").on("click", async function () {
+    if (!currentGeneratedId || !currentRecordId) return;
+
+    const $btn = $(this);
+    // const content = $("#panelContent").text();
+
+    const content = reportEditor.getHTML();
+
+    try {
+        $btn.prop("disabled", true).text("Saving & approving…");
+
+        // 1️⃣ Save content
+        const saveRes = await fetch(`/api/saveRecord/${currentRecordId}`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content")
+            },
+            body: JSON.stringify({ content })
+        });
+
+        if (!saveRes.ok) {
+            throw new Error(`Save failed (${saveRes.status})`);
+        }
+
+        const saveData = await saveRes.json();
+
+        if (!saveData.success && !saveData.updated) {
+            throw new Error("Server did not confirm save");
+        }
+
+        // 2️⃣ Approve record
+        const approveRes = await fetch(`/api/statusUpdate`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content")
+            },
+            body: JSON.stringify({
+                id: currentRecordId,
+                status: 1,
+                approved: user_id
+            })
+        });
+
+        if (!approveRes.ok) {
+            throw new Error(`Approve failed (${approveRes.status})`);
+        }
+
+        closeGeneratedPanel();
+        showSuccess("Approved", "Record saved and approved.");
+
+        table.ajax.reload();
+        loadStatusCounts();
+
+    } catch (err) {
+        console.error("Save & approve error:", err);
+        alert("Failed to save and approve. Please try again.");
+    } finally {
+        $btn.prop("disabled", false).text("Save & Approve");
+    }
+});
+/* ===============================
+   LOAD STATUS COUNTS
+================================ */
+function loadStatusCounts() {
+    const year = state.year;
+    const apiUrl = year !== 'all'
+        ? `/api/getStatusCount?year=${year}&archived=false`
+        : `/api/getStatusCount?archived=false`;
+
+    fetch(apiUrl)
+        .then(res => res.json())
+        .then(data => {
+            let pending = 0;
+            let notEvaluated = 0;
+            let approved = 0;
+
+            data.forEach(status => {
+                const count = status.count || 0;
+                const name = status.status_name?.toLowerCase() || '';
+
+                if (name === 'pending') {
+                    pending = count;
+                } else if (name === 'not evaluated') {
+                    notEvaluated = count;
+                } else if (name === 'approved') {
+                    approved = count;
+                }
+            });
+
+            $("#pending-count").text(pending);
+            $("#not-evaluated-count").text(notEvaluated);
+            $("#approved-count").text(approved);
+        })
+        .catch(err => {
+            console.error('Error loading status counts:', err);
+        });
+}
+
 
 /* ===============================
    FILTER BUTTON STATE
 ================================ */
 const $filterBtn = $("#reset-filters");
-const $searchIcon = $("#filter-search-icon");
-const $resetIcon = $("#filter-reset-icon");
 const $searchInput = $("#record-search");
 
-function setFilterButtonMode(mode) {
-    if (mode === "reset") {
-        $filterBtn
-            .attr("data-mode", "reset")
-            .removeClass("bg-blue-600 hover:bg-blue-700 border-blue-600 text-white")
-            .addClass("bg-gray-100 hover:bg-gray-200 border-gray-300 text-gray-700");
 
-        $searchIcon.addClass("hidden").css("display", "none");
-        $resetIcon.removeClass("hidden").css("display", "");
-    } else {
-        $filterBtn
-            .attr("data-mode", "search")
-            .removeClass("bg-gray-100 hover:bg-gray-200 border-gray-300 text-gray-700")
-            .addClass("bg-blue-600 hover:bg-blue-700 border-blue-600 text-white");
-
-        $resetIcon.addClass("hidden").css("display", "none");
-        $searchIcon.removeClass("hidden").css("display", "");
-    }
-}
-
-function hasActiveFilters() {
-    const currentYear = new Date().getFullYear();
-
-    return (
-        (state.status && state.status !== 'all') ||
-        (state.year && state.year !== currentYear) ||
-        (state.search && state.search.trim() !== '')
-    );
-}
-
-
-function hasPendingChanges() {
-    return pending.status !== null || pending.year !== null || pending.search !== null;
-}
-
-function syncFilterButton() {
-    // Show reset icon if filters are active, search icon if not
-    setFilterButtonMode(hasActiveFilters() ? 'reset' : 'search');
-}
-
-function resetFilters() {
+window.resetFilters = function () {
     const currentYear = new Date().getFullYear();
 
     // Reset state
@@ -122,7 +459,6 @@ function resetFilters() {
     $("#year-filter-label").text(currentYear);
 
     updateURL();
-    syncFilterButton();
 
     // Reload dependent filters
     if (window.refreshStatusFilter) {
@@ -133,16 +469,10 @@ function resetFilters() {
 }
 
 
-/* ===============================
-   STAGE FILTERS (Don't apply yet)
-================================ */
 function stageFilter(type, value) {
     pending[type] = value;
 }
 
-/* ===============================
-   APPLY FILTERS (SAFE)
-================================ */
 function applyFilters(filters = {}) {
     // Update state from filters or pending
     if (filters.status !== undefined) {
@@ -172,17 +502,12 @@ function applyFilters(filters = {}) {
     // Update URL
     updateURL();
 
-    // Update UI
-    syncFilterButton();
+    loadStatusCounts()
 
-    // Apply filters to DataTable
     table.ajax.reload();
 }
 
-/* ===============================
-   APPLY ALL PENDING FILTERS
-================================ */
-function applyPendingFilters() {
+window.applyPendingFilters = function() {
     applyFilters({
         status: pending.status !== null ? pending.status : undefined,
         year: pending.year !== null ? pending.year : undefined,
@@ -195,13 +520,13 @@ function applyPendingFilters() {
 ================================ */
 const table = $("#records-table").DataTable({
     serverSide: true,
-    processing: false,
+    processing: true,
     pageLength: 20,
 
-    scrollY: "calc(100vh - 230px)",
+    scrollY: "calc(100vh - 380px)",
     scrollCollapse: true,
 
-    autoWidth: false,
+    autoWidth: true,
     paging: true,
     info: false,
     lengthChange: false,
@@ -214,15 +539,14 @@ const table = $("#records-table").DataTable({
     `,
 
     ajax: {
-        url: "/table/records",
+        url: window.page.table,
         type: "GET",
         data: d => {
             d.search = state.search || '';
             d.status = state.status || Date.now();
             d.year   = state.year || 'all';
-            showLoading();
+            loadStatusCounts();
         },
-        complete: hideLoading
     },
 
     columnDefs: [
@@ -230,37 +554,45 @@ const table = $("#records-table").DataTable({
         { targets: 1, width: "15%" },
         { targets: 2, width: "10%" },
         { targets: 3, width: "20%" },
-        { targets: 4, width: "10%" }
+        { targets: 4, width: "20%" }
     ],
 
     columns: [
         {
             data: "patient",
-            render: p => `
-                <div class="leading-tight">
-                    <div class="font-medium text-gray-900 text-sm">
-                        (${p.unit}) ${p.last_name}, ${p.first_name} ${p.middle_name ?? ""}
+            render: function(p) {
+                if (!p) return "—";
+                return `
+                    <div class="leading-tight">
+                        <div class="font-medium text-gray-900 dark:text-white text-sm">
+                            (${p.unit}) ${p.last_name}, ${p.first_name} ${p.middle_name ?? ""}
+                        </div>
+                        <div class="text-xs text-gray-500">${p.age} y.o.</div>
                     </div>
-                    <div class="text-xs text-gray-500">${p.age} y.o.</div>
-                </div>
-            `
+                `;
+            }
         },
         {
             data: "status.status_name",
-            orderable: false
+            orderable: false,
+            className: "CENTER"
         },
         {
             data: "staff",
-            orderable: false
+            render: function(data) {
+                return data || "—";
+            }
         },
         {
             data: "created_at",
-            render: d =>
-                new Date(d).toLocaleDateString("en-US", {
+            render: function(data) {
+                if (!data) return "—";
+                return new Date(data).toLocaleDateString("en-US", {
                     year: "numeric",
                     month: "long",
                     day: "numeric"
-                })
+                });
+            }
         },
         {
             data: null,
@@ -268,7 +600,8 @@ const table = $("#records-table").DataTable({
             className: "text-center",
             render: r => {
                 const hasGenerated = r.generated_id && r.generated_id !== null && r.generated_id !== '';
-                const hasDoctorApproval = r.doctor !== null && r.doctor !== '';
+                const hasDoctorApproval = r.doctor  !== null && r.doctor !== '';
+
 
                 const generatingButton = `
                 <div id="generateBtn-${r.id}" class="generate-btn hidden">
@@ -291,9 +624,9 @@ const table = $("#records-table").DataTable({
 
                 // View button - blue (only if generated)
                 const viewBtn =
-                    `<button class="hhi-btn hhi-btn-view icon-only view-generated-btn" ${!hasGenerated ? "disabled" : ' '}
+                    `<button class="hhi-btn hhi-btn-view icon-only view-generated-btn" ${!hasGenerated ? 'disabled' : ' '}
                             title="${!hasGenerated ? "No Evaluation" : 'View Evaluation'}"
-                            data-id="${r.generated_id}">
+                            data-id="${r.generated_id ? r.generated_id : ' '}">
                        <i class="fa-solid fa-magnifying-glass"></i>
                     </button>`
 
@@ -302,14 +635,15 @@ const table = $("#records-table").DataTable({
                 const evaluateBtn = !hasGenerated && ai_Access && ai_Ready
                     ? `<button class="hhi-btn hhi-btn-evaluate icon-only evaluate-btn"
                             title="Evaluate with AI"
-                            data-index="${r.counter}"
+
                             data-record-id="${r.id}">
                         <i class="fa-solid fa-brain"></i>
                     </button>`
                     : '';
 
 
-                const printBtnStyled = hasDoctorApproval
+
+                const printBtnStyled = hasDoctorApproval && hasGenerated
                     ? `<button class="hhi-btn hhi-btn-print icon-only"
                             title="Print"
                             onclick="printRow('${r.id}')">
@@ -340,23 +674,86 @@ const table = $("#records-table").DataTable({
             `;
             }
         }
+
     ]
 });
 
 window.table = table;
 
-/* ===============================
-   FILTER MODULES
-================================ */
-// Export functions for filter modules to use
 window.stageFilter = stageFilter;
 window.applyPendingFilters = applyPendingFilters;
 window.getCurrentYear = () => state.year;
 window.getPendingYear = () => pending.year;
 
-// Initialize filters
 setupYearFilterRecords( state.year === 'all' ? null : state.year);
 setupStatusFilterRecords(state.status);
+
+
+$searchInput.off('input').on('input', () => {
+    const searchTerm = $searchInput.val().trim();
+    stageFilter('search', searchTerm);
+});
+
+$filterBtn.off('click').on('click', (e) => {
+    e.preventDefault();
+    const mode = $filterBtn.attr("data-mode");
+
+    if (mode === "reset") {
+        // Reset all filters
+        resetFilters();
+    } else {
+        // Search mode - apply all pending filters
+        applyPendingFilters();
+    }
+});
+
+window.addEventListener('popstate', () => {
+    const params = new URLSearchParams(window.location.search);
+    const currentYear = new Date().getFullYear();
+
+    applyFilters({
+        status: params.get('status') || 'all',
+        year: params.get('year') || currentYear,
+        search: params.get('search') || ''
+    });
+});
+
+
+
+
+$searchInput.on("input", () => {
+    const searchTerm = $searchInput.val().trim();
+    stageFilter("search", searchTerm);
+    setFilterButtonMode(searchTerm.length > 0 ? 'search' : 'reset');
+
+});
+
+$(document).on(
+    "click",
+    ".year-filter-dropdown-item, #year-filter-menu .dropdown-item",
+    function () {
+        const value = $(this).data("value");
+
+        stageFilter("year", value);
+
+        setFilterButtonMode("search");
+
+    }
+);
+
+
+$(document).on(
+    "click",
+    ".status-filter-dropdown-item, #status-filter-menu .dropdown-item",
+    function () {
+        const status = $(this).data("value");
+
+        stageFilter("status", status);
+        setFilterButtonMode("search");
+
+    }
+);
+
 
 
 /* ===============================
@@ -404,7 +801,7 @@ $("#records-table tbody").on("click", ".row-toggle", function (e) {
 //     }
 //
 //     return `
-//         <div class="bg[var(--clr-surface-a10)]] border border-gray-200 rounded-lg p-4 text-sm relative record-edit-container"
+//         <div class="bg-[var(--clr-surface-a10)] border border-[var(--clr-surface-a30)] rounded-lg p-4 text-sm relative record-edit-container"
 //              data-record-id="${recordId}">
 //            ${extendedActions}
 //             <!-- MAIN GRID -->
@@ -438,10 +835,10 @@ $("#records-table tbody").on("click", ".row-toggle", function (e) {
 // function renderEditableInput(label, fieldName, value, recordId) {
 //     return `
 //         <div>
-//             <label class="block min:text-md text-gray-500 mb-1 text-start">${label}</label>
+//             <label class="block min:text-md text-[var(--clr-text-a30)] mb-1 text-start">${label}</label>
 //             <input type="number"
 //                    step="0.01"
-//                    class="record-field w-full px-3 py-2 text-sm bg-gray-100 border rounded disabled:bg-gray-100"
+//                    class="record-field w-full px-3 py-2 text-sm bg-[var(--clr-surface-a0)] border border-[var(--clr-surface-a30)] rounded disabled:bg-[var(--clr-surface-a10)] disabled:text-[var(--clr-text-a50)]"
 //                    data-field="${fieldName}"
 //                    data-record-id="${recordId}"
 //                    value="${value ?? ""}"
@@ -449,13 +846,14 @@ $("#records-table tbody").on("click", ".row-toggle", function (e) {
 //         </div>
 //     `;
 // }
+//
 // function renderRiskRadio(label, fieldName, value, recordId) {
 //     const yesChecked = value ? 'checked' : '';
 //     const noChecked = !value ? 'checked' : '';
 //
 //     return `
 //         <div>
-//             <div class="text-sm font-medium text-gray-600 mb-2 text-start">
+//             <div class="text-sm font-medium text-[var(--clr-text-a20)] mb-2 text-start">
 //                 ${label}
 //             </div>
 //
@@ -464,7 +862,7 @@ $("#records-table tbody").on("click", ".row-toggle", function (e) {
 //                 <label class="
 //                     flex items-center gap-3 px-3 py-2 rounded-lg border
 //                     text-base font-medium select-none
-//                     radio-readonly border-gray-300
+//                     radio-readonly border-[var(--clr-surface-a30)]
 //                 ">
 //                     <input type="radio"
 //                            class="risk-field radio-readonly radio-yes w-5 h-5"
@@ -479,7 +877,7 @@ $("#records-table tbody").on("click", ".row-toggle", function (e) {
 //                 <label class="
 //                     flex items-center gap-3 px-3 py-2 rounded-lg border
 //                     text-base font-medium select-none
-//                     radio-readonly border-gray-300
+//                     radio-readonly border-[var(--clr-surface-a30)]
 //                 ">
 //                     <input type="radio"
 //                            class="risk-field radio-readonly radio-no w-5 h-5"
@@ -493,6 +891,7 @@ $("#records-table tbody").on("click", ".row-toggle", function (e) {
 //         </div>
 //     `;
 // }
+//
 
 /* ===============================
    EDIT FUNCTIONALITY
@@ -671,128 +1070,6 @@ $(document).on('click', '.save-record-btn', function(e) {
     });
 });
 
-/* ===============================
-   VIEW GENERATED TEXT MODAL
-================================ */
-
-function setSection(data){
-
-
-    const name = [
-        data.patient.first_name ? data.patient.first_name : " " ,
-        data.patient.middle_name ? data.patient.middle_name : " ",
-        data.patient.last_name ? data.patient.last_name : " " ,
-        data.patient.suffix ? data.patient.suffix : " "
-    ]
-        .filter(Boolean)
-        .join(' ');
-
-    $(`.xte`).removeClass("opacity-50");
-    $(`#template-date`).text(data.created_at);
-    $(`#template-name`).text(name);
-    $(`#template-unit`).text(data.patient.unit);
-    $(`#template-dob`).text(data.patient.birthday);
-    $(`#template-age`).text(data.patient.age);
-    $(`#template-weight`).text(data.patient.weight);
-    $(`#template-height`).text(data.patient.height);
-    $(`#template-bmi`).text(data.patient.bmi);
-    $(`#template-contact`).text(data.patient.contact);
-
-    $(`#template-cholesterol`).text(data.cholesterol + ' mg/dl');
-    $(`#template-hdl`).text(data.hdl_cholesterol + ' mg/dl');
-    $(`#template-bp`).text(data.systolic_bp +  ' mmHg');
-    $(`#template-fbs`).text(data.fbs);
-    $(`#template-hbac`).text(data.hba1c + '%');
-}
-
-
-function clearSection(){
-    $(`.xte`).addClass("opacity-50");
-    $(`#template-date`).text('');
-    $(`#template-name`).text('');
-    $(`#template-unit`).text('');
-    $(`#template-dob`).text('');
-    $(`#template-age`).text('');
-    $(`#template-weight`).text('');
-    $(`#template-height`).text('');
-    $(`#template-bmi`).text('');
-    $(`#template-contact`).text('');
-
-    $(`#template-cholesterol`).text('');
-    $(`#template-hdl`).text('');
-    $(`#template-bp`).text('');
-    $(`#template-fbs`).text('');
-    $(`#template-hbac`).text('');
-}
-
-let originalPanelContent = ``;
-$("#closeGeneratedPanel").on("click", () => {
-    originalPanelContent = ` `;
-    closeGeneratedPanel();
-});
-
-function closeGeneratedPanel() {
-    clearSection();
-    $("#generatedPanel").addClass("translate-x-full");
-    $(`.view-generated-btn`).html('<i class="fa-solid fa-magnifying-glass"></i>');
-}
-$(document).on('click', '.view-generated-btn', function(e) {
-    e.stopPropagation();
-    $('.hhi-btn-view').prop('disabled', true);
-
-    $(this)
-        .html('<i class="fa-solid fa-spinner fa-spin mr-1"></i>').prop('disabled' , true);
-
-    const $tr = $(this).closest("tr");
-    const rowData = table.row($tr).data();
-    const generatedId = $(this).data('id');
-
-    setSection(rowData);
-
-    $("#panelRecordId").text(`Generated ID #${generatedId}`);
-
-    // $('#reportModal').removeClass('hidden');
-    // $('#modalContent').text('Loading…');
-
-
-    fetch(`/api/getGeneratedContent/${generatedId}`)
-        .then(res => res.json())
-        .then(res => {
-            originalPanelContent = res.generated_text || "No generated content.";
-            $(`#content`).html(originalPanelContent);
-            openGeneratedPanel();
-            $('.hhi-btn-view').prop('disabled', false);
-            $(this)
-                .html('<i class="fa-solid fa-magnifying-glass"></i>');
-        })
-        .catch(() => {
-            $("#panelContent").text("Failed to load content.");
-        })
-        .finally(() => {
-            setPanelLoading(false);
-        });
-
-});
-
-function openGeneratedPanel() {
-    $(`#panelEditBtn`).hide();
-    $("#generatedPanel").removeClass("translate-x-full");
-}
-
-function setPanelLoading(isLoading) {
-    $("#panelSkeleton").toggle(isLoading);
-    $("#panelContent").toggleClass("opacity-50", isLoading);
-}
-
-$('#closeModal').on('click', () => {
-    $('#reportModal').addClass('hidden');
-});
-
-$('#reportModal').on('click', function(e) {
-    if (e.target === this) {
-        $(this).addClass('hidden');
-    }
-});
 
 /* ===============================
    EVALUATE RECORD
@@ -854,77 +1131,3 @@ $(document).on('click', '.evaluate-btn', async function (e) {
             .html('<i class="fa-solid fa-brain"></i>');
     }
 });
-
-
-/* ===============================
-   EVENT HANDLERS
-================================ */
-// Search input - stage changes, don't apply
-$searchInput.off('input').on('input', () => {
-    const searchTerm = $searchInput.val().trim();
-    stageFilter('search', searchTerm);
-});
-
-// Handle search/reset button
-$filterBtn.off('click').on('click', (e) => {
-    e.preventDefault();
-    const mode = $filterBtn.attr("data-mode");
-
-    if (mode === "reset") {
-        // Reset all filters
-        resetFilters();
-    } else {
-        // Search mode - apply all pending filters
-        applyPendingFilters();
-    }
-});
-
-// Handle browser back/forward
-window.addEventListener('popstate', () => {
-    const params = new URLSearchParams(window.location.search);
-    const currentYear = new Date().getFullYear();
-
-    applyFilters({
-        status: params.get('status') || 'all',
-        year: params.get('year') || currentYear,
-        search: params.get('search') || ''
-    });
-});
-
-
-/* ===============================
-   INIT
-================================ */
-
-$searchInput.on("input", () => {
-    const searchTerm = $searchInput.val().trim();
-    stageFilter("search", searchTerm);
-    setFilterButtonMode(searchTerm.length > 0 ? 'search' : 'reset');
-
-});
-
-$(document).on(
-    "click",
-    ".year-filter-dropdown-item, #year-filter-menu .dropdown-item",
-    function () {
-        const value = $(this).data("value");
-
-        stageFilter("year", value);
-
-        setFilterButtonMode("search");
-
-    }
-);
-
-
-$(document).on(
-    "click",
-    ".status-filter-dropdown-item, #status-filter-menu .dropdown-item",
-    function () {
-        const status = $(this).data("value");
-
-        stageFilter("status", status);
-        setFilterButtonMode("search");
-
-    }
-);

@@ -1,4 +1,4 @@
-@vite(['resources/css/table.css','resources/js/doctor.js'])
+@vite(['resources/css/table.css','resources/js/page/doctor.js'])
 
 <x-app-layout>
     <div class="
@@ -32,10 +32,9 @@
                         count-key="count"
                         class="dropdown form-control"
                     />
-                    <x-filter_reset />
 
-                    <!--Search Tag: search_patient.php-->
-                    <x-search_button />
+                    <x-button.search_button onClick="applyPendingFilters()" />
+                    <x-button.reset_button onClick="resetFilters()" />
                 </div>
             </div>
         </div>
@@ -159,4 +158,6 @@
     function printRow(patientId){
         window.open(`/export/pdf/${patientId}`, "_blank");
     }
+
+    window.page = { table : "/table/{{$table}}" }
 </script>

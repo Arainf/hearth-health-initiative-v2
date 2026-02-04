@@ -1,4 +1,4 @@
-@vite(['resources/css/table.css','resources/js/patients.js'])
+@vite(['resources/css/table.css','resources/js/page/patients.js'])
 
 <x-app-layout>
 
@@ -14,11 +14,8 @@
             <div class="flex flex-row gap-1">
                 <x-filters />
 
-                <!--Reset Tag: filter_reset.php-->
-                <x-filter_reset />
-
-                <!--Search Tag: search_patient.php-->
-                <x-search_button />
+                <x-button.search_button onClick="applyPendingFilters()" />
+                <x-button.reset_button onClick="resetFilters()" />
             </div>
 
         </div>
@@ -93,4 +90,10 @@
     </div>
 </div>
 
+
+<script>
+    window.page = {
+        table : "/table/{{$table}}"
+    }
+</script>
 

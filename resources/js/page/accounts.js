@@ -45,7 +45,7 @@ const table = $("#accounts-table").DataTable({
     `,
 
     ajax: {
-        url: "/table/accounts",
+        url: window.page.table,
         type: "GET",
         data: d => {
             d.search = $("#record-search").val();

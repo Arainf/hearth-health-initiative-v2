@@ -1,4 +1,4 @@
-@vite(['resources/css/table.css','resources/js/records.js'])
+@vite(['resources/css/table.css','resources/js/page/dashboard.js'])
 
 <x-app-layout>
     <div class=" relative flex flex-col h-screen bg-[#f9fbfc] px-2 pt-2 overflow-hidden">
@@ -31,10 +31,9 @@
                         count-key="count"
                         class="dropdown form-control"
                     />
-                    <x-filter_reset />
+                    <x-button.search_button onClick="applyPendingFilters()" />
+                    <x-button.reset_button onClick="resetFilters()" />
 
-                    <!--Search Tag: search_patient.php-->
-                    <x-search_button />
                 </div>
             </div>
         </div>
@@ -130,5 +129,8 @@
         window.open(`/export/pdf/${patientId}`, "_blank");
     }
 
+    window.page = {
+        table : "/table/{{$table}}",
+    }
 
 </script>

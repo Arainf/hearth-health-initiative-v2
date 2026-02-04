@@ -35,7 +35,7 @@
     <div class="flex h-full w-full gap-3 p-2 transition-all duration-300 ">
 
         <!-- Sidebar -->
-        @if(!request()->routeIs('form'))
+        @if(!request()->routeIs('record'))
             <aside
                 class="hidden md:flex shrink-0 transition-all duration-300"
                 :class="sidebarCollapsed ? 'w-[80px]' : 'w-[260px] lg:w-[280px]'"
@@ -64,6 +64,7 @@
                 rounded-xl
                 transition-all
                 duration-300
+                overflow-x-scroll
                 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]
             "
             :class="sidebarCollapsed ? 'pl-1' : 'pl-0'"

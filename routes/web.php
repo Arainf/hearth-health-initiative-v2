@@ -4,9 +4,14 @@ use App\Http\Controllers\AIController;
 use App\Http\Controllers\ApiController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\DeleteController;
+use App\Http\Controllers\Pages\AccountPageController;
+use App\Http\Controllers\Pages\ArchivePageController;
+use App\Http\Controllers\Pages\ComparePageController;
 use App\Http\Controllers\Pages\DashboardPageController;
 use App\Http\Controllers\Pages\DoctorPageController;
 use App\Http\Controllers\Dump\trashController;
+use App\Http\Controllers\Pages\PatientPageController;
+use App\Http\Controllers\Pages\RecordPageController;
 use App\Http\Controllers\PatientController;
 use App\Http\Controllers\Pdf\PdfController;
 use App\Http\Controllers\ProfileController;
@@ -19,15 +24,10 @@ Route::get('/', function () {
 });
 
 Route::middleware('auth')->group(function () {
-    Route::get('/table/records', [TableController::class, 'records']);
-    Route::get('/table/patients', [TableController::class, 'patients']);
-    Route::get('/table/patientsNav', [TableController::class, 'patientsNav']);
     Route::get('/table/patients/{id}/records', [TableController::class, 'patientsOwnRecord']);
     Route::get('/api/statuses', [ApiController::class, 'getStatuses']);
     Route::put('/api/statusUpdate', [ApiController::class, 'update']);
-
     Route::get('/api/record/{id}', [ApiController::class, 'getSingleRecord']);
-
     //Get Status Count
     Route::get('/api/getStatusCount', [ApiController::class, 'countStatus']);
     Route::get('/api/getRecordYears', [ApiController::class, 'getRecordYears']);
@@ -36,7 +36,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/api/getGeneratedContent/{id}', [ApiController::class, 'getGeneratedContent']);
     Route::get('/export/pdf/{id}', [PdfController::class, 'export']);
 
-    Route::get('/patients', [PatientController::class, 'index'])->name('patient');;
     Route::get('/patients/{id}', [PatientController::class, 'show'])->name('patientFiles');
     Route::get('/patients/{id}/edit', [PatientController::class, 'edit'])->name('patientEdit');
     Route::put('/patients/{id}', [PatientController::class, 'update']);
@@ -51,7 +50,6 @@ Route::middleware('auth')->group(function () {
     Route::post('/records/store', [RecordController::class, 'store'])->name('records.store');
 
     Route::delete('/api/patient/delete/{id}', [DeleteController::class, 'deletePatient']);
-
 });
 
 Route::middleware('auth')->group(function () {
@@ -60,49 +58,67 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/compare', function () {
-        return view('compare');
-    })->name('compare');
-
-    Route::get('/editGenerate', function () {
-        return view('edit');
-    })->name('edit');
-
-    Route::get('/createForm', function () {
-        return view('form');
-    })->name('form');
-
-
-});
 
 Route::middleware(['auth', 'can:isAdmin'])->group(function () {
-    Route::get('/table/accounts', [TableController::class, 'accounts']);
     Route::get('/table/archive-records', [TableController::class, 'archiveRecords']);
     Route::get('/api/getArchiveYears', [ApiController::class, 'getArchiveYears']);
-    Route::get('/archive', function(){
-        return view('archive');
-    })->name('archive');
     Route::delete('/api/accounts/delete/{id}', [ApiController::class, 'deleteUser']);
     Route::put('/api/accounts/{id}/ai-access', [ApiController::class, 'aiAccess']);
     Route::put('/api/accounts/{id}/admin', [ApiController::class, 'adminAccess']);
     Route::put('/api/accounts/{id}/doctor', [ApiController::class, 'doctorAccess']);
-    Route::get('/accounts/create', [RegisteredUserController::class, 'create'])->name('accounts.create');
-    Route::get('/account', function () {
-        return view('account');
-    })->name('account');
+
     Route::post('/accounts', [RegisteredUserController::class, 'store'])
         ->name('accounts.store');
 });
 
+/** NEW ROUTES WITH ENCRYPTED ROUTE */
+
 Route::middleware('auth')->group(function () {
-    $doctor = trashController::encrypt('doctor');
-    Route::get("/{$doctor}", [DoctorPageController::class, 'index'])->name('doctor');
+    $core = trashController::encrypt('doctor');
+    Route::get("/{$core}", [DoctorPageController::class, 'index'])->name('doctor');
+    Route::get("/table/{$core}", [DoctorPageController::class, 'table']);
 });
 
 Route::middleware('auth')->group(function () {
-    $dashboard = trashController::encrypt('dashboard');
-    Route::get("/{$dashboard}", [DashboardPageController::class, 'index'])->name('dashboard');
+    $core = trashController::encrypt('dashboard');
+    Route::get("/{$core}", [DashboardPageController::class, 'index'])->name('dashboard');
+    Route::get("/table/{$core}", [DashboardPageController::class, 'table']);
 });
+
+Route::middleware('auth')->group(function () {
+    $core = trashController::encrypt('account');
+    Route::get("/{$core}", [AccountPageController::class, 'index'])->name('account');
+    Route::get("/table/{$core}", [AccountPageController::class, 'table']);
+
+    Route::get("/create/{$core}", [RegisteredUserController::class, 'create'])->name('account.create');
+});
+
+Route::middleware('auth')->group(function () {
+   $core = trashController::encrypt('archive');
+   Route::get("/{$core}", [ArchivePageController::class, 'index'])->name('archive');
+   Route::get("/table/{$core}", [AccountPageController::class, 'table']);
+});
+
+Route::middleware('auth')->group(function () {
+    $core = trashController::encrypt('patient');
+    Route::get("/{$core}", [PatientPageController::class, 'index'])->name('patient');
+    Route::get("/table/{$core}", [PatientPageController::class, 'table']);
+});
+
+Route::middleware('auth')->group(function () {
+   $core = trashController::encrypt('compare');
+   Route::get("/{$core}", [ComparePageController::class, 'index'])->name('compare');
+
+});
+
+Route::middleware('auth')->group(function () {
+    $core = trashController::encrypt('record');
+    Route::get("/{$core}", [RecordPageController::class, 'index'])->name('record');
+    Route::get("/table/{$core}", [RecordPageController::class, 'table']);
+
+});
+
+
+Route::get('/unauthorized', function () { return view('pages.unauthorize'); })->name('unauthorized');
 
 require __DIR__.'/auth.php';

@@ -170,33 +170,33 @@
                 </x-navigation.nav-link>
 
                 <!-- Archive Records -->
-{{--                <x-navigation.nav-link--}}
-{{--                    :href="route('archive')"--}}
-{{--                    :active="request()->routeIs('archive')"--}}
-{{--                    :style="2"--}}
-{{--                    title="Archive Records"--}}
-{{--                >--}}
-{{--                    <div--}}
-{{--                        class="flex items-center w-full"--}}
-{{--                        :class="sidebarCollapsed ? 'justify-center' : ''"--}}
-{{--                    >--}}
-{{--                        <i class="--}}
-{{--                            fa-solid fa-box-archive w-5 transition-colors--}}
-{{--                            {{ request()->routeIs('archive')--}}
-{{--                                ? 'text-purple-600'--}}
-{{--                                : 'text-gray-400 group-hover:text-purple-600'--}}
-{{--                            }}--}}
-{{--                        "></i>--}}
+                <x-navigation.nav-link
+                    :href="route('archive')"
+                    :active="request()->routeIs('archive')"
+                    :style="2"
+                    title="Archive Records"
+                >
+                    <div
+                        class="flex items-center w-full"
+                        :class="sidebarCollapsed ? 'justify-center' : ''"
+                    >
+                        <i class="
+                            fa-solid fa-box-archive w-5 transition-colors
+                            {{ request()->routeIs('archive')
+                                ? 'text-purple-600'
+                                : 'text-gray-400 group-hover:text-purple-600'
+                            }}
+                        "></i>
 
-{{--                        <span--}}
-{{--                            x-show="!sidebarCollapsed"--}}
-{{--                            x-transition--}}
-{{--                            class="ml-4 text-sm font-medium"--}}
-{{--                        >--}}
-{{--                            Archive--}}
-{{--                        </span>--}}
-{{--                    </div>--}}
-{{--                </x-navigation.nav-link>--}}
+                        <span
+                            x-show="!sidebarCollapsed"
+                            x-transition
+                            class="ml-4 text-sm font-medium"
+                        >
+                            Archive
+                        </span>
+                    </div>
+                </x-navigation.nav-link>
             @endif
 
 
@@ -211,7 +211,7 @@
             <div class="grid grid-cols-2 gap-3">
 
                 <a
-                    href="{{ route('form') }}"
+                    href="{{ route('record') }}"
                     class="flex flex-col items-center justify-center p-3 rounded-lg
                bg-[var(--bg-card)] hover:bg-[var(--clr-surface-a20)] transition"
                 >
@@ -236,7 +236,7 @@
               <div class="grid grid-rows-2 gap-3">
 
                   <a
-                      href="{{ route('form') }}"
+                      href="{{ route('record') }}"
                       class="flex flex-col items-center justify-center p-2 rounded-lg
                bg-[var(--bg-card)] hover:bg-[var(--bg-card-hover)] transition"
                   >
