@@ -31,13 +31,12 @@ class AIController extends Controller
     public function check($id)
     {
         try {
-            $record = Records::with(['patient', 'status', 'generated_report'])->find($id);
+            $record = Records::with(['patient.family_history', 'status', 'generated_report'])->find($id);
 
             if (!$record) {
                 return ['found' => false, 'message' => 'Record not found'];
             }
 
-            // Check if patient exists (might be deleted)
             if (!$record->patient) {
                 return ['found' => false, 'message' => 'Patient associated with this record no longer exists'];
             }
@@ -51,7 +50,6 @@ class AIController extends Controller
                 ];
             }
 
-            // Validate required data for AI evaluation
             $inputData = $record->getAIInputData();
             if (empty($inputData['record']) || empty($inputData['patient'])) {
                 return [
@@ -73,6 +71,41 @@ class AIController extends Controller
             Log::error('Error checking record', ['record_id' => $id, 'error' => $e->getMessage()]);
             return ['found' => false, 'message' => 'Error checking record: ' . $e->getMessage()];
         }
+    }
+
+    public function formatJsonPayload($record)
+    {
+        return [
+            'record_information' => [
+                'cholesterol[mg/dl]' => $record->cholesterol ?? '',
+                'high_density_lipoprotein_cholesterol[mg/dl]' => $record->hdl_cholesterol ?? '',
+                'systolic_blood_pressure[mmHg]' => $record->systolic_bp ?? '',
+                'fasting_blood_sugar' => $record->fbs ?? '',
+                'HbA1c' => $record->hba1c ?? '',
+                'current' => [
+                    'has_hypertension' => $record->hypertension ? 'Yes' : 'No',
+                    'has_diabetes' => $record->diabetes ? 'Yes' : 'No',
+                    'is_smoking' => $record->smoking ? 'Yes' : 'No',
+                ]
+            ],
+            'patient_information' => [
+                'first_name' => $record->patient->first_name ?? '',
+                'last_name' => $record->patient->last_name ?? '',
+                'middle_name' => $record->patient->middle_name ?? '',
+                'suffix' => $record->patient->suffix ?? '',
+                'age' => $record->patient->age ?? '',
+                'sex' => $record->patient->sex ?? '',
+                'height' => $record->patient->height ?? '',
+                'weight' => $record->patient->weight ?? '',
+                'bmi' => $record->patient->bmi ?? '',
+                'family_history' => [
+                    'has_hypertension' => $record->patient->family_history?->Hypertension ? 'Yes' : 'No',
+                    'has_diabetes_mellitus' => $record->patient->family_history?->Diabetes ? 'Yes' : 'No',
+                    'heart_attack_under_60y' => $record->patient->family_history?->Heart_Attack ? 'Yes' : 'No',
+                    'has_cholesterol' => $record->patient->family_history?->Cholesterol ? 'Yes' : 'No',
+                ]
+            ]
+        ];
     }
 
     public function editChangesSave(Request $request, $id)
@@ -139,7 +172,7 @@ class AIController extends Controller
         }
 
         $record = $check['record'];
-        $inputData = $check['input_data'];
+        $inputData = $this->formatJsonPayload($record);
 
         ksort($inputData);
 
@@ -148,6 +181,8 @@ class AIController extends Controller
         }, $inputData);
 
         $ai = $this->getUserAIConfig();
+
+/** you can add " - Print all data receive from the prompt " to check which data has been passed to the ai */
 
         $systemPrompt = $ai['prompt'] . '
                  Output rules:
@@ -166,50 +201,26 @@ class AIController extends Controller
 
                 ';
 
+
+/**   You can toggle between openAI and HuggingFace */
+
         try {
-            $response = Http::withOptions([
-                'verify' => false,
-                'timeout' => 300,
-            ])->withHeaders([
-                'Authorization' => 'Bearer ' . $ai['api_key'],
-                'Content-Type' => 'application/json',
-            ])->post('https://api.openai.com/v1/chat/completions', [
-                'model' => 'gpt-4.1',
-//                gpt-5-nano-2025-08-07
-
-                // 🔒 DETERMINISM CONTROLS
-                'temperature' => 0.0,
-                'top_p' => 1.0,
-                'frequency_penalty' => 0.0,
-                'presence_penalty' => 0.0,
-                // 'max_tokens' => 1200,
-
-                'messages' => [
-                    [
-                        'role' => 'system',
-                        'content' => $systemPrompt,
-                    ],
-                    [
-                        'role' => 'user',
-                        'content' => 'Patient info: ' . json_encode($inputData, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
-                    ],
-                ],
-            ]);
 //            $response = Http::withOptions([
 //                'verify' => false,
 //                'timeout' => 300,
 //            ])->withHeaders([
 //                'Authorization' => 'Bearer ' . $ai['api_key'],
 //                'Content-Type' => 'application/json',
-//            ])->post('https://router.huggingface.co/v1/chat/completions', [
-//                'model' => 'openai/gpt-oss-20b',
+//            ])->post('https://api.openai.com/v1/chat/completions', [
+//                'model' => 'gpt-4.1',
+////                gpt-5-nano-2025-08-07
 //
 //                // 🔒 DETERMINISM CONTROLS
 //                'temperature' => 0.0,
 //                'top_p' => 1.0,
 //                'frequency_penalty' => 0.0,
 //                'presence_penalty' => 0.0,
-//                'seed' => 42,
+//                // 'max_tokens' => 1200,
 //
 //                'messages' => [
 //                    [
@@ -222,6 +233,33 @@ class AIController extends Controller
 //                    ],
 //                ],
 //            ]);
+            $response = Http::withOptions([
+                'verify' => false,
+                'timeout' => 300,
+            ])->withHeaders([
+                'Authorization' => 'Bearer ' . $ai['api_key'],
+                'Content-Type' => 'application/json',
+            ])->post('https://router.huggingface.co/v1/chat/completions', [
+                'model' => 'openai/gpt-oss-20b',
+
+                // 🔒 DETERMINISM CONTROLS
+                'temperature' => 0.0,
+                'top_p' => 1.0,
+                'frequency_penalty' => 0.0,
+                'presence_penalty' => 0.0,
+                'seed' => 42,
+
+                'messages' => [
+                    [
+                        'role' => 'system',
+                        'content' => $systemPrompt,
+                    ],
+                    [
+                        'role' => 'user',
+                        'content' => 'Patient info: ' . json_encode($inputData, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
+                    ],
+                ],
+            ]);
 
             // Check for HTTP errors
             if ($response->failed()) {
