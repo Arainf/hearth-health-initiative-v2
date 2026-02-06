@@ -3,19 +3,39 @@
     <x-auth-session-status class="mb-4" :status="session('status')" />
 
     @auth
-        <a
-            href="{{ route('dashboard') }}"
-            class="inline-block px-5 py-1.5 dark:text-[#EDEDEC] border-[#19140035] hover:border-[#1915014a] border text-[#1b1b18] dark:border-[#3E3E3A] dark:hover:border-[#62605b] rounded-sm text-sm leading-normal"
-        >
-            Dashboard
-        </a>
+        <div>
+            <span class="circular text-2xl tracking-tighter text-white" >Welcome Back {{ Auth::user()->name }}!</span>
+            <div class="flex justify-center pt-5">
+                <div class="pr-5">
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button
+                            type="submit"
+                            class="w-full flex items-center gap-3 px-3 py-2 rounded-lg
+                            text-sm  text-[var(--danger-text)] bg-[var(--red-700)] hover:bg-[#ab3f3f] hover:text-white transition"
+                        >
+                            <i class="fa-solid fa-right-from-bracket w-5"></i>
+                            <span x-show="!sidebarCollapsed" x-transition>Logout</span>
+                        </button>
+                    </form>
+                </div>
+                <div>
+                    <button class="w-full flex items-center gap-3 px-3 py-2 rounded-lg
+                    text-sm  text-white  bg-[#00205B] hover:bg-[#143774] transition">
+                        <a href="{{ route('dashboard') }}">
+                            Dashboard
+                        </a>
+                    </button>
+                </div>
+            </div>
+        </div>
     @endauth
 
     @guest
         <form method="POST" action="{{ route('login') }}">
             @csrf
 
-            <!-- Email Address -->
+            <!-- Username -->
             <div class="relative w-[350px] flex flex-row items-center">
                 <i class="ml-3 text-[#092D69] absolute fa-solid fa-user"></i>
                 <span class="flex flex-col w-full">
