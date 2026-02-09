@@ -6,9 +6,9 @@
     $baseClasses = "inline-flex items-center gap-2
         px-4 py-2 rounded-lg font-medium
         text-sm tracking-tight
-        bg-gradient-to-b from-white/70 to-white/40
-        backdrop-blur-md shadow-sm border border-gray-300/60
-        text-gray-800
+        bg-[#121212] from-white/70 to-white/40
+        backdrop-blur-md shadow-sm border border-gray-400/20
+        text-white
         hover:shadow-md hover:border-gray-400
         active:scale-[0.98]
         transition-all duration-150 ease-out";
