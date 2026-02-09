@@ -17,9 +17,8 @@ class DashboardPageController extends Controller
         $years = DropdownService::years();
         $status = DropdownService::status($currentYear, false);
 
-        $user = auth()->user();
 
-        if (!$user->is_Admin() || !$user->is_Doctor() || !$user) return redirect('unauthorized');
+
 
         return view('pages.dashboard',
         [
