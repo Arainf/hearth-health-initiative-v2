@@ -1,27 +1,27 @@
-<section class="bg-white rounded-xl shadow-sm p-6">
+<section class="bg-[#121212] rounded-xl shadow-sm p-6">
     <header class="mb-4">
-        <h2 class="text-lg font-semibold text-gray-900">
+        <h2 class="text-lg font-semibold text-white">
             AI Settings
         </h2>
-        <p class="text-sm text-gray-600">
+        <p class="text-sm text-gray-400">
             Configure your OpenAI API key and default prompt.
         </p>
     </header>
 
     {{-- Toggle --}}
     <div class="flex items-center justify-between mb-4">
-        <span class="text-sm font-medium text-gray-700">
+        <span class="text-sm font-medium text-gray-400">
             Enable editing
         </span>
 
         <label class="relative inline-flex items-center cursor-pointer">
             <input type="checkbox" id="aiToggle" class="sr-only peer">
-            <div class="w-11 h-6 bg-gray-200 rounded-full peer
+            <div class="w-11 h-6 bg-gray-500 rounded-full peer
                         peer-focus:outline-none
                         peer-checked:bg-blue-600
                         after:content-['']
                         after:absolute after:top-[2px] after:left-[2px]
-                        after:bg-white after:rounded-full
+                        after:bg-[#121212] after:rounded-full
                         after:h-5 after:w-5
                         after:transition-all
                         peer-checked:after:translate-x-full">
@@ -40,14 +40,14 @@
                   class="opacity-50 pointer-events-none transition">
 
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">
+                <label class="block text-sm font-medium text-gray-400 mb-1">
                     OpenAI API Key
                 </label>
                 <input
                     type="password"
                     name="openai_api_key"
                     placeholder="sk-********************************"
-                    class="w-full rounded-lg border-gray-300
+                    class="w-full rounded-lg bg-[#121212] border-gray-400/20
                            focus:border-blue-500 focus:ring-blue-500"
                 />
                 <p class="text-xs text-gray-500 mt-1">
@@ -56,13 +56,13 @@
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">
+                <label class="block text-sm font-medium text-gray-400 mb-1">
                     Default Prompt
                 </label>
                 <textarea
                     name="ai_prompt"
                     rows="4"
-                    class="w-full rounded-lg border-gray-300
+                    class="w-full rounded-lg bg-[#121212] border-gray-400/20
                            focus:border-blue-500 focus:ring-blue-500"
                     placeholder="You are a helpful medical assistant..."
                 >{{ old('ai_prompt', auth()->user()->ai_prompt) }}</textarea>
