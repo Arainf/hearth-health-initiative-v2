@@ -199,6 +199,35 @@
                 </x-navigation.nav-link>
             @endif
 
+            <!-- Unit -->
+            <x-navigation.nav-link
+                :href="route('patient')"
+                :active="request()->routeIs('patient') || request()->routeIs('patientFiles')"
+                :style="3"
+                title="Units"
+            >
+                <div
+                    class="flex items-center w-full"
+                    :class="sidebarCollapsed ? 'justify-center' : ''"
+                >
+                    <i class="
+                        fa-solid fa-building w-5 transition-colors
+                        {{ request()->routeIs('patient') || request()->routeIs('patientFiles')
+                            ? 'text-[var(--accent-3)]'
+                            : 'text-[var(--badge-disabled-text)] group-hover:text-[var(--accent-6)]'
+                        }}
+                    "></i>
+
+                    <span
+                        x-show="!sidebarCollapsed"
+                        x-transition
+                        class="ml-4 text-sm font-medium"
+                    >
+                        Units
+                    </span>
+                </div>
+            </x-navigation.nav-link>
+
 
 
         </div>
