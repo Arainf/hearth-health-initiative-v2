@@ -18,6 +18,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RecordController;
 use App\Http\Controllers\Table\TableController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Pages\UnitPageController;
 
 Route::get('/', function () {
         return view('auth.login');
@@ -116,6 +117,11 @@ Route::middleware('auth')->group(function () {
     Route::get("/{$core}", [RecordPageController::class, 'index'])->name('record');
     Route::get("/table/{$core}", [RecordPageController::class, 'table']);
 
+});
+
+Route::middleware('auth')->group(function(){
+    $core = trashController::encrypt('unit');
+    Route::get("/{$core}", [UnitPageController::class, 'index'])->name('unit');
 });
 
 
