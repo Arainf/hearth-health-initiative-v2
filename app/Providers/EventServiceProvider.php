@@ -11,11 +11,7 @@ use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvi
 
 class EventServiceProvider extends ServiceProvider
 {
-    protected $listen = [
-        Login::class => [\App\Listeners\LogSuccessfulLogin::class],
-        Logout::class => [\App\Listeners\LogLogout::class],
-        Lockout::class => [\App\Listeners\LogLockout::class],
-        Registered::class => [\App\Listeners\LogRegistered::class],
-        PasswordReset::class => [\App\Listeners\LogPasswordReset::class],
-    ];
+//    protected $listen = [
+//
+//    ];
 }
