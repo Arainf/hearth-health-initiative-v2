@@ -19,6 +19,7 @@ use App\Http\Controllers\RecordController;
 use App\Http\Controllers\Table\TableController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Pages\UnitPageController;
+use App\Http\Controllers\Table\CreateUnitController;
 
 Route::get('/', function () {
         return view('auth.login');
@@ -64,6 +65,7 @@ Route::middleware(['auth', 'can:isAdmin'])->group(function () {
     Route::get('/table/archive-records', [TableController::class, 'archiveRecords']);
     Route::get('/api/getArchiveYears', [ApiController::class, 'getArchiveYears']);
     Route::delete('/api/accounts/delete/{id}', [ApiController::class, 'deleteUser']);
+    Route::delete('/api/units/delete/{id}', [UnitPageController::class, 'destroy']);
     Route::put('/api/accounts/{id}/ai-access', [ApiController::class, 'aiAccess']);
     Route::put('/api/accounts/{id}/admin', [ApiController::class, 'adminAccess']);
     Route::put('/api/accounts/{id}/doctor', [ApiController::class, 'doctorAccess']);
@@ -122,6 +124,7 @@ Route::middleware('auth')->group(function () {
 Route::middleware('auth')->group(function(){
     $core = trashController::encrypt('unit');
     Route::get("/{$core}", [UnitPageController::class, 'index'])->name('unit');
+    Route::get("/table/{$core}", [UnitPageController::class, 'table']);
 });
 
 
