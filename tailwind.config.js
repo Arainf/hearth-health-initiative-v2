@@ -13,6 +13,7 @@ export default {
     theme: {
         extend: {
             fontFamily: {
+                inter: ['Inter', 'sans-serif'],
                 sans: ['Figtree', ...defaultTheme.fontFamily.sans],
             },
         },

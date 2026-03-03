@@ -7,17 +7,33 @@
     const compareUrl = "{{ asset('icons/file-compare.png') }}"
 </script>
 
+
+<style>
+    table.dataTable tbody tr > td:first-child{
+        text-align: center;
+    }
+
+    table.dataTable tbody tr > td:nth-child(6){
+        text-align: center;
+    }
+
+    .dataTables_scrollHeadInner,
+    .dataTables_scrollHeadInner table {
+        width: 100% !important;
+    }
+</style>
+
 <table id="patients" class="table datatable w-full bg-[#f9fbfc]">
     <thead>
        <tr>
-            <th style="width:4%;">#</th>
-            <th style="width:24%;">Patient Name</th>
-            <th style="width:10%;">Unit</th>
-            <th style="width:10%;">Records</th>
-            <th style="width:14%;">Phone</th>
-            <th style="width:10%;">Gender</th>
-            <th style="width:18%;">Birth Day</th>
-            <th style="width:10%;"></th>
+            <th class="text-center">#</th>
+            <th>Patient Name</th>
+            <th>Unit</th>
+            <th>Records</th>
+            <th>Phone</th>
+            <th>Gender</th>
+            <th>Birth Day</th>
+            <th>Actions</th>
         </tr>
 
     </thead>

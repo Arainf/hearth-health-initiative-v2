@@ -2,20 +2,46 @@
 
 <x-app-layout>
 
-    <div class=" relative flex flex-col h-full w-full rounded-xl bg-[#FCFDFE] px-2 pt-2  border-2 shadow-xl border-gray-100">
+    <div class=" relative flex flex-col h-full w-full rounded-xl  px-2 pt-2  ">
         <!-- HEADER -->
         <div class="flex flex-row bg-white px-6 py-3 z-20 sticky top-0 justify-between">
-            <div class="flex items-center">
-                <p class="circular text-lg tracking-tighter">Patients</p>
+            <!-- LEFT: ICON + TITLE -->
+            <div class="flex items-center font-inter font-semibold shrink-0">
+                @php
+                    $icon = $MODULE_NAME['icon'];
+                @endphp
+
+                <x-dynamic-component
+                    :component="'lucide-' . $icon"
+                    class="w-5 h-5 mr-2"
+                />
+
+                <span class="text-base sm:text-lg">
+                        {{ $MODULE_NAME['label'] }}
+                    </span>
             </div>
 
             <x-filter_search id="record-search" placeholder="Search Patient" width="w-80" />
 
-            <div class="flex flex-row gap-1">
-                <x-filters />
+            <div class="flex flex-row gap-2">
 
-                <x-button.search_button onClick="applyPendingFilters()" />
-                <x-button.reset_button onClick="resetFilters()" />
+                <div class="w-64">
+                    <x-dropdown_select
+                        class="form-control w-full"
+                        name="unit_office"
+                        :options="$UNITS"
+                        valueKey="unit_code"
+                        labelKey="unit_name"
+                        placeholder="Select Unit"
+                    >
+                    </x-dropdown_select>
+                </div>
+
+                <div class="flex flex-row gap-1">
+
+                    <x-button.search_button/>
+                    <x-button.reset_button/>
+                </div>
             </div>
 
         </div>
@@ -90,10 +116,7 @@
     </div>
 </div>
 
-
 <script>
-    window.page = {
-        table : "/table/{{$table}}"
-    }
+    window.page = { token : "{{$TOKEN}}"}
 </script>
 

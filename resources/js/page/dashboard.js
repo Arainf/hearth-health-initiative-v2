@@ -4,301 +4,116 @@ import DataTable from "datatables.net-dt";
 import { setupYearFilterRecords } from "@/filters/filter-year.js";
 import { setupStatusFilterRecords } from "@/filters/filter-status.js";
 import { formatExpandedRow } from "@/utilities/table-expanded-form.js";
+import {createIcons, icons} from "lucide";
 
 window.$ = window.jQuery = $;
 
-const ai_Access = document.body.dataset.aiAccess === '1';
-const ai_Ready = document.body.dataset.aiReady === '1';
-
-
-/* ===============================
-   STATE & URL MANAGEMENT
-================================ */
-const state = {
-    status: new URLSearchParams(window.location.search).get('status') || 'all',
-    year: new URLSearchParams(window.location.search).get('year') || new Date().getFullYear(),
-    search: new URLSearchParams(window.location.search).get('search') || ''
-};
 
 const generatingRecords = new Set();
 
 
-// Pending state for staged filter changes (not yet applied)
-const pending = {
-    status: null,
-    year: null,
-    search: null
-};
-
-function updateURL() {
-    const params = new URLSearchParams();
-    if (state.status && state.status !== 'all') params.set('status', state.status);
-    if (state.year && state.year !== 'all') params.set('year', state.year);
-    if (state.search) params.set('search', state.search);
-
-    const newUrl = `${window.location.pathname}?${params.toString()}`;
-    window.history.pushState({}, '', newUrl);
-}
-
-/* ===============================
-   LOADING
-================================ */
-
-
-/* ===============================
-   FILTER BUTTON STATE
-================================ */
-const $filterBtn = $("#reset-filters");
-const $searchInput = $("#record-search");
-
-
-window.resetFilters = function () {
-    const currentYear = new Date().getFullYear();
-
-    // Reset state
-    state.status = 'all';
-    state.year   = currentYear;
-    state.search = '';
-
-    // Clear pending
-    pending.status = null;
-    pending.year   = null;
-    pending.search = null;
-
-    // Reset UI
-    $searchInput.val('');
-    $("#status-filter-label").text('All');
-    $("#year-filter-label").text(currentYear);
-
-    updateURL();
-
-    // Reload dependent filters
-    if (window.refreshStatusFilter) {
-        window.refreshStatusFilter(currentYear);
-    }
-
-    table.ajax.reload();
-}
-
-
-/* ===============================
-   STAGE FILTERS (Don't apply yet)
-================================ */
-function stageFilter(type, value) {
-    pending[type] = value;
-}
-
-/* ===============================
-   APPLY FILTERS (SAFE)
-================================ */
-function applyFilters(filters = {}) {
-    // Update state from filters or pending
-    if (filters.status !== undefined) {
-        state.status = filters.status;
-        pending.status = null;
-    } else if (pending.status !== null) {
-        state.status = pending.status;
-        pending.status = null;
-    }
-
-    if (filters.year !== undefined) {
-        state.year = filters.year;
-        pending.year = null;
-    } else if (pending.year !== null) {
-        state.year = pending.year;
-        pending.year = null;
-    }
-
-    if (filters.search !== undefined) {
-        state.search = filters.search;
-        pending.search = null;
-    } else if (pending.search !== null) {
-        state.search = pending.search;
-        pending.search = null;
-    }
-
-    // Update URL
-    updateURL();
-
-    // Apply filters to DataTable
-    table.ajax.reload();
-}
-
-/* ===============================
-   APPLY ALL PENDING FILTERS
-================================ */
-window.applyPendingFilters = function () {
-    applyFilters({
-        status: pending.status !== null ? pending.status : undefined,
-        year: pending.year !== null ? pending.year : undefined,
-        search: pending.search !== null ? pending.search : undefined
-    });
-}
+let statusFilterValue = null;
+let yearFilterValue =  new Date().getFullYear();
+$(document).on('click', '.status-filter-dropdown-item', function () {
+    statusFilterValue = $(this).data('value');
+});
+$(document).on('click', '.year-filter-dropdown-item', function () {
+    yearFilterValue = $(this).data('value');
+});
 
 /* ===============================
    DATATABLE INIT
 ================================ */
 const table = $("#records-table").DataTable({
     serverSide: true,
-    processing: true,
     pageLength: 20,
-
-    scrollY: "calc(100vh - 230px)",
+    processing: true,
+    language: {
+        infoFiltered: ""
+    },
+    scrollY: "calc(100vh - 380px)",
     scrollCollapse: true,
 
-    autoWidth: false,
+    autoWidth: true,
     paging: true,
-    info: false,
+    info: true,
     lengthChange: false,
 
     dom: `
         <"datatable-wrapper"
-            <"datatable-body"t>
-            <"datatable-footer"p>
+            <"datatable-body" t>
+            <"datatable-footer"i p>
         >
     `,
 
     ajax: {
-        url: window.page.table,
+        url: "/table/" + window.page.token,
         type: "GET",
         data: d => {
-            d.search = state.search || '';
-            d.status = state.status || Date.now();
-            d.year   = state.year || 'all';
+            d.search = $('#record-search').val();
+            d.status = statusFilterValue || 'all';
+            d.year   = yearFilterValue;
+            d.unit = $('#unit_office').val();
+
         },
     },
+
 
     columnDefs: [
         { targets: 0, width: "35%" },
         { targets: 1, width: "15%" },
-        { targets: 2, width: "10%" },
-        { targets: 3, width: "20%" },
-        { targets: 4, width: "10%" }
+        { targets: 2, width: "15%" },
+        { targets: 3, width: "10%" },
+        { targets: 4, width: "20%" },
+        { targets: 5, width: "20%" }
     ],
 
     columns: [
-        {
-            data: "patient",
-            render: p => `
-                <div class="leading-tight">
-                    <div class="font-medium text-gray-900 text-sm">
-                        (${p.unit}) ${p.last_name}, ${p.first_name} ${p.middle_name ?? ""}
-                    </div>
-                    <div class="text-xs text-gray-500">${p.age} y.o.</div>
-                </div>
-            `
-        },
-        {
-            data: "status.status_name",
-            orderable: false
-        },
-        {
-            data: "staff",
-            orderable: false
-        },
-        {
-            data: "created_at",
-            render: d =>
-                new Date(d).toLocaleDateString("en-US", {
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric"
-                })
-        },
-        {
-            data: null,
-            orderable: false,
-            className: "text-center",
-            render: r => {
-                const hasGenerated = r.generated_id && r.generated_id !== null && r.generated_id !== '';
-                const hasDoctorApproval = r.doctor !== null && r.doctor !== '';
-
-                const generatingButton = `
-                <div id="generateBtn-${r.id}" class="generate-btn hidden">
-                    <i class="fa-solid fa-spinner fa-spin mr-2"></i>
-                    Generating
-                </div>`
-
-                const printBtn = hasGenerated
-                    ? `<button class="hhi-btn hhi-btn-view icon-only"
-                            title="Print"
-                            onclick="printRow('${r.id}')">
-                        <i class="fa-solid fa-print"></i>
-                    </button>`
-                    : `<button class="hhi-btn hhi-btn-view icon-only opacity-50 cursor-not-allowed"
-                            title="No report available"
-                            disabled>
-                        <i class="fa-solid fa-print"></i>
-                    </button>`;
-
-
-                // View button - blue (only if generated)
-                const viewBtn =
-                    `<button class="hhi-btn hhi-btn-view icon-only view-generated-btn" ${!hasGenerated ? "disabled" : ' '}
-                            title="${!hasGenerated ? "No Evaluation" : 'View Evaluation'}"
-                            data-id="${r.generated_id}">
-                       <i class="fa-solid fa-magnifying-glass"></i>
-                    </button>`
-
-
-                // Evaluate button - purple (only if not generated)
-                const evaluateBtn = !hasGenerated && ai_Access && ai_Ready
-                    ? `<button class="hhi-btn hhi-btn-evaluate icon-only evaluate-btn"
-                            title="Evaluate with AI"
-                            data-index="${r.counter}"
-                            data-record-id="${r.id}">
-                        <i class="fa-solid fa-brain"></i>
-                    </button>`
-                    : '';
-
-
-                const printBtnStyled = hasDoctorApproval
-                    ? `<button class="hhi-btn hhi-btn-print icon-only"
-                            title="Print"
-                            onclick="printRow('${r.id}')">
-                        <i class="fa-solid fa-print"></i>
-                    </button>`
-                    : hasGenerated ? `<button
-                            class="hhi-btn hhi-btn-print icon-only bg-transparent border border-gray-200 text-gray-400 opacity-50 cursor-not-allowed"
-                            title="Need Approval from a Doctor"
-                            disabled
-                        >
-                            <i class="fa-solid fa-print"></i>
-                        </button>
-                        ` : '';
-
-                return `
-                <div class="flex flex-col items-center justify-center gap-1">
-                    ${generatingButton}
-                    <div id="actionsBtn-${r.id}" class="actions-btn">
-                        ${viewBtn}
-                        ${evaluateBtn}
-                        ${printBtnStyled}
-                        <button class="hhi-btn hhi-btn-secondary icon-only row-toggle">
-                            <i class="fa-solid fa-chevron-down"></i>
-                        </button>
-                    </div>
-
-                </div>
-            `;
-            }
-        }
+        { data: "patient" },
+        { data: "unit" },
+        { data: "staff" },
+        { data: "created_at" },
+        { data: "status", orderable: false },
+        { data: "actions", orderable: false, className: "text-center" }
     ]
+
+
+});
+
+$('#records-table').on('draw.dt', function () {
+    createIcons({ icons });
 });
 
 window.table = table;
 
-/* ===============================
-   FILTER MODULES
-================================ */
-// Export functions for filter modules to use
-window.stageFilter = stageFilter;
-window.getCurrentYear = () => state.year;
-window.getPendingYear = () => pending.year;
+$(document).on(
+    "click",
+    "#search-button",
+    function () {
+        table.ajax.reload();
+    }
+);
 
-// Initialize filters
-setupYearFilterRecords( state.year === 'all' ? null : state.year);
-setupStatusFilterRecords(state.status);
+$(document).on(
+    "click",
+    "#reset-filters",
+    function () {
+        const currentYear = new Date().getFullYear();
+
+        $("#record-search").val('');
+        $("#status-filter-label").text('All');
+        $("#year-filter-label").text(currentYear);
+        $('#unit_office').val('').trigger('change');
+
+        statusFilterValue = 'all';
+        yearFilterValue = currentYear;
+        table.ajax.reload();
+    }
+);
+
+
+setupYearFilterRecords( yearFilterValue);
+setupStatusFilterRecords(statusFilterValue);
 
 
 /* ===============================
@@ -307,19 +122,46 @@ setupStatusFilterRecords(state.status);
 $("#records-table tbody").on("click", ".row-toggle", function (e) {
     e.stopPropagation();
 
-    const tr   = $(this).closest("tr");
-    const row  = table.row(tr);
-    const icon = $(this).find("i");
+    const button = $(this);
+    const tr = button.closest("tr");
+    const row = table.row(tr);
+    const url = button.data("url");
 
     if (row.child.isShown()) {
         row.child.hide();
         tr.removeClass("shown");
-        icon.removeClass("rotate-180");
-    } else {
-        row.child(formatExpandedRow(row.data())).show();
-        tr.addClass("shown");
-        icon.addClass("rotate-180");
+
+        button.html(`<i data-lucide="chevron-down" class="w-4 h-4"></i>`);
+        createIcons({ icons });
+        return;
     }
+
+    if (button.data("loading")) return;
+
+    button.data("loading", true);
+
+    // LOADER
+    button.html(`
+        <i data-lucide="loader" class="w-4 h-4 animate-spin"></i>
+    `);
+    createIcons({ icons });
+
+    fetch(url)
+        .then(res => res.json())
+        .then(data => {
+            row.child(formatExpandedRow(data)).show();
+            tr.addClass("shown");
+
+            // Restore chevron rotated
+            button.html(`
+                <i data-lucide="chevron-down" class="w-4 h-4 rotate-180"></i>
+            `);
+            createIcons({ icons });
+        })
+        .catch(err => console.error(err))
+        .finally(() => {
+            button.data("loading", false);
+        });
 });
 
 
@@ -370,9 +212,11 @@ $(document).on('click', '.toggle-edit', function (e) {
 
     // Toggle buttons
     $(this).addClass('hidden');
+
     $row.find('.save-record-btn').removeClass('hidden');
     $row.find('.cancel-edit-btn').removeClass('hidden');
 });
+
 
 
 // Cancel edit
@@ -433,6 +277,7 @@ $(document).on('click', '.save-record-btn', function(e) {
     e.stopPropagation();
 
     const recordId = $(this).data('record-id');
+    const mode = $(this).data('mode');
     const $row = $(this).closest('.record-edit-container');
     const $btn = $(this);
 
@@ -464,13 +309,17 @@ $(document).on('click', '.save-record-btn', function(e) {
     $btn.prop('disabled', true).html('<i class="fa-solid fa-spinner fa-spin mr-1"></i> Saving...');
 
     $.ajax({
-        url: `/api/records/${recordId}`,
+        url: "/update/" +  window.page.token,
         type: 'PUT',
         headers: {
             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
             'Content-Type': 'application/json'
         },
-        data: JSON.stringify(data),
+        data: JSON.stringify({
+            id: recordId,
+            mode: mode,
+            ...data
+        }),
         success: () => {
             // Disable fields
             $row.find('.record-field').prop('disabled', true).removeClass('bg-white border-blue-300').addClass('bg-gray-50');
@@ -500,6 +349,7 @@ $(document).on('click', '.save-record-btn', function(e) {
         }
     });
 });
+
 
 /* ===============================
    VIEW GENERATED TEXT MODAL
@@ -566,39 +416,62 @@ function closeGeneratedPanel() {
     $("#generatedPanel").addClass("translate-x-full");
     $(`.view-generated-btn`).html('<i class="fa-solid fa-magnifying-glass"></i>');
 }
-$(document).on('click', '.view-generated-btn', function(e) {
+$(document).on("click", ".view-generated-btn", function (e) {
     e.stopPropagation();
+
+    const btn = $(this);
+
     $('.hhi-btn-view').prop('disabled', true);
 
-    $(this)
-        .html('<i class="fa-solid fa-spinner fa-spin mr-1"></i>').prop('disabled' , true);
+    btn
+        .addClass('is-loading')
+        .html(`
+            <i data-lucide="loader" class="w-4 h-4 animate-spin"></i>
+            <span class="ml-1">Preparing</span>
+        `)
+        .prop('disabled', true);
 
-    const $tr = $(this).closest("tr");
-    const rowData = table.row($tr).data();
-    const generatedId = $(this).data('id');
-
-    setSection(rowData);
-
-    $("#panelRecordId").text(`Generated ID #${generatedId}`);
+    createIcons({ icons }); // re-render lucide icons
 
 
-    fetch(`/api/getGeneratedContent/${generatedId}`)
+    const url = btn.data('url');
+
+    setPanelLoading(true);
+
+    fetch(url)
         .then(res => res.json())
         .then(res => {
             originalPanelContent = res.generated_text || "No generated content.";
-            $(`#content`).html(originalPanelContent);
+            reportEditor.setContent(originalPanelContent);
+            setSection(res);
             openGeneratedPanel();
+
+            const isApproved = res.status_id === 1;
+            if (isApproved) {
+                $("#panelSaveApproveBtn").addClass("hidden").prop('disabled', true);
+            } else {
+                $("#panelSaveApproveBtn").removeClass("hidden").prop('disabled', false);
+            }
+
             $('.hhi-btn-view').prop('disabled', false);
-            $(this)
-                .html('<i class="fa-solid fa-magnifying-glass"></i>');
+
+            btn
+                .removeClass('is-loading')
+                .html(`<i data-lucide="search" class="w-4 h-4"></i>`)
+                .prop('disabled', false);
+
+            createIcons({ icons }); // re-render icon again
         })
         .catch(() => {
             $("#panelContent").text("Failed to load content.");
-        })
-        .finally(() => {
-            setPanelLoading(false);
-        });
 
+            btn
+                .removeClass('is-loading')
+                .html(`<i data-lucide="search" class="w-4 h-4"></i>`)
+                .prop('disabled', false);
+
+            createIcons({ icons });
+        });
 });
 
 function openGeneratedPanel() {
@@ -624,12 +497,13 @@ $('#reportModal').on('click', function(e) {
 /* ===============================
    EVALUATE RECORD
 ================================ */
-
+let evaluationQueue = [];
 
 $(document).on('click', '.evaluate-btn', async function (e) {
     e.stopPropagation();
 
     const recordId = $(this).data('record-id');
+    const recordMode = $(this).data('record-mode');
     const $btn = $(this);
 
     // Prevent double-click on same row
@@ -637,34 +511,45 @@ $(document).on('click', '.evaluate-btn', async function (e) {
 
     generatingRecords.add(recordId);
 
-    // 🔥 IMMEDIATE UI FEEDBACK (same as your old behavior)
+    // 🆕 Add to queue
+    evaluationQueue.push(recordId);
+    updateQueueBadges();
+
+    // 🔥 Immediate UI Feedback
     $(`#generateBtn-${recordId}`).addClass("is-active").removeClass("hidden");
     $(`#actionsBtn-${recordId}`).addClass("is-hidden");
 
+    // Make button relative for badge positioning
+    $btn.addClass('relative');
+
+    // Spinner
     $btn.prop('disabled', true)
-        .html('<i class="fa-solid fa-spinner fa-spin"></i>');
+        .html(`
+            <i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i>
+        `);
+
+    createIcons({ icons });
 
     try {
         await $.ajax({
-            url: `/api/evaluate/${recordId}`,
-            type: 'POST',
+            url: `/store/` + window.page.token,
+            method: 'POST',
+            contentType: "application/json",
             headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            }
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr("content")
+            },
+            data: JSON.stringify({
+                id: recordId,
+                mode: recordMode
+            })
         });
 
-        // job finished
-        generatingRecords.delete(recordId);
+        finishEvaluation(recordId, $btn);
 
-        // restore UI
-        $(`#generateBtn-${recordId}`).removeClass("is-active").addClass("hidden");
-        $(`#actionsBtn-${recordId}`).removeClass("is-hidden");
-
-        // 🔄 reload AFTER completion (won’t block others)
+        // Reload table without resetting pagination
         table.ajax.reload(null, false);
 
     } catch (xhr) {
-        generatingRecords.delete(recordId);
 
         const errorMsg =
             xhr.responseJSON?.error ||
@@ -673,40 +558,261 @@ $(document).on('click', '.evaluate-btn', async function (e) {
 
         alert(errorMsg);
 
-        // restore UI on error
-        $(`#generateBtn-${recordId}`).removeClass("is-active").addClass("hidden");
-        $(`#actionsBtn-${recordId}`).removeClass("is-hidden");
-
-        $btn.prop('disabled', false)
-            .html('<i class="fa-solid fa-brain"></i>');
+        finishEvaluation(recordId, $btn, true);
     }
 });
 
+function finishEvaluation(recordId, $btn, isError = false) {
 
-/* ===============================
-   INIT
-================================ */
+    generatingRecords.delete(recordId);
 
-$searchInput.on("input", () => {
-    const searchTerm = $searchInput.val().trim();
-    stageFilter("search", searchTerm);
+    // Remove from queue
+    evaluationQueue = evaluationQueue.filter(id => id !== recordId);
+
+    // Restore UI
+    $(`#generateBtn-${recordId}`).removeClass("is-active").addClass("hidden");
+    $(`#actionsBtn-${recordId}`).removeClass("is-hidden");
+
+    // Restore button icon
+    $btn.prop('disabled', false)
+        .html(`
+            <i data-lucide="brain" class="w-4 h-4"></i>
+        `);
+
+    createIcons({ icons });
+
+    updateQueueBadges();
+}
+
+function updateQueueBadges() {
+
+    $('.evaluate-btn').each(function () {
+
+        const $btn = $(this);
+        const id = $btn.data('record-id');
+        const index = evaluationQueue.indexOf(id);
+
+        // Remove old badge
+        $btn.find('.eval-order-badge').remove();
+
+        if (index !== -1) {
+            $btn.append(`
+                <span class="eval-order-badge absolute -top-1 -right-1
+                             bg-red-500 text-white text-[10px] font-semibold
+                             rounded-full w-4 h-4 flex items-center justify-center">
+                    ${index + 1}
+                </span>
+            `);
+        }
+    });
+}
+
+
+
+/* ==========================================
+   IMPORT & TEMPLATE MODAL LOGIC (jQuery)
+   ========================================== */
+
+// Handle opening modals
+$('#btnOpenTemplate').on('click', function() {
+    $('#modalTemplate').removeClass('hidden').addClass('flex');
 });
 
-$(document).on(
-    "click",
-    ".year-filter-dropdown-item, #year-filter-menu .dropdown-item",
-    function () {
-        const value = $(this).data("value");
-        stageFilter("year", value);
-    }
-);
+$('#btnOpenImport').on('click', function() {
+    $('#modalImport').removeClass('hidden').addClass('flex');
+    resetImportModal();
+});
 
+// Close modals
+$('.close-modal').on('click', function() {
+    $(this).closest('.fixed').addClass('hidden').removeClass('flex');
+});
 
-$(document).on(
-    "click",
-    ".status-filter-dropdown-item, #status-filter-menu .dropdown-item",
-    function () {
-        const status = $(this).data("value");
-        stageFilter("status", status);
+// Click outside to close
+$(window).on('click', function(e) {
+    if ($(e.target).hasClass('fixed')) {
+        $(e.target).addClass('hidden').removeClass('flex');
     }
-);
+});
+
+function resetImportModal() {
+    $('#import_step_1').removeClass('hidden');
+    $('#import_step_2').addClass('hidden');
+    $('#import_loading').addClass('hidden');
+    // Shrink modal back to original size
+    $('#importModalContainer').removeClass('w-[95vw] max-w-7xl h-[85vh]').addClass('w-[520px]');
+    $('#import_file').val('');
+    $("#validate_import").prop("disabled", true);
+}
+
+// --- Validation & Export Logic ---
+
+$("#export_template").prop("disabled", true);
+$("#validate_import").prop("disabled", true);
+
+$("#unit_office_template").on("change", function () {
+    if ($(this).val() === "") {
+        $("#export_template").prop("disabled", true);
+    } else {
+        $("#export_template").prop("disabled", false);
+    }
+});
+
+$("#import_file").on("change", function () {
+    if ($(this).val() === "") {
+        $("#validate_import").prop("disabled", true);
+    } else {
+        $("#validate_import").prop("disabled", false);
+    }
+});
+
+$('#export_template').on('click', function () {
+    const unitCode = $('#unit_office_template').val();
+    if (!unitCode) return;
+
+    const mode = $(this).data("mode");
+    const url = `/page/${window.page.token}?mode=${mode}&unit_code=${unitCode}`;
+
+    window.open(url, '_blank');
+});
+
+$('#validate_import').on('click', function () {
+    const fileInput = $('#import_file')[0].files[0];
+    if (!fileInput) {
+        alert('Please select a file.');
+        return;
+    }
+
+    const mode = $(this).data("mode");
+    const token = window.page.token;
+    const url = `/store/${token}?mode=${mode}`;
+
+    let formData = new FormData();
+    formData.append("file", fileInput);
+
+    const $btn = $(this);
+    $btn.html(`<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i><span class="ml-1">Validating</span>`)
+        .prop('disabled', true);
+
+    createIcons({ icons });
+
+    $.ajax({
+        url: url,
+        type: "POST",
+        data: formData,
+        processData: false,
+        contentType: false,
+        headers: {
+            "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr('content')
+        },
+        success: function (response) {
+            $btn.html(`<span class="ml-1">Validate File</span>`).prop('disabled', false);
+            createIcons({ icons });
+
+            // ✅ Update summary
+            $("#valid_rows").text(response.valid_rows);
+            $("#invalid_rows").text(response.invalid_rows);
+
+            // ✅ Build preview table
+            let html = "";
+            if (response.data && response.data.length > 0) {
+                response.data.forEach(function(row) {
+                    html += `
+                        <tr class="hover:bg-gray-50 h-[50px] divide-x">
+                            <td class="px-2 py-1 border-b text-center">${row.row ?? ''}</td>
+                            <td class="px-2 py-1 border-b font-medium whitespace-nowrap">${row.full_name ?? ''}</td>
+                            <td class="px-2 py-1 border-b">${row.birthday ?? ''}</td>
+                            <td class="px-2 py-1 border-b">${row.sex ?? ''}</td>
+                            <td class="px-2 py-1 border-b">${row.weight ?? ''}</td>
+                            <td class="px-2 py-1 border-b">${row.height ?? ''}</td>
+                            <td class="px-2 py-1 border-b">${row.phone_number ?? ''}</td>
+                            <td class="px-2 py-1 border-b">${row.hypertension ?? ''}</td>
+                            <td class="px-2 py-1 border-b">${row.diabetes_mellitus ?? ''}</td>
+                            <td class="px-2 py-1 border-b">${row.heart_attack_under_60y ?? ''}</td>
+                            <td class="px-2 py-1 border-b">${row.cholesterol ?? ''}</td>
+                            <td class="px-2 py-1 border-b">${row.total_cholesterol ?? ''}</td>
+                            <td class="px-2 py-1 border-b">${row.hdl_cholesterol ?? ''}</td>
+                            <td class="px-2 py-1 border-b">${row.systolic_bp ?? ''}</td>
+                            <td class="px-2 py-1 border-b">${row.fbs ?? ''}</td>
+                            <td class="px-2 py-1 border-b">${row.hba1c ?? ''}</td>
+                            <td class="px-2 py-1 border-b">${row.hypertension_tx ?? ''}</td>
+                            <td class="px-2 py-1 border-b">${row.diabetes_m ?? ''}</td>
+                            <td class="px-2 py-1 border-b">${row.smoking ?? ''}</td>
+                            <td class="px-2 py-1 border-b">${row.date_record ?? ''}</td>
+                        </tr>
+                    `;
+                });
+            } else {
+                html = `<tr><td colspan="21" class="text-center py-3 text-gray-500">No valid rows to preview.</td></tr>`;
+            }
+
+            $("#preview_table_body").html(html);
+
+            // ✅ Switch to step 2 & Expand Modal
+            $("#import_step_1").addClass("hidden");
+            $("#import_step_2").removeClass("hidden");
+
+            // Replaces Alpine "expand_modal" logic
+            $('#importModalContainer')
+                .removeClass('w-[520px]')
+                .addClass('w-[95vw] max-w-7xl h-[85vh]');
+
+            $("#import_loading").addClass("hidden");
+        },
+        error: function (xhr) {
+            alert(xhr.responseJSON?.message || "Import failed.");
+            $btn.html(`<span class="ml-1">Validate File</span>`).prop('disabled', false);
+            createIcons({ icons });
+            $("#import_loading").addClass("hidden");
+        }
+    });
+});
+
+$('#back_to_upload').on('click', function () {
+    $("#import_step_2").addClass("hidden");
+    $("#import_step_1").removeClass("hidden");
+
+    $("#validate_import").html(`<span class="ml-1">Validate File</span>`).prop('disabled', false);
+
+    // Shrink modal back
+    $('#importModalContainer').removeClass('w-[95vw] max-w-7xl h-[85vh]').addClass('w-[520px]');
+});
+
+$('#confirm_import').on('click', function () {
+    const fileInput = $('#import_file')[0].files[0];
+    if (!fileInput) return;
+
+    const mode = $(this).data("mode");
+    const token = window.page.token;
+    const url = `/store/${token}?mode=${mode}`;
+
+    let formData = new FormData();
+    formData.append("file", fileInput);
+
+    const $btn = $(this);
+    $("#import_loading").removeClass("hidden");
+    $btn.html(`<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i><span class="ml-1">Saving</span>`)
+        .prop('disabled', true);
+
+    createIcons({ icons });
+
+    $.ajax({
+        url: url,
+        type: "POST",
+        data: formData,
+        processData: false,
+        contentType: false,
+        headers: {
+            "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr('content')
+        },
+        success: function () {
+            location.reload();
+        },
+        error: function () {
+            alert("Saving failed.");
+            $btn.html(`<span class="ml-1">Confirm & Save</span>`).prop('disabled', false);
+            createIcons({ icons });
+            $("#import_loading").addClass("hidden");
+        }
+    });
+});

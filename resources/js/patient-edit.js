@@ -14,11 +14,12 @@ $('#patientForm').on('input change', 'input, select, textarea', () => {
 });
 
 /* ================= BACK BUTTON WARNING ================= */
-$('#backBtn').on('click', () => {
-    if (!isDirty || confirm('You have unsaved changes. Leave anyway?')) {
-        window.location.href = '/patients';
+$('#backBtn').on('click', function (e) {
+    if (isDirty && !confirm('You have unsaved changes. Leave anyway?')) {
+        e.preventDefault();
     }
 });
+
 
 /* ================= TAB / REFRESH WARNING ================= */
 window.addEventListener('beforeunload', e => {

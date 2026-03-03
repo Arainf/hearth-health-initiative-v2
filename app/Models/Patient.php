@@ -5,9 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Patient extends Model
 {
+    use softDeletes;
     protected $fillable = [
         'last_name',
         'first_name',
@@ -15,13 +17,13 @@ class Patient extends Model
         'suffix',
         'phone_number',
         'birth_date',
-        'age',
         'sex',
-        'unit',
+        'unit_code',
         'weight',
         'height',
-        'bmi',
         'history_id',
+        'deleted_at',
+        'deleted_by',
     ];
 
     protected function casts(): array
@@ -40,4 +42,5 @@ class Patient extends Model
     {
         return $this->belongsTo(Family_history::class, 'history_id');
     }
+
 }

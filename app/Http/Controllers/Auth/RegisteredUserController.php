@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Dump\trashController;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
@@ -31,6 +32,7 @@ class RegisteredUserController extends Controller
 
     public function store(Request $request)
     {
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'username' => 'required|string|max:255|unique:users',
@@ -48,10 +50,9 @@ class RegisteredUserController extends Controller
             'ai_access' => $request->boolean('ai_access'),
             'is_doctor' => $request->boolean('is_doctor'),
         ]);
-
+        $trash = new trashController();
         return redirect()
-            ->route('account.create')
+            ->route('page' , [ 'token' => $trash->encrypt('account')])
             ->with('account_created', true);
-
     }
 }

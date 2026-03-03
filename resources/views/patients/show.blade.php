@@ -1,26 +1,21 @@
 @vite(['resources/css/table.css','resources/js/patients-show.js'])
 
 
-<style>
-    table.dataTable thead tr > th:nth-child(8) {
-        text-align: center !important;
-    }
-</style>
 
 <x-app-layout>
-<div class="w-full h-full relative">
+<div class="w-full h-full relative font-inter">
 
     <div class="bg-white rounded-xl shadow-sm p-4 h-full">
 
         {{-- HEADER --}}
         <div class="flex justify-between items-center mb-4">
-            <h2 class="text-lg font-bold tracking-wide">
-                {{ $patient->last_name }}, {{ $patient->first_name }} - Records
+            <h2 class="text-lg font-bold tracking-wide ">
+                {{ $PATIENT->last_name }}, {{ $PATIENT->first_name }} {{ $PATIENT->middle_name }} {{ $PATIENT->suffix }} - Records
             </h2>
 
             <button
                 class="hhi-btn hhi-btn-back"
-                onclick="window.location='{{ route('patient') }}'"
+                onclick="window.location='{{ url()->previous() }}'"
             >
                 Back
             </button>
@@ -101,3 +96,7 @@
 
 </div>
 </x-app-layout>
+
+<script>
+    window.page = { token : "{{$TOKEN}}" , secret : "{{$SECRET}}" }
+</script>

@@ -22,8 +22,9 @@
     <thead>
     <tr>
         <th>Patient</th>
-        <th>Status</th>
-        <th>Created</th>
+        <th>Unit/Office</th>
+        <th>Staff</th>
+        <th>Deleted at</th>
         <th>Actions</th>
     </tr>
     </thead>

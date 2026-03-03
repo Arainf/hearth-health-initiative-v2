@@ -8,13 +8,15 @@
         group
         flex items-center
         gap-4
-        px-4 py-3
+        pr-4 py-3
+        pl-3
         rounded-xl
         text-sm font-medium
         transition-all duration-200
         border
         border-transparent
        text-[var(--sidebar-text)]
+
     ';
 
     $accentColors = match ($style) {

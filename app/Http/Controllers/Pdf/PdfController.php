@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Pdf;
 
 use App\Http\Controllers\Controller;
 use App\Models\Records;
+use App\Models\VRecords;
 use Mpdf\Mpdf;
 
 class PdfController extends Controller
@@ -85,15 +86,23 @@ class PdfController extends Controller
     {
         if(!$patient){ abort(404,'No patient found'); }
 
+        $full_name = trim(
+            ($patient['first_name'] ?? '') . ' ' .
+            ($patient['middle_name'] ?? '') . ' ' .
+            ($patient['last_name'] ?? '') . ' ' .
+            ($patient['suffix'] ?? '')
+        );
 
-        $full_name      = $patient->first_name.' '.$patient->middle_name.' '.$patient->last_name.' '.$patient->suffix;
-        $unit           = $patient->unit;
-        $dob            = $patient->birth_date ? $patient->birth_date->format('d/m/Y') : " ";
-        $age            = $patient->age;
-        $weight         = $patient->weight;
-        $height         = $patient->height;
-        $bmi            = $patient->bmi;
-        $contact        = $patient->phone_number;
+        $unit    = $patient['unit'] ?? '';
+        $dob     = !empty($patient['dob'])
+            ? \Carbon\Carbon::parse($patient['dob'])->format('d/m/Y')
+            : ' ';
+
+        $age     = $patient['age'] ?? '';
+        $weight  = $patient['weight'] ?? '';
+        $height  = $patient['height'] ?? '';
+        $bmi     = $patient['bmi'] ?? '';
+        $contact = $patient['contact'] ?? '';
 
         return '
         <p class="section-title">A. Personal Information</p>
@@ -141,12 +150,20 @@ class PdfController extends Controller
     {
         if(!$record){ abort(404,'No record found'); }
 
+        $chol = !empty($record['cholesterol'])
+            ? $record['cholesterol'] . ' mg/dl'
+            : '';
 
-        $chol          = $record->cholesterol. ' mg/dl';
-        $hdl           = $record->hdl_cholesterol. ' mg/dl';
-        $bp            = $record->systolic_bp. ' mmHg';
-        $fbs           = $record->fbs;
-        $hbac          = $record->hba1c;
+        $hdl = !empty($record['hdl_cholesterol'])
+            ? $record['hdl_cholesterol'] . ' mg/dl'
+            : '';
+
+        $bp = !empty($record['systolic_bp'])
+            ? $record['systolic_bp'] . ' mmHg'
+            : '';
+
+        $fbs  = $record['fbs'] . ' mg/dl' ?? '';
+        $hbac = $record['hba1c'] . ' %' ?? '';
 
 
         return '
@@ -214,13 +231,13 @@ class PdfController extends Controller
 
     public function export($id)
     {
-        $record = Records::with('generated_report', 'patient')->findOrFail($id);
+        $record = VRecords::findContentForPdf($id);
 
-        if (!$record->generated_report) {
+        if (!$record['generated_report']) {
             abort(404, 'No generated report found for this record.');
         }
 
-        $content = $record->generated_report->generated_text;
+        $content = $record['generated_report']['generated_text'];
 
         $mpdf = new Mpdf([
             'format'        => 'A4',
@@ -231,7 +248,9 @@ class PdfController extends Controller
             'default_font'  => 'Arial',
         ]);
 
-        $date = $record->created_at->format('F d, Y');
+        $date = !empty($record['generated_report']['created_at'])
+            ? \Carbon\Carbon::parse($record['generated_report']['created_at'])->format('F d, Y')
+            : '';
 
 
         $mpdf->SetHTMLHeader('
@@ -260,8 +279,8 @@ class PdfController extends Controller
             </tr>
         </table>
         ');
-        $mpdf->WriteHTML($this->sectionA($record->patient));
-        $mpdf->WriteHTML($this->sectionB($record));
+        $mpdf->WriteHTML($this->sectionA($record['patient']));
+        $mpdf->WriteHTML($this->sectionB($record['medical']));
         $mpdf->WriteHTML($content);
 //        $mpdf->WriteHTML($this->sectionF());
         $mpdf->SetHTMLFooter(
@@ -270,7 +289,7 @@ class PdfController extends Controller
 
 
         return $mpdf->Output(
-            "HHI_Report_{$record->patient->last_name}.pdf",
+            "HHI_Report_{$record['patient']['last_name']}.pdf",
             "D"
         );
     }

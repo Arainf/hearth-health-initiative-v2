@@ -24,6 +24,7 @@ class Records extends Model
         'is_archived',
         'staff_id',
         'approved_by',
+        'created_at',
     ];
 
     public function patient(): BelongsTo
@@ -93,4 +94,6 @@ class Records extends Model
             'status' => $this->status?->status_name,
         ];
     }
+
+
 }

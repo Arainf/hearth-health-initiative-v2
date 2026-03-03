@@ -380,94 +380,94 @@ class TableController extends Controller
     }
 
     public function patientsOwnRecord(Request $request, $id)
-{
-    if (!$request->ajax()) return;
+    {
+        if (!$request->ajax()) return;
 
-    $draw   = (int) $request->get('draw', 1);
-    $start  = (int) $request->get('start', 0);
-    $length = (int) $request->get('length', 10);
+        $draw   = (int) $request->get('draw', 1);
+        $start  = (int) $request->get('start', 0);
+        $length = (int) $request->get('length', 10);
 
-    $base = DB::table('records')
-        ->where('patient_id', $id);
+        $base = DB::table('records')
+            ->where('patient_id', $id);
 
-    // DATE FILTER
-    if ($request->date_from) {
-        $base->whereDate('created_at', '>=', $request->date_from);
-    }
-
-    if ($request->date_to) {
-        $base->whereDate('created_at', '<=', $request->date_to);
-    }
-
-    $recordsTotal = $base->count();
-
-    $rows = $base
-        ->orderBy('created_at', 'desc')
-        ->skip($start)
-        ->take($length)
-        ->get();
-
-    $data = [];
-    $counter = $start + 1;
-
-    foreach ($rows as $row) {
-
-        $statusName = DB::table('status')
-            ->where('id', $row->status_id)
-            ->value('status_name');
-
-        $doctor = $row->approved_by;
-
-        /* Status badge */
-        $color = match (strtolower($statusName)) {
-            'approved' => 'badge-approved',
-            'pending'  => 'badge-pending',
-            default    => 'badge-not-evaluated',
-        };
-
-        $doctorName = '';
-        if ($doctor) {
-            $doctorName = '
-            <div class="text-[11px] text-gray-400 mt-1">
-                by ' . e($doctor) . '
-            </div>
-        ';
+        // DATE FILTER
+        if ($request->date_from) {
+            $base->whereDate('created_at', '>=', $request->date_from);
         }
 
-        $status = '
-        <div class="flex flex-col items-center">
-            <span class="badge ' . $color . '">
-                ' . $statusName . '
-            </span>
-            ' . $doctorName . '
-        </div>
-    ';
+        if ($request->date_to) {
+            $base->whereDate('created_at', '<=', $request->date_to);
+        }
+
+        $recordsTotal = $base->count();
+
+        $rows = $base
+            ->orderBy('created_at', 'desc')
+            ->skip($start)
+            ->take($length)
+            ->get();
+
+        $data = [];
+        $counter = $start + 1;
+
+        foreach ($rows as $row) {
+
+            $statusName = DB::table('status')
+                ->where('id', $row->status_id)
+                ->value('status_name');
+
+            $doctor = $row->approved_by;
+
+            /* Status badge */
+            $color = match (strtolower($statusName)) {
+                'approved' => 'badge-approved',
+                'pending'  => 'badge-pending',
+                default    => 'badge-not-evaluated',
+            };
+
+            $doctorName = '';
+            if ($doctor) {
+                $doctorName = '
+                <div class="text-[11px] text-gray-400 mt-1">
+                    by ' . e($doctor) . '
+                </div>
+            ';
+            }
+
+            $status = '
+            <div class="flex flex-col items-center">
+                <span class="badge ' . $color . '">
+                    ' . $statusName . '
+                </span>
+                ' . $doctorName . '
+            </div>
+        ';
 
 
-        $data[] = [
-            $counter++,                // #
-            $row->cholesterol,
-            $row->hdl_cholesterol,
-            $row->systolic_bp,
-            $row->fbs,
-            $row->hba1c,
-            $row->hypertension,        // HTN
-            $row->diabetes,            // DM
-            $row->smoking,             // Smoking
-            $status,
-            \Carbon\Carbon::parse($row->created_at)
-                ->format('M d, Y '),
-            $row->generated_id         // 👈 used by drawer
-        ];
+            $data[] = [
+                $counter++,                // #
+                $row->cholesterol,
+                $row->hdl_cholesterol,
+                $row->systolic_bp,
+                $row->fbs,
+                $row->hba1c,
+                $row->hypertension,        // HTN
+                $row->diabetes,            // DM
+                $row->smoking,             // Smoking
+                $status,
+                \Carbon\Carbon::parse($row->created_at)
+                    ->format('M d, Y '),
+                $row->generated_id         // 👈 used by drawer
+            ];
+        }
+
+        return response()->json([
+            'draw' => $draw,
+            'recordsTotal' => $recordsTotal,
+            'recordsFiltered' => $recordsTotal,
+            'data' => $data
+        ]);
     }
-
-    return response()->json([
-        'draw' => $draw,
-        'recordsTotal' => $recordsTotal,
-        'recordsFiltered' => $recordsTotal,
-        'data' => $data
-    ]);
-}
 
     public function accounts(Request $request)
 {
