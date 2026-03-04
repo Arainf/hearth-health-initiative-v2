@@ -102,7 +102,7 @@
     --badge-pending-text: #92400e;
     --badge-pending-border: #fde68a;
 
-    --badge-neutral-bg: #f3f4f6;
+    --badge-neutral-bg: #d6d6d6;
     --badge-neutral-text: #374151;
     --badge-neutral-border: #d1d5db;
 
@@ -135,7 +135,7 @@
     --danger-text: var(--accent-4);
     --danger-bg: var(--red-100);
 
-    --accent-primary: #2563eb;
+    --accent-primary: #1e88e5;
     --accent-1: #F1AE00;
     --accent-2: #4f46e5;
     --accent-3: #16a34a;

@@ -2,95 +2,422 @@
 
 <x-app-layout>
     <div class="
-    relative flex flex-col h-screen px-2 pt-2 overflow-hidden ">
+    relative flex flex-col h-full px-2 pt-2 overflow-hidden ">
+
         <!-- HEADER -->
-        <div class="flex flex-col border-b  px-6 py-3 z-20 sticky top-0 ">
-            <div class="flex justify-between items-center mb-4">
-                <p class="circular text-lg tracking-tighter ">Doctor Dashboard</p>
+        <div class="flex flex-col border-b px-4 sm:px-6 py-3 z-20 sticky top-0 ">
 
-                <x-filter_search id="record-search" placeholder="Search record" width="w-80" />
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
 
-                <div class="flex flex-row gap-1">
-                    <x-dropdown
-                        name="year-filter"
-                        :options="$years"
-                        selected="{{$currentYear}}"
-                        all-value="all"
-                        all-display="all years"
-                        class="dropdown form-control"
+                <!-- LEFT: ICON + TITLE -->
+                <div class="flex items-center font-inter font-semibold shrink-0">
+                    @php
+                        $icon = $MODULE_NAME['icon'];
+                    @endphp
+
+                    <x-dynamic-component
+                        :component="'lucide-' . $icon"
+                        class="w-5 h-5 mr-2"
                     />
 
-                    <x-dropdown
-                        name="status-filter"
-                        :options="$status"
-                        selected="all status"
-                        all-value="all"
-                        all-display="all status"
+                    <span class="text-base sm:text-lg">
+                        {{ $MODULE_NAME['label'] }}
+                    </span>
+                </div>
 
-                        value-key="id"
-                        label-key="status_name"
-                        count-key="count"
-                        class="dropdown form-control"
+                <div class="flex flex-row gap-2">
+                    <x-button id="btnOpenTemplate">
+                        <x-lucide-layout-template class="w-4 h-4"/> Get Template
+                    </x-button>
+                    <x-button id="btnOpenImport">
+                        <x-lucide-download class="w-4 h-4"/> Upload Csv
+                    </x-button>
+
+                    <div id="modalTemplate" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/50 backdrop-blur-sm">
+                        <div class="bg-white w-[500px] rounded-xl shadow-xl p-6 relative">
+                            <button type="button" class="close-modal absolute top-3 right-3 text-gray-500 hover:text-gray-700">✕</button>
+                            <h2 class="text-lg font-semibold mb-4">Download Template</h2>
+                            <p class="text-sm text-gray-600 mb-6">Download the CSV template file to ensure proper formatting. Also select a unit/office.</p>
+
+                            <x-dropdown_select label="Unit/Office" class="form-control w-full col-span-2" name="unit_office_template" :options="$UNITS" valueKey="unit_code" labelKey="unit_name" placeholder="Select Unit">
+                                <x-slot:iconSlot><x-lucide-building-2 class="w-4 h-4"/></x-slot:iconSlot>
+                            </x-dropdown_select>
+
+                            <div class="flex justify-end gap-3 mt-3">
+                                <x-button type="button" class="close-modal">Cancel</x-button>
+                                <x-button id="export_template" data-mode="{{ $encryption->encrypt('export') }}">
+                                    <x-lucide-download class="w-4 h-4"/> Download Template
+                                </x-button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="modalImport" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/50 backdrop-blur-sm">
+                        <div id="importModalContainer" class="bg-white w-[520px] rounded-xl shadow-xl p-6 relative transition-all duration-300 ease-in-out">
+                            <button type="button" class="close-modal absolute top-3 right-3 text-gray-500 hover:text-gray-700">✕</button>
+                            <h2 class="text-lg font-semibold mb-2">Import Patient Records</h2>
+                            <p class="text-sm text-gray-600 mb-4">Upload the official system-generated template (.xlsx only).</p>
+
+                            <div id="import_step_1">
+                                <div class="mb-4">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Upload Excel File (.xlsx only)</label>
+                                    <input type="file" id="import_file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" class="w-full border rounded-lg p-2 text-sm">
+                                </div>
+                                <div class="flex justify-end gap-3 mt-4">
+                                    <x-button type="button" class="close-modal">Cancel</x-button>
+                                    <x-button id="validate_import" data-mode="{{ $encryption->encrypt('validate') }}" class="bg-blue-600 text-white">Validate File</x-button>
+                                </div>
+                            </div>
+
+                            <!-- STEP 2 -->
+
+                            <div id="import_step_2" class="hidden">
+                                <div class="bg-gray-50 border rounded-lg p-4 text-sm">
+                                    <p class="mb-2 font-semibold">Import Summary</p>
+                                    <p>
+                                        Valid Rows:
+                                        <span id="valid_rows" class="text-green-600 font-medium"></span>
+                                    </p>
+                                    <p>
+                                        Invalid Rows:
+                                        <span id="invalid_rows" class="text-red-600 font-medium"></span>
+                                    </p>
+                                </div>
+                                <div class="flex-1 mt-4 border rounded-lg h-[58vh] overflow-y-scroll">
+                                    <table class="min-w-full text-xs border-collapse h-full">
+                                        <thead class="bg-gray-100 sticky top-0 z-10">
+                                        <tr>
+                                            <th class="px-2 py-2 border">Row</th>
+                                            <th class="px-2 py-2 border">Full Name</th>
+                                            <th class="px-2 py-2 border">Birthday</th>
+                                            <th class="px-2 py-2 border">Sex</th>
+                                            <th class="px-2 py-2 border">Weight (KG)</th>
+                                            <th class="px-2 py-2 border">Height (CM)</th>
+                                            <th class="px-2 py-2 border">Phone Number</th>
+                                            <!-- Family History -->
+                                            <th class="px-2 py-2 border">Hypertension</th>
+                                            <th class="px-2 py-2 border">Diabetes Mellitus</th>
+                                            <th class="px-2 py-2 border">Heart Attack under 60y</th>
+                                            <th class="px-2 py-2 border">Cholesterol</th>
+                                            <!-- Risk Factors -->
+                                            <th class="px-2 py-2 border">Total Cholesterol (mg/dl)</th>
+                                            <th class="px-2 py-2 border">HDL Cholesterol (mg/dl)</th>
+                                            <th class="px-2 py-2 border">Systolic BP (mmHg)</th>
+                                            <th class="px-2 py-2 border">FBS (mg/dl)</th>
+                                            <th class="px-2 py-2 border">HbA1c (%)</th>
+                                            <th class="px-2 py-2 border">Hypertension Tx</th>
+                                            <th class="px-2 py-2 border">Diabetes M</th>
+                                            <th class="px-2 py-2 border">Current Smoker</th>
+                                            <th class="px-2 py-2 border">Date Record</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody id="preview_table_body" class="bg-white">
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="flex justify-between mt-4">
+                                    <x-button id="back_to_upload">
+                                        Back
+                                    </x-button>
+                                    <x-button id="confirm_import"
+                                              data-mode="{{ $encryption->encrypt('confirm') }}"
+                                              class="bg-green-600 text-white">
+                                        Confirm & Save
+                                    </x-button>
+                                </div>
+                            </div>
+                            <div id="import_loading" class="hidden text-center text-sm text-gray-500 mt-4">Processing...</div>
+                        </div>
+                    </div>
+                </div>
+
+
+            </div>
+
+
+        </div>
+
+        <div class="flex flex-row justify-between mx-4 mb-4 pb-4 border-b border-border ">
+
+            <div class="grid grid-cols-5 grid-rows-2 items-end gap-2 w-[40%] ">
+
+                <div class="w-full col-span-5">
+                    <x-filter_search
+                        id="record-search"
+                        placeholder="Search record"
+                        width="w-full"
                     />
+                </div>
 
-                    <x-button.search_button onClick="applyPendingFilters()" />
-                    <x-button.reset_button onClick="resetFilters()" />
+                <x-dropdown
+                    label="Year"
+                    name="year-filter"
+                    :options="$YEARS"
+                    selected="{{$CURRENT}}"
+                    all-value="all"
+                    all-display="all years"
+                    class="dropdown form-control w-full"
+                >
+                    <x-slot:iconSlot>
+                        <x-lucide-calendar-clock class="w-4 h-4"/>
+                    </x-slot:iconSlot>
+                </x-dropdown>
+
+                <x-dropdown
+                    label="Status"
+                    name="status-filter"
+                    :options="$STATUS"
+                    selected="all status"
+                    all-value="all"
+                    all-display="all status"
+                    value-key="id"
+                    label-key="status_name"
+                    count-key="count"
+                    class="dropdown form-control w-full "
+                >
+                    <x-slot:iconSlot>
+                        <x-lucide-badge-info class="w-4 h-4"/>
+                    </x-slot:iconSlot>
+                </x-dropdown>
+
+                <x-dropdown_select
+                    label="Unit/Office"
+                    class="form-control w-full col-span-2 "
+                    name="unit_office"
+                    :options="$UNITS"
+                    valueKey="unit_name"
+                    labelKey="unit_name"
+                    placeholder="Select Unit"
+                >
+                    <x-slot:iconSlot>
+                        <x-lucide-building-2 class="w-4 h-4"/>
+                    </x-slot:iconSlot>
+                </x-dropdown_select>
+
+                <div class="flex flex-row gap-2">
+                    <x-button.search_button  />
+                    <x-button.reset_button />
+                </div>
+
+            </div>
+            <!-- CENTER: SEARCH -->
+
+            <!-- OVERVIEW CARDS -->
+            <div class="px-4 pt-4 w-[60%] items-center justify-center font-inter">
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+
+                    {{-- ================= Pending ================= --}}
+                    <div id="pending-card"
+                         class="relative overflow-hidden rounded-xl p-4
+                            bg-gradient-to-br
+                            from-[var(--badge-pending-bg)]
+                            to-[var(--clr-surface-a10)]
+                            dark:from-[var(--badge-pending-bg)]
+                            dark:to-[var(--clr-surface-a20)]
+                            border border-[var(--badge-pending-border)]
+                            shadow-sm hover:shadow-md transition">
+
+                        {{-- ===== Skeleton Overlay ===== --}}
+                        <div id="pending-skeleton"
+                             class="absolute inset-0 z-20 p-4
+                                bg-gradient-to-br
+                                from-[var(--badge-pending-bg)]
+                                to-[var(--clr-surface-a10)]
+                                dark:from-[var(--badge-pending-bg)]
+                                dark:to-[var(--clr-surface-a20)]
+                                animate-pulse">
+
+                            <div class="space-y-3">
+                                <div class="h-4 w-32 rounded bg-[var(--clr-surface-a30)]"></div>
+                                <div class="h-10 w-20 rounded bg-[var(--clr-surface-a30)]"></div>
+                            </div>
+
+                            <div class="mt-5 space-y-2">
+                                <div class="h-3 w-28 rounded bg-[var(--clr-surface-a30)]"></div>
+                                <div class="h-3 w-40 rounded bg-[var(--clr-surface-a30)]"></div>
+                            </div>
+                        </div>
+
+                        {{-- ===== Real Content ===== --}}
+                        <div id="pending-content"
+                             class="relative z-10 opacity-0 transition-opacity duration-300">
+
+                            {{-- Header --}}
+                            <div class="flex items-center justify-between mb-4">
+                                <div>
+                                    <p class="text-sm font-medium text-[var(--badge-pending-text)]">
+                                        Pending Records
+                                    </p>
+                                    <p class="text-4xl font-bold text-[var(--text-primary)]"
+                                       id="pending-count">
+                                        0
+                                    </p>
+                                </div>
+
+                                <div class="p-3 rounded-full bg-[var(--badge-pending-border)]/30">
+                                    <x-lucide-clock
+                                        class="absolute w-28 h-28 bottom-[-53%] right-[-15%] blur-sm text-[var(--badge-pending-text)]" />
+                                </div>
+                            </div>
+
+                            {{-- Extra Info --}}
+                            <div class="text-xs text-[var(--text-secondary)] space-y-1">
+                                <p>Year: <span class="font-medium" id="pendingYear"> {{ now()->year }}</span></p>
+                                <p class="flex items-center gap-1">
+                                    <span>Office:</span>
+                                    <span id="pendingUnit"
+                                          class="font-medium truncate max-w-[160px] inline-block">
+                                        All Units
+                                    </span>
+                                </p>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    {{-- ================= Not Evaluated ================= --}}
+                    <div id="not-evaluated-card"
+                         class="relative overflow-hidden rounded-xl p-6
+                            bg-gradient-to-br
+                            from-[var(--badge-neutral-bg)]
+                            to-[var(--clr-surface-a10)]
+                            dark:from-[var(--badge-neutral-bg)]
+                            dark:to-[var(--clr-surface-a20)]
+                            border border-[var(--badge-neutral-border)]
+                            shadow-sm hover:shadow-md transition">
+
+                        {{-- ===== Skeleton Overlay ===== --}}
+                        <div id="not-evaluated-skeleton"
+                             class="absolute inset-0 z-20 p-6
+                                bg-gradient-to-br
+                                from-[var(--badge-neutral-bg)]
+                                to-[var(--clr-surface-a10)]
+                                dark:from-[var(--badge-neutral-bg)]
+                                dark:to-[var(--clr-surface-a20)]
+                                animate-pulse">
+
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="space-y-3 w-full">
+                                    <div class="h-4 w-32 rounded bg-[var(--clr-surface-a30)]"></div>
+                                    <div class="h-10 w-20 rounded bg-[var(--clr-surface-a30)]"></div>
+                                </div>
+                            </div>
+
+                            <div class="space-y-2 mt-4">
+                                <div class="h-3 w-28 rounded bg-[var(--clr-surface-a30)]"></div>
+                                <div class="h-3 w-40 rounded bg-[var(--clr-surface-a30)]"></div>
+                            </div>
+                        </div>
+
+                        {{-- ===== Real Content ===== --}}
+                        <div id="not-evaluated-content"
+                             class="relative z-10 opacity-0 transition-opacity duration-300">
+
+                            <div class="flex items-center justify-between mb-4">
+                                <div>
+                                    <p class="text-sm font-medium text-[var(--badge-neutral-text)]">
+                                        Not Evaluated
+                                    </p>
+                                    <p class="text-4xl font-bold text-[var(--text-primary)]"
+                                       id="not-evaluated-count">
+                                        0
+                                    </p>
+                                </div>
+
+                                <div class="p-3 rounded-full bg-[var(--badge-neutral-border)]/30">
+                                    <x-lucide-circle-question-mark class="absolute w-28 h-28 bottom-[-53%] right-[-15%] blur-sm text-[var(--badge-neutral-text)]" />
+                                </div>
+                            </div>
+
+                            <div class="text-xs text-[var(--text-secondary)] space-y-1">
+                                <p>Year:<span class="font-medium" id="evaluatedYear"> {{ now()->year }}</span></p>
+                                <p class="flex items-center gap-1">
+                                    <span>Office:</span>
+                                    <span id="evaluateUnit"
+                                          class="font-medium truncate max-w-[160px] inline-block">
+                                        All Units
+                                    </span>
+                                </p>
+                            </div>
+
+                        </div>
+                    </div>
+                    {{-- ================= Approved ================= --}}
+                    <div id="approved-card"
+                         class="relative overflow-hidden rounded-xl p-6
+                        bg-gradient-to-br
+                        from-[var(--badge-approved-bg)]
+                        to-[var(--clr-surface-a10)]
+                        dark:from-[var(--badge-approved-bg)]
+                        dark:to-[var(--clr-surface-a20)]
+                        border border-[var(--badge-approved-border)]
+                        shadow-sm hover:shadow-md transition">
+
+                        <!-- ===== Skeleton Overlay ===== -->
+                        <div id="approved-skeleton"
+                             class="absolute inset-0 z-20 p-6
+                            bg-gradient-to-br
+                            from-[var(--badge-approved-bg)]
+                            to-[var(--clr-surface-a10)]
+                            dark:from-[var(--badge-approved-bg)]
+                            dark:to-[var(--clr-surface-a20)]
+                            animate-pulse">
+
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="space-y-3 w-full">
+                                    <div class="h-4 w-32 rounded bg-[var(--clr-surface-a30)]"></div>
+                                    <div class="h-10 w-20 rounded bg-[var(--clr-surface-a30)]"></div>
+                                </div>
+                            </div>
+
+                            <div class="space-y-2 mt-4">
+                                <div class="h-3 w-28 rounded bg-[var(--clr-surface-a30)]"></div>
+                                <div class="h-3 w-40 rounded bg-[var(--clr-surface-a30)]"></div>
+                            </div>
+                        </div>
+
+                        <!-- ===== Actual Content ===== -->
+                        <div id="approved-content" class="relative z-10 opacity-0 transition-opacity duration-300">
+
+                            <div class="flex items-center justify-between mb-4">
+                                <div>
+                                    <p class="text-sm font-medium text-[var(--badge-approved-text)]">
+                                        Approved Records
+                                    </p>
+                                    <p class="text-4xl font-bold text-[var(--text-primary)]"
+                                       id="approved-count">
+                                        0
+                                    </p>
+                                </div>
+
+                                <div class="p-3 rounded-full bg-[var(--badge-approved-border)]/30">
+                                    <x-lucide-check-circle class="absolute w-28 h-28 bottom-[-53%] right-[-15%] blur-sm text-[var(--badge-approved-text)]" />
+                                </div>
+                            </div>
+
+                            <div class="text-xs text-[var(--text-secondary)] space-y-1">
+                                <p>Year: <span class="font-medium" id="approveYear">{{ now()->year }}</span></p>
+                                <p class="flex items-center gap-1">
+                                    <span>Office:</span>
+                                    <span id="approveUnit"
+                                          class="font-medium truncate max-w-[160px] inline-block">
+                                        All Units
+                                    </span>
+                                </p>
+                            </div>
+
+                        </div>
+                    </div>
+
                 </div>
             </div>
+
+            <!-- RIGHT: FILTERS -->
+
         </div>
 
-        <!-- OVERVIEW CARDS -->
-        <div class="px-6 py-4 border-b border-border">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <!-- Pending Card -->
-                <div class="bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/30 dark:to-amber-900/10 border border-amber-200 dark:border-amber-800/50 rounded-xl p-5 shadow-sm hover:shadow-md transition-all relative overflow-hidden">
-                    <div class="absolute inset-0 bg-white/50 dark:bg-gray-900/30 flex items-center justify-center loading-overlay hidden">
-                        <div class="w-6 h-6 border-2 border-amber-400 dark:border-amber-600 border-t-transparent rounded-full animate-spin"></div>
-                    </div>
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm font-medium text-amber-700 dark:text-amber-300 mb-1">Pending Records</p>
-                            <p class="text-3xl font-bold text-amber-900 dark:text-white" id="pending-count">0</p>
-                        </div>
-                        <div class="bg-amber-200 dark:bg-amber-900/30 rounded-full p-3">
-                            <i class="fa-solid fa-clock text-amber-700 dark:text-amber-400 text-2xl"></i>
-                        </div>
-                    </div>
-                </div>
 
-                <!-- Not Evaluated Card -->
-                <div class="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-xl p-5 shadow-sm hover:shadow-md transition-all relative overflow-hidden">
-                    <div class="absolute inset-0 bg-white/50 dark:bg-gray-900/30 flex items-center justify-center loading-overlay hidden">
-                        <div class="w-6 h-6 border-2 border-gray-400 dark:border-gray-500 border-t-transparent rounded-full animate-spin"></div>
-                    </div>
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Not Evaluated</p>
-                            <p class="text-3xl font-bold text-gray-900 dark:text-white" id="not-evaluated-count">0</p>
-                        </div>
-                        <div class="bg-gray-200 dark:bg-gray-700/50 rounded-full p-3">
-                            <i class="fa-solid fa-file-circle-question text-gray-700 dark:text-gray-300 text-2xl"></i>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Approved Card -->
-                <div class="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-900/5 border border-green-200 dark:border-green-800/50 rounded-xl p-5 shadow-sm hover:shadow-md transition-all relative overflow-hidden">
-                    <div class="absolute inset-0 bg-white/50 dark:bg-gray-900/30 flex items-center justify-center loading-overlay hidden">
-                        <div class="w-6 h-6 border-2 border-green-400 dark:border-green-600 border-t-transparent rounded-full animate-spin"></div>
-                    </div>
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm font-medium text-green-700 dark:text-green-300 mb-1">Approved Records</p>
-                            <p class="text-3xl font-bold text-green-900 dark:text-white" id="approved-count">0</p>
-                        </div>
-                        <div class="bg-green-200 dark:bg-green-900/30 rounded-full p-3">
-                            <i class="fa-solid fa-check-circle text-green-700 dark:text-green-400 text-2xl"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
 
         <!-- TABLE SECTION -->
         <div class="flex-1 overflow-y-auto p-2 w-full h-full">
@@ -120,9 +447,6 @@
             </div>
         </div>
     </div>
-
-    <!-- RIGHT SLIDE PANEL (Generated Report Editor) -->
-   <x-rich-editor.main/>
 
 
     <!-- SUCCESS MODAL -->
@@ -155,9 +479,5 @@
 
 
 <script>
-    function printRow(patientId){
-        window.open(`/export/pdf/${patientId}`, "_blank");
-    }
-
-    window.page = { table : "/table/{{$table}}" }
+    window.page = { token : "{{$TOKEN}}" }
 </script>

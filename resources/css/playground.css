@@ -63,6 +63,11 @@
   border-collapse: collapse !important;
 }
 
+.dt-info {
+    @apply
+    mt-2 font-inter font-semibold text-gray-400 absolute
+}
+
 .dt-scroll-head table.dataTable thead th {
   background: var(--clr-surface-a20);
   color: var(--clr-text-a30);
@@ -83,8 +88,6 @@
 
 /* ================= TABLE BASE ================= */
 table.dataTable {
-  border-collapse: separate !important;
-  border-spacing: 0 6px !important;
   background: transparent;
   color: var(--clr-text-a0);
 }
@@ -97,7 +100,7 @@ table.dataTable tbody tr {
 /* ================= CELLS ================= */
 table.dataTable tbody tr > td {
   background: var(--clr-surface-a10);
-  padding: 5px 12px !important;
+  padding: 5px 12px ;
   font-size: 13px;
   color: var(--clr-text-a0);
   vertical-align: middle;
@@ -106,6 +109,11 @@ table.dataTable tbody tr > td {
   border-bottom: 1px solid var(--clr-surface-a30);
   border-right: 1px solid var(--clr-surface-a30);
   transition: background .15s ease;
+}
+
+table.dataTable tbody tr > td[colspan="6"]  {
+    padding: 0 !important;
+    margin: 0 !important;
 }
 
 /* Left border */
@@ -215,21 +223,6 @@ td.text-end {
   justify-content: flex-end;
 }
 
-/* Icon buttons */
-.hhi-btn.icon-only {
-  width: 32px;
-  height: 32px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 6px;
-  transition: all .15s ease;
-}
-
-.hhi-btn.icon-only:hover {
-  transform: translateY(-1px);
-  filter: brightness(1.1);
-}
 
 /* ================= PAGINATION ================= */
 .dataTables_paginate {

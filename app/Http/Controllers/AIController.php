@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Records;
 use App\Models\Generated_reports;
+use App\Models\VRecords;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -31,17 +32,16 @@ class AIController extends Controller
     public function check($id)
     {
         try {
-            $record = Records::with(['patient.family_history', 'status', 'generated_report'])->find($id);
+            $record = VRecords::findOrFail($id);
 
             if (!$record) {
-                return ['found' => false, 'message' => 'Record not found'];
+                return [
+                    'found' => false,
+                    'message' => 'Record not found'
+                ];
             }
 
-            if (!$record->patient) {
-                return ['found' => false, 'message' => 'Patient associated with this record no longer exists'];
-            }
-
-            if ($record->hasGeneratedReport()) {
+            if (!empty($record->generated_id)) {
                 return [
                     'found' => true,
                     'generated' => true,
@@ -50,16 +50,7 @@ class AIController extends Controller
                 ];
             }
 
-            $inputData = $record->getAIInputData();
-            if (empty($inputData['record']) || empty($inputData['patient'])) {
-                return [
-                    'found' => true,
-                    'generated' => false,
-                    'error' => 'Insufficient data for AI evaluation. Please ensure the record has all required fields.',
-                    'input_data' => $inputData,
-                    'record' => $record,
-                ];
-            }
+            $inputData = $this->formatJsonPayload($record);
 
             return [
                 'found' => true,
@@ -67,43 +58,58 @@ class AIController extends Controller
                 'input_data' => $inputData,
                 'record' => $record,
             ];
+
         } catch (\Exception $e) {
-            Log::error('Error checking record', ['record_id' => $id, 'error' => $e->getMessage()]);
-            return ['found' => false, 'message' => 'Error checking record: ' . $e->getMessage()];
+            Log::error('Error checking record', [
+                'record_id' => $id,
+                'error' => $e->getMessage()
+            ]);
+
+            return [
+                'found' => false,
+                'message' => 'Error checking record: ' . $e->getMessage()
+            ];
         }
     }
 
     public function formatJsonPayload($record)
     {
         return [
+
             'record_information' => [
-                'cholesterol[mg/dl]' => $record->cholesterol ?? '',
-                'high_density_lipoprotein_cholesterol[mg/dl]' => $record->hdl_cholesterol ?? '',
+                'total_cholesterol[mg/dl]' => $record->total_cholesterol ?? '',
+                'hdl_cholesterol[mg/dl]' => $record->hdl_cholesterol ?? '',
                 'systolic_blood_pressure[mmHg]' => $record->systolic_bp ?? '',
                 'fasting_blood_sugar' => $record->fbs ?? '',
                 'HbA1c' => $record->hba1c ?? '',
-                'current' => [
-                    'has_hypertension' => $record->hypertension ? 'Yes' : 'No',
-                    'has_diabetes' => $record->diabetes ? 'Yes' : 'No',
-                    'is_smoking' => $record->smoking ? 'Yes' : 'No',
+
+                'current_conditions' => [
+                    'has_hypertension' => $record->hypertension_tx ? 'Yes' : 'No',
+                    'has_diabetes' => $record->diabetes_m ? 'Yes' : 'No',
+                    'is_smoking' => $record->current_smoker ? 'Yes' : 'No',
                 ]
             ],
+
             'patient_information' => [
-                'first_name' => $record->patient->first_name ?? '',
-                'last_name' => $record->patient->last_name ?? '',
-                'middle_name' => $record->patient->middle_name ?? '',
-                'suffix' => $record->patient->suffix ?? '',
-                'age' => $record->patient->age ?? '',
-                'sex' => $record->patient->sex ?? '',
-                'height' => $record->patient->height ?? '',
-                'weight' => $record->patient->weight ?? '',
-                'bmi' => $record->patient->bmi ?? '',
-                'family_history' => [
-                    'has_hypertension' => $record->patient->family_history?->Hypertension ? 'Yes' : 'No',
-                    'has_diabetes_mellitus' => $record->patient->family_history?->Diabetes ? 'Yes' : 'No',
-                    'heart_attack_under_60y' => $record->patient->family_history?->Heart_Attack ? 'Yes' : 'No',
-                    'has_cholesterol' => $record->patient->family_history?->Cholesterol ? 'Yes' : 'No',
-                ]
+                'first_name' => $record->first_name ?? '',
+                'last_name' => $record->last_name ?? '',
+                'middle_name' => $record->middle_name ?? '',
+                'suffix' => $record->suffix ?? '',
+                'age' => $record->age ?? '',
+                'sex' => $record->sex ?? '',
+                'birth_date' => $record->birth_date ?? '',
+                'height' => $record->height ?? '',
+                'weight' => $record->weight ?? '',
+                'bmi' => $record->bmi ?? '',
+                'contact_number' => $record->phone_number ?? '',
+                'unit' => $record->unit_name ?? '',
+            ],
+
+            'meta_information' => [
+                'record_id' => $record->record_id,
+                'status' => $record->status_name ?? '',
+                'created_at' => $record->create ?? '',
+                'staff_id' => $record->staff_id ?? '',
             ]
         ];
     }
@@ -155,8 +161,7 @@ class AIController extends Controller
 
     public function evaluateRecord(Request $request, $id)
     {
-        set_time_limit(300);
-        ini_set('max_execution_time', 300);
+
 
         $check = $this->check($id);
 
@@ -171,18 +176,26 @@ class AIController extends Controller
             ]);
         }
 
-        $record = $check['record'];
-        $inputData = $this->formatJsonPayload($record);
+        $VRecord = $check['record'];
+        $inputData = $this->formatJsonPayload($VRecord);
+
 
         ksort($inputData);
 
-        $inputData = array_map(function ($v) {
-            return $v === null ? '' : $v;
-        }, $inputData);
-
+        array_walk_recursive($inputData, function (&$value) {
+            if ($value === null) $value = '';
+        });
         $ai = $this->getUserAIConfig();
 
-/** you can add " - Print all data receive from the prompt " to check which data has been passed to the ai */
+ /** you can add " - Print all data receive from the prompt " to check which data has been passed to the ai
+  * DEBUG MODE:
+  * - Before generating the report,
+  * - Print a section titled: <p><strong>RAW INPUT DATA</strong></p>
+  * - Print the entire JSON exactly as received.
+  * - Do not summarize.
+  * - Then generate the report normally.
+  *
+  * */
 
         $systemPrompt = $ai['prompt'] . '
                  Output rules:
@@ -233,33 +246,31 @@ class AIController extends Controller
 //                    ],
 //                ],
 //            ]);
-            $response = Http::withOptions([
-                'verify' => false,
-                'timeout' => 300,
-            ])->withHeaders([
-                'Authorization' => 'Bearer ' . $ai['api_key'],
-                'Content-Type' => 'application/json',
-            ])->post('https://router.huggingface.co/v1/chat/completions', [
-                'model' => 'openai/gpt-oss-20b',
-
-                // 🔒 DETERMINISM CONTROLS
-                'temperature' => 0.0,
-                'top_p' => 1.0,
-                'frequency_penalty' => 0.0,
-                'presence_penalty' => 0.0,
-                'seed' => 42,
-
-                'messages' => [
-                    [
-                        'role' => 'system',
-                        'content' => $systemPrompt,
+            $response = Http::timeout(60)
+                ->retry(2, 500)
+                ->withOptions([
+                    'verify' => false
+                ])
+                ->withHeaders([
+                    'Authorization' => 'Bearer ' . $ai['api_key'],
+                    'Content-Type' => 'application/json',
+                ])
+                ->post('https://router.huggingface.co/v1/chat/completions', [
+                    'model' => 'openai/gpt-oss-20b',
+                    'temperature' => 0.0,
+                    'top_p' => 1.0,
+                    'seed' => 42,
+                    'messages' => [
+                        [
+                            'role' => 'system',
+                            'content' => $systemPrompt,
+                        ],
+                        [
+                            'role' => 'user',
+                            'content' => 'Patient info: ' . json_encode($inputData, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
+                        ],
                     ],
-                    [
-                        'role' => 'user',
-                        'content' => 'Patient info: ' . json_encode($inputData, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
-                    ],
-                ],
-            ]);
+                ]);
 
             // Check for HTTP errors
             if ($response->failed()) {
@@ -296,6 +307,8 @@ class AIController extends Controller
                     'error' => 'AI service returned empty response'
                 ], 500);
             }
+
+            $record = Records::findOrFail($VRecord->record_id);
 
             $report = Generated_reports::create([
                 'generated_text' => $summary,

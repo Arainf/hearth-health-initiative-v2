@@ -16,6 +16,7 @@ class Dropdown extends Component
     public $valueKey;       // Key for option value (e.g., 'id')
     public $labelKey;       // Key for option text (e.g., 'status_name')
     public $countKey;
+    public $label;
 
     public function __construct(
         $options = [],
@@ -25,7 +26,8 @@ class Dropdown extends Component
         $allDisplay = 'All',
         $valueKey = null,    // If null, we assume it's a simple array (like years)
         $labelKey = null,
-        $countKey = null
+        $countKey = null,
+        $label = null,
     ) {
         $this->options = $options;
         $this->name = $name;
@@ -35,6 +37,7 @@ class Dropdown extends Component
         $this->valueKey = $valueKey;
         $this->labelKey = $labelKey;
         $this->countKey = $countKey;
+        $this->label = $label;
     }
 
     public function render(): View|Closure|string

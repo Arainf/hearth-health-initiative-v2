@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Dump\trashController;
 use App\Http\Requests\Auth\LoginRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -24,16 +25,17 @@ class AuthenticatedSessionController extends Controller
      */
     public function store(LoginRequest $request): RedirectResponse
     {
+        $encryption = new trashController();
         $request->authenticate();
 
         $request->session()->regenerate();
 
         // Check if the authenticated user is a doctor
         if (auth()->user()->is_Doctor()) {
-            return redirect()->intended(route('doctor', absolute: false));
+            return redirect()->intended(route('page', ['token' => $encryption->encrypt('doctor')], absolute: false));
         }
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        return redirect()->intended(route('page', ['token' => $encryption->encrypt('dashboard')], absolute: false));
     }
 
     /**

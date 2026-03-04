@@ -4,48 +4,70 @@ let action = "search";
 window.$ = window.jQuery = $;
 let currentPatientId = null;
 
-function togglePatientOverlay(show) {
-    $('#patientOverlay').toggleClass('hidden', !show);
-}
-
-function toggleFamilyOverlay(show) {
-    $('#familyOverlay').toggleClass('hidden', !show);
-}
 
 function showLoading() {
     $('#tableLoading').removeClass('hidden');
+    $('#saveBtn').prop('disabled', true);
+    $('#saveText').addClass('opacity-0');
+    $('#saveSpinner').removeClass('hidden');
 }
 
 function hideLoading() {
     $('#tableLoading').addClass('hidden');
+    $('#saveBtn').prop('disabled', false);
+    $('#saveText').removeClass('opacity-0');
+    $('#saveSpinner').addClass('hidden');
 }
 
 
 /* ----------------------
    Helpers: enable/disable form regions
    ---------------------- */
-function setPatientReadonly(isReadonly) {
-    // text inputs
-    $('#patientForm').find('input[type="text"], input[type="number"], input[type="date"]').prop('readonly', isReadonly);
-    // radio inputs
-    $('#patientForm')
-        .find('input[type="radio"]')
+function setPatientReadonly(isReadonly, type = null) {
+
+    const form = $('#patientForm');
+
+    // text / number / date inputs
+    form.find('input[type="text"], input[type="number"], input[type="date"]')
+        .prop('readonly', isReadonly);
+
+    // radio inputs (visual only)
+    form.find('input[type="radio"]')
+        .prop('disabled', isReadonly)  // 🔥 actually disable them
         .toggleClass('radio-readonly', isReadonly);
 
-    // show/hide edit button appropriately
-    if (isReadonly) {
-        $('#editPatientBtn').removeClass('hidden');
-    } else {
+    // 🔥 select dropdowns
+    form.find('select')
+        .prop('disabled', isReadonly);
+
+    // Button + icon logic
+    if (type) {
         $('#editPatientBtn').addClass('hidden');
+        $('#patientIcon').addClass('fa-lock').removeClass('fa-pen-to-square');
+    } else {
+        if (isReadonly) {
+            $('#editPatientBtn').removeClass('hidden');
+            $('#patientIcon').addClass('fa-lock').removeClass('fa-pen-to-square');
+        } else {
+            $('#patientIcon').removeClass('fa-lock').addClass('fa-pen-to-square');
+        }
     }
 }
 
-function setFamilyReadonly(isReadonly) {
+
+function setFamilyReadonly(isReadonly, type) {
     $('#familyForm').find('input[type="radio"]').prop('disabled', isReadonly);
-    if (isReadonly) {
-        $('#editFamilyBtn').removeClass('hidden');
-    } else {
+
+    if (type){
         $('#editFamilyBtn').addClass('hidden');
+        $('#familyIcon').addClass('fa-lock').removeClass('fa-pen-to-square');
+    } else {
+        if (isReadonly) {
+            $('#editFamilyBtn').removeClass('hidden');
+            $('#familyIcon').addClass('fa-lock').removeClass('fa-pen-to-square');
+        } else {
+            $('#familyIcon').removeClass('fa-lock').addClass('fa-pen-to-square');
+        }
     }
 }
 
@@ -76,14 +98,15 @@ async function submitFormAjax() {
     const action = form.getAttribute('action') || window.location.href;
     const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
-    // gather form data to JSON
     const formDataObj = {};
     const fd = new FormData(form);
     for (const [k, v] of fd.entries()) {
         formDataObj[k] = v;
     }
 
+    clearValidationErrors();
     showLoading();
+
     try {
         const res = await fetch(action, {
             method: 'POST',
@@ -95,23 +118,71 @@ async function submitFormAjax() {
             body: JSON.stringify(formDataObj),
         });
 
-        if (!res.ok) {
-            const text = await res.text();
-            throw new Error(`Save failed: ${res.status} ${text}`);
+        // 🔴 Handle Validation Errors
+        if (res.status === 422) {
+            const errorData = await res.json();
+            hideLoading();
+            showValidationErrors(errorData.errors);
+            return;
         }
 
-        let json = null;
-        try { json = await res.json(); } catch (e) { /* ignore */ }
+        if (!res.ok) {
+            throw new Error(`Save failed: ${res.status}`);
+        }
 
-        // show modal
+        await res.json().catch(() => {});
+
         hideLoading();
-        $('#saveModal').removeClass('hidden');
+
+        // ✅ Show Success Modal
+        document.getElementById('saveModal').classList.remove('hidden');
+
+        setPatientReadonly(false, 1);
+        setFamilyReadonly(false);
+        unlockPatientsTable();
+        clearPatientForm();
 
     } catch (err) {
+        hideLoading();
+
         console.error('Save error', err);
-        alert('Failed to save record. See console for details.');
+        alert('Failed to save record.');
     }
 }
+
+
+function showValidationErrors(errors) {
+    Object.keys(errors).forEach(field => {
+        const input = document.querySelector(`[name="${field}"]`);
+        if (!input) return;
+
+        input.classList.add('border-red-500');
+
+        const msg = document.createElement('p');
+        msg.className =
+            'text-xs text-red-500 mt-1 validation-error';
+        msg.innerText = errors[field][0];
+
+        const wrapper = input.closest('.w-full');
+        if (wrapper) {
+            wrapper.appendChild(msg);
+        }
+    });
+
+    const firstError = document.querySelector('.border-red-500');
+    if (firstError) {
+        firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+}
+
+function clearValidationErrors() {
+    document.querySelectorAll('.validation-error').forEach(el => el.remove());
+    document.querySelectorAll('.border-red-500').forEach(el => {
+        el.classList.remove('border-red-500');
+    });
+}
+
+
 
 
 
@@ -123,12 +194,10 @@ $(document).ready(function () {
     // Edit toggles
     $('#editPatientBtn').on('click', function () {
         setPatientReadonly(false);
-        togglePatientOverlay(false);
     });
 
     $('#editFamilyBtn').on('click', function () {
         setFamilyReadonly(false);
-        toggleFamilyOverlay(false);
     });
 
     // Always keep BMI calculated when user edits weight/height
@@ -138,16 +207,15 @@ $(document).ready(function () {
 
     // Save button: AJAX submit
     $('#saveBtn').on('click', function (e) {
+      showLoading();
         e.preventDefault();
         submitFormAjax();
     });
 
     // Modal buttons
     $('#createAnotherBtn').on('click', function () {
-        // Close modal
         $('#saveModal').addClass('hidden');
 
-        // Clear patient & form
         clearPatientForm();
 
         // Unlock table for new selection
@@ -161,20 +229,10 @@ $(document).ready(function () {
         // UX nicety
         $('#record-search-input')
             .val('')
-            .attr('placeholder', 'Search patient');
+            .attr('placeholder', 'Search patient').focus();
 
-        // Optional: scroll to top or focus search
-        $('#record-search-input').focus();
     });
 
-
-    $('#goDashboardBtn').on('click', function () {
-        window.location.href = '/dashboard';
-    });
-
-    $('#goDashboardBtn2').on('click', function () {
-        window.location.href = '/dashboard';
-    });
 
     const params = new URLSearchParams(window.location.search);
     const patient = params.get('patient');
@@ -182,8 +240,6 @@ $(document).ready(function () {
 
     if (patient) {
         action = "search";
-        loadPatientAndLock(patient);
-
 
         // Optional UX hint (recommended)
         $('#record-search-input')
@@ -192,8 +248,6 @@ $(document).ready(function () {
 
     if(record){
         action = "create";
-        loadPatientAndLock(record);
-
 
         // Optional UX hint (recommended)
         $('#record-search-input')
@@ -202,21 +256,18 @@ $(document).ready(function () {
 
 
     // make sure initial state is editable (no patient selected)
-    setPatientReadonly(false);
+    setPatientReadonly(false, 1);
     setFamilyReadonly(false);
 });
 
 
 function hydratePatientForm(p) {
-    if (!p || !p.id) {
+    if (!p.id) {
         console.warn('Invalid patient data for hydration');
         return;
     }
 
     currentPatientId = p.id;
-
-    toggleFamilyOverlay(true);
-    togglePatientOverlay(true);
 
     /* --------------------
        BASIC PATIENT INFO
@@ -227,53 +278,29 @@ function hydratePatientForm(p) {
     $('#middle_name').val(p.middle_name ?? '');
     $('#suffix').val(p.suffix ?? '');
     $('#age').val(p.age ?? '');
-    $('#unit').val(p.unit ?? '');
     $('#contact').val(p.phone_number ?? '');
-    $('#birth_date').val(p.birth_date ?? '');
-
-
-    /* --------------------
-       HEIGHT / WEIGHT / BMI
-    -------------------- */
+    $('#birth_date').val(p.birthday ?? '');
+    $('select[name="unit_code"]').val(p.unit).trigger('change');
     $('#weight').val(p.weight ?? '');
     $('#height').val(p.height ?? '');
     $('#bmi').val(p.bmi ?? '');
     calcAndSetBMI();
-
-    /* --------------------
-       SEX
-    -------------------- */
     if (p.sex) {
         $(`input[name="sex"][value="${p.sex}"]`).prop('checked', true);
     }
-
-    /* --------------------
-       FAMILY HISTORY
-    -------------------- */
-    const history = p.family_history ?? {};
     const yn = v => (v ? 'y' : 'n');
-
-    $(`input[name="family_hypertension"][value="${yn(history.Hypertension)}"]`).prop('checked', true);
-    $(`input[name="family_heart-attack-under-60y"][value="${yn(history.Heart_Attack)}"]`).prop('checked', true);
-    $(`input[name="family_diabetes-mellitus"][value="${yn(history.Diabetes)}"]`).prop('checked', true);
-    $(`input[name="family_cholesterol"][value="${yn(history.Cholesterol)}"]`).prop('checked', true);
-
-    /* --------------------
-       LOCK FORM (view-only)
-    -------------------- */
+    $(`input[name="family_hypertension"][value="${yn(p.hypertension)}"]`).prop('checked', true);
+    $(`input[name="family_heart-attack-under-60y"][value="${yn(p.heart_attack_under_60y)}"]`).prop('checked', true);
+    $(`input[name="family_diabetes-mellitus"][value="${yn(p.diabetes_mellitus)}"]`).prop('checked', true);
+    $(`input[name="family_cholesterol"][value="${yn(p.cholesterol)}"]`).prop('checked', true);
     setPatientReadonly(true);
     setFamilyReadonly(true);
-
     $('#searchResults').addClass('hidden');
     $('#record-search-input, #magnifying').addClass('hidden');
 }
 
 
 function clearPatientForm() {
-
-    // --------------------
-    // BASIC PATIENT INFO
-    // --------------------
     $('#patient_id').val('');
     $('#first_name').val('');
     $('#last_name').val('');
@@ -283,47 +310,21 @@ function clearPatientForm() {
     $('#birth_date').val('');
     $('#unit').val('');
     $('#contact').val('');
-
-    // --------------------
-    // HEIGHT / WEIGHT / BMI
-    // --------------------
     $('#weight').val('');
     $('#height').val('');
     $('#bmi').val('');
-
-    // --------------------
-    // SEX
-    // --------------------
     $('input[name="sex"]').prop('checked', false);
-
-    // --------------------
-    // FAMILY HISTORY
-    // --------------------
     $('#familyForm input[type="radio"]').prop('checked', false);
-
-    // --------------------
-    // RISK FACTORS
-    // --------------------
     $('#total_cholesterol').val('');
     $('#hdl_cholesterol').val('');
     $('#systolic_bp').val('');
     $('#fbs').val('');
     $('#hba1c').val('');
-
     $('input[name="hypertension_tx"]').prop('checked', false);
     $('input[name="diabetes_m"]').prop('checked', false);
     $('input[name="smoker"]').prop('checked', false);
-
-    // --------------------
-    // UI STATE
-    // --------------------
-    togglePatientOverlay(false);
-    toggleFamilyOverlay(false);
-
-    setPatientReadonly(false);
-    setFamilyReadonly(false);
-
-    // Restore search UI
+    setPatientReadonly(false, 1);
+    setFamilyReadonly(false, 1);
     $('#record-search-input, #magnifying').removeClass('hidden');
 }
 
@@ -350,21 +351,36 @@ $('#patients-nav tbody').on('click', 'tr', function () {
     const rowData = table.row(this).data();
     if (!rowData) return;
 
-    const patient = rowData[1]; // hiddenData
+    const patient = rowData[1]; // minimalData
 
-    // Highlight active row
     $('#patients-nav tbody tr td').removeClass('active-patient');
     $(this).find('td').addClass('active-patient');
 
-    // Lock table
     lockPatientsTable();
 
-    // Hydrate form
-    hydratePatientForm(patient);
+    // 🔥 Fetch full patient data
+    fetchPatient(patient.id);
 });
+
+
+function fetchPatient(id) {
+    $.ajax({
+        url: window.page.table + '/?id=' + id,
+        type: 'GET',
+        success: function (data) {
+            hydratePatientForm(data);
+        },
+        error: function () {
+            alert('Failed to load patient data.');
+        }
+    });
+}
+
 
 $('#changePatientBtn').on('click', function () {
     $('.active-patient').removeClass('active-patient');
+    setPatientReadonly(false,1);
+    setFamilyReadonly(false,1);
     unlockPatientsTable();
     clearPatientForm();
 });

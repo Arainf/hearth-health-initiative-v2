@@ -1,11 +1,11 @@
 {{-- ================= EDIT PAGE ================= --}}
-@vite(['resources/js/patient-edit.js', 'resources/js/form-flow.js'])
+@vite(['resources/js/patient-edit.js'])
 
 <x-app-layout>
 <form
     id="patientForm"
     method="POST"
-    action="{{ url('/patients/'.$patient->id) }}"
+    action="{{ route('update' , ['token' => $encryption->encrypt('patient'), 'id' => $encryption->encrypt($patient->id), 'mode' => $encryption->encrypt('save')]) }}"
     class="h-full max-w-7xl mx-auto px-6 py-4 grid grid-rows-[auto_1fr] gap-4 overflow-hidden"
 >
     @csrf
@@ -22,14 +22,13 @@
             </p>
         </div>
 
-        <button
+        <a
             class="hhi-btn hhi-btn-back"
             id="backBtn"
-            type="button"
+            href="{{ route('page', ['token' => $encryption->encrypt('patient')]) }}"
         >
-
             Back
-        </button>
+        </a>
     </div>
 
     {{-- CONTENT --}}
@@ -52,13 +51,19 @@
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <x-form.input label="Birth Date" type="date" name="birth_date"
-                            :value="optional($patient->birth_date)->format('Y-m-d')" />
+                        <x-form.input label="Birth Date" type="date" name="birth_date" :value="$patient->birthday"/>
                         <x-form.input label="Age" type="number" name="age" :value="$patient->age" readonly />
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <x-form.input label="Unit" name="unit" :value="$patient->unit" />
+                        <x-form.dropdown
+                            label="Unit"
+                              name="unit_code"
+                              :options="$units"
+                              valueKey="unit_code"
+                              labelKey="unit_name"
+                              selected="{{$patient->unit}}"
+                              placeholder="Select Unit" />
                         <x-form.input label="Phone" name="phone_number" :value="$patient->phone_number" />
                     </div>
                 </div>

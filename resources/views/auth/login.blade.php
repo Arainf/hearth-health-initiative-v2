@@ -22,7 +22,7 @@
                 <div>
                     <button class="w-full flex items-center gap-3 px-3 py-2 rounded-lg
                     text-sm  text-white  bg-[#00205B] hover:bg-[#143774] transition">
-                        <a href="{{ route('dashboard') }}">
+                        <a href="{{ route('page', ['token' => $encryption->encrypt('dashboard')] ) }}">
                             Dashboard
                         </a>
                     </button>

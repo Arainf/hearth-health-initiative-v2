@@ -6,8 +6,29 @@
     ]
 @endphp
 
+@props([
+    'label' => null,
+    'icon' => null, // optional string icon name
+])
 
-<div class="relative inline-block text-left w-44">
+
+<div class="relative inline-block text-left w-full">
+
+    {{-- LABEL SECTION --}}
+    @if($label)
+        <div class="flex font-inter items-center gap-2 mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
+
+            {{-- Icon Slot --}}
+            @if(isset($iconSlot))
+                {{ $iconSlot }}
+            @endif
+
+            {{-- Named Slot Override (Optional) --}}
+            {{ $label }}
+
+        </div>
+    @endif
+
     <button id="{{ $name }}-btn" type="button" {{ $attributes }}>
 
         <span id="{{ $name }}-label"> {{ $selected }}</span>

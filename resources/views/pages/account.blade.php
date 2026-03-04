@@ -6,21 +6,30 @@
     <div class="relative flex flex-col h-screen px-2 pt-2 overflow-hidden">
         <!-- HEADER -->
         <div class="flex flex-col border-b px-6 py-3 z-20 sticky top-0">
-            <div class="flex justify-between items-center">
-                <p class="circular text-lg tracking-tighter">Heart Health Accounts</p>
+            <div class="flex items-center font-inter font-semibold shrink-0">
+                @php
+                    $icon = $MODULE_NAME['icon'];
+                @endphp
+
+                <x-dynamic-component
+                    :component="'lucide-' . $icon"
+                    class="w-5 h-5 mr-2"
+                />
+
+                <span class="text-base sm:text-lg">
+                        {{ $MODULE_NAME['label'] }}
+                    </span>
             </div>
         </div>
 
         <!-- SEARCH BAR -->
         <div class="flex items-end w-full px-6 py-3 border-b sticky top-[56px] z-10 justify-end">
-{{--            <div>--}}
-{{--                <x-filter_search id="record-search" placeholder="Search account" width="w-80" />--}}
-{{--            </div>--}}
             @can('isAdmin')
                 <button
                     type="button"
                     class="hhi-btn hhi-btn-create-another"
-                    onclick="window.location='{{ route('account.create') }}'">
+                    onclick="window.location='{{ route('page', ['token' => $TOKEN , 'mode' => $encryption->encrypt('create')]) }}'">
+                    <x-lucide-user-round-plus class="w-4 h-4 mr-1" />
                     Create Account
                 </button>
             @endcan
@@ -84,8 +93,6 @@
 </x-app-layout>
 
 <script>
-    window.page = {
-        table : "/table/{{$table}}"
-    }
+    window.page = { token : "{{$TOKEN}}"}
 </script>
 

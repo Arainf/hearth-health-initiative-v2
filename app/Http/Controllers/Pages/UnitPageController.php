@@ -1,115 +1,154 @@
 <?php
+
 namespace App\Http\Controllers\Pages;
+
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Dump\trashController;
 use App\Models\Unit;
+use App\Models\Unit_group;
+use App\Models\VOffice;
+use App\Services\DropdownService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class UnitPageController extends Controller
 {
-    public function index()
+    public object $trash;
+    public string $token;
+    public string $module;
+
+    public function __construct()
+    {
+        $this->module = 'unit';
+        $this->trash = new trashController;
+        // This remains for initial page load and redirects if needed
+        $this->token = $this->trash->encrypt($this->module);
+    }
+
+    public function index(Request $request, $token)
     {
         $user = auth()->user();
-        if(!$user) return redirect('unauthorized');
+        if (!$user) return redirect('unauthorized');
 
-        // Dropdown options for Unit Group filter (from DB view)
-        $unitGroups = DB::table('v_offices')
-            ->select('unit_group_code', 'unit_group_name')
-            ->whereNotNull('unit_group_code')
-            ->whereNotNull('unit_group_name')
-            ->distinct()
-            ->orderBy('unit_group_name', 'asc')
-            ->get();
+        $MODULE_NAME = [
+            'icon' => 'building-2',
+            'label' => 'Units'
+        ];
+
+        $unitGroups = DropdownService::offices();
+
+        // If AJAX request for modal content or data processing
+        if ($request->query('id') || $request->query('mode') || $request->input('id') || $request->input('mode')) {
+            return $this->menu($request);
+        }
 
         return view('pages.unit', [
-            'table' => trashController::encrypt('unit'),
-            'unitGroups' => $unitGroups,
+            'MODULE_NAME' => $MODULE_NAME,
+            'TOKEN' => $token,
+            'UNIT' => $unitGroups,
         ]);
+    }
+
+    public function menu(Request $request)
+    {
+        $rawMode = $request->query('mode') ?? $request->input('mode');
+        $rawId   = $request->query('id') ?? $request->input('id');
+
+        $mode = $rawMode ? $this->trash->decrypt($rawMode) : null;
+        $id   = $rawId   ? $this->trash->decrypt($rawId)   : null;
+
+        return match ($mode) {
+            'store'  => $this->store($request),
+            'update' => $this->update($request, $id),
+            'delete' => $this->destroy($request, $id),
+            default  => abort(404),
+        };
+    }
+
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'unit_name'       => 'required|string|max:150',
+            'unit_abbr'       => 'required|string|max:50',
+            'unit_group_code' => 'required|exists:unit_group,unit_group_code',
+        ]);
+
+        try {
+            $latestId = Unit::max('id') ?? 0;
+            $nextId = $latestId + 1;
+
+            $cleanAbbr  = Str::upper(str_replace(' ', '', $validated['unit_abbr']));
+            $cleanGroup = Str::upper(str_replace(' ', '', $validated['unit_group_code']));
+
+            // Loop logic: Repeat string then take first 4 (ALP -> ALPA)
+            $partAbbr  = substr(str_repeat($cleanAbbr, 4), 0, 4);
+            $partGroup = substr(str_repeat($cleanGroup, 4), 0, 4);
+
+            $generatedCode = $partAbbr . $partGroup . $nextId;
+
+            Unit::create([
+                'unit_code'       => $generatedCode,
+                'unit_name'       => $validated['unit_name'],
+                'unit_abbr'       => $validated['unit_abbr'],
+                'unit_group_code' => $validated['unit_group_code'],
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => "Unit $generatedCode created successfully!"
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json(['errors' => ['main' => $e->getMessage()]], 422);
+        }
+    }
+
+    public function update(Request $request, $id = null)
+    {
+        // Decrypt ID from input if not in URL
+        $targetId = $id ?? $this->trash->decrypt($request->input('id'));
+
+        $validated = $request->validate([
+            'unit_name'       => 'required|string|max:100',
+            'unit_abbr'       => 'required|string|max:50',
+            'unit_group_code' => 'required|exists:unit_group,unit_group_code',
+        ]);
+
+        try {
+            $unit = Unit::where('unit_code', $targetId)->firstOrFail();
+            $unit->update($validated);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Unit updated successfully!'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json(['errors' => ['main' => $e->getMessage()]], 422);
+        }
     }
 
     public function table(Request $request)
     {
-        if (!$request->ajax()) {
-            abort(404);
-        }
-
-        $draw   = (int) $request->get('draw', 1);
-        $start  = (int) $request->get('start', 0);
-        $length = (int) $request->get('length', 20);
-
-        // Base query on the DB view
-        $base = DB::table('v_offices');
-
-        // Total before filters
-        $recordsTotal = (clone $base)->count();
-
-        // Optional search (from d.search in DataTables ajax)
-        if ($request->filled('search')) {
-            $search = $request->get('search');
-
-            $base->where(function ($q) use ($search) {
-                $q->where('unit_name', 'like', "%{$search}%")
-                ->orWhere('unit_abbr', 'like', "%{$search}%")
-                ->orWhere('unit_group_code', 'like', "%{$search}%")
-                ->orWhere('unit_group_name', 'like', "%{$search}%");
-            });
-        }
-
-        // Unit Group filter
-        if ($request->filled('unit_group') && $request->unit_group !== 'all') {
-            $base->where('unit_group_name', $request->unit_group);
-        }
-
-        $recordsFiltered = (clone $base)->count();
-
-        // Pagination + order
-        $rows = $base
-            ->orderBy('unit_name', 'asc')
-            ->skip($start)
-            ->take($length)
-            ->get([
-                'unit_code',
-                'unit_name',
-                'unit_abbr',
-                'unit_group_code',
-                'unit_group_name',
-            ]);
-
-        $data = $rows->map(fn ($row) => [
-            'id'               => $row->unit_code,
-            'unit_name'        => $row->unit_name,
-            'unit_abbr'        => $row->unit_abbr,
-            'unit_group_code'  => $row->unit_group_code,
-            'unit_group_name'  => $row->unit_group_name,
-        ])->values();
-
-        return response()->json([
-            'draw'            => $draw,
-            'recordsTotal'    => $recordsTotal,
-            'recordsFiltered' => $recordsFiltered,
-            'data'            => $data,
-        ]);
+        if (!$request->ajax()) abort(404);
+        return response()->json(VOffice::datatable($request));
     }
 
-    public function destroy($id)
+    public function destroy(Request $request, $id = null)
     {
-        //TEMPORARY DELETE LOGIC USING QUERY BUILDER
-        $delete = DB::table('unit')
-            ->where('unit_code', $id)
-            ->delete();
+        // Decrypt ID from input if not in URL
+        $targetId = $id ?? $this->trash->decrypt($request->input('id'));
 
-        return response()->json($delete);
+        try {
+            $unit = Unit::where('unit_code', $targetId)->firstOrFail();
+            $unit->delete();
 
-        /*
-        * THIS IS THE LOGIC ONCE THE MODEL 'UNIT' IS CREATED
-        * Uncomment this once the model has been created
-        */
-        // $unit = Unit::where('unit_code', $id)->firstOrFail();
-        // $unit->delete();
-
-        // return response()->json($unit);
-
+            return response()->json([
+                'success' => true,
+                'message' => 'Unit deleted successfully!'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Deletion failed'], 500);
+        }
     }
-
 }

@@ -1,4 +1,4 @@
-@vite(['resources/css/table.css','resources/js/compare-records.js'])
+@vite(['resources/css/table.css','resources/js/compare-records.js', 'resources/js/page/record.js'])
 
 <x-app-layout>
     <div class="relative flex flex-col h-screen bg-[#f9fbfc] overflow-hidden">
@@ -9,12 +9,22 @@
                     Compare Records
                 </p>
 
-                <a
-                    href="{{ route('dashboard') }}"
-                    class="hhi-btn hhi-btn-back tracking-tighter circular text-xs sm:text-sm"
-                >
-                    Records
-                </a>
+                @if(auth()->user()->is_Doctor())
+                    <a
+                        href="{{ route('page', ['token' => $encryption->encrypt('doctor')]) }}"
+                        class="hhi-btn hhi-btn-back tracking-tighter circular text-xs sm:text-sm"
+                    >
+                        <x-lucide-stethoscope class="h-4 w-4 mr-2"/> Doctor Dashboard
+                    </a>
+                @else
+                    <a
+                        href="{{ route('page', ['token' => $encryption->encrypt('dashboard')]) }}"
+                        class="hhi-btn hhi-btn-back tracking-tighter circular text-xs sm:text-sm"
+                    >
+                        Dashboard
+                    </a>
+                @endif
+
             </div>
 
             <!-- SEARCH BAR -->
@@ -54,7 +64,7 @@
         <div id="recordsCarouselArea" class="flex-1 bg-[#e7e8ea] overflow-hidden flex flex-col">
             <div id="recordsCarousel" class="flex-1 overflow-x-auto overflow-y-hidden px-3 sm:px-4 md:px-6 py-4 sm:py-6">
                 <div id="recordsContainer" class="flex gap-3 sm:gap-4 h-full items-start">
-                
+
                 </div>
             </div>
         </div>

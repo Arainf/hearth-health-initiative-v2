@@ -2,180 +2,194 @@
 
 namespace App\Http\Controllers\Pages;
 
+use App\Exports\PatientsExport;
+use App\Http\Controllers\AIController;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Dump\trashController;
+use App\Http\Controllers\Pdf\PdfController;
+use App\Imports\PatientsImport;
+use App\Imports\PatientsPreviewImport;
+use App\Models\Generated_reports;
+use App\Models\Records;
+use App\Models\Status;
+use App\Models\VPatient;
+use App\Services\RecordService;
+use App\Models\VRecords;
 use App\Services\DropdownService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Facades\Excel;
+use PhpOffice\PhpSpreadsheet\Exception;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class DoctorPageController extends Controller
 {
-    public function index()
+
+    public object $trash;
+    public string $token;
+    public string $module;
+    private RecordService $recordService;
+
+    public function __construct(RecordService $recordService){
+        $this->module               = 'doctor';
+        $this->trash                = new trashController;
+        $this->token                = $this->trash->encrypt($this->module);
+        $this->recordService        = $recordService;
+    }
+
+
+    public function index(Request $request, $token)
     {
+        $MODULE_NAME = [
+            'icon' => 'stethoscope',
+            'label' => 'Doctor'
+        ];
+
 
         $currentYear = now()->year;
         $years = DropdownService::years();
         $status = DropdownService::status($currentYear, false);
+        $units = DropdownService::units();
         $user = auth()->user();
 
        if(!$user->is_Doctor()) return redirect('unauthorized');
 
-        return view('pages.doctor',
-            [
-                'years' => $years,
-                'currentYear' => $currentYear,
-                'status' => $status,
-                'table' => trashController::encrypt('doctor')
-            ]);
+        if($request->query('id') || $request->query('mode') || $request->input('id') || $request->input('mode'))
+            return $this->menu($request);
+
+       return view('pages.doctor',
+           [
+               'MODULE_NAME' => $MODULE_NAME,
+               'YEARS' => $years,
+               'CURRENT' => $currentYear,
+               'STATUS' => $status,
+               'UNITS' => $units,
+               'TOKEN' => $token
+       ]);
+
+
     }
+
+
+    public function menu(Request $request)
+    {
+        $rawId  = $request->query('id') ?? $request->input('id');
+        $rawMode = $request->query('mode') ?? $request->input('mode');
+
+        $mode = $this->trash->decrypt($rawMode);
+        $id = $rawId ? $this->trash->decrypt($rawId) : null;
+
+        return match ($mode) {
+            'update'            => $this->handleUpdate($request, $id),
+            'instance'          => VRecords::findValueSingleInstance($id),
+            'generatedContent'  => VRecords::getGeneratedContent($id),
+            'print'         => app(PdfController::class)->export($id),
+            'evaluate'      => app(AIController::class)->evaluateRecord($request, $id),
+            'export'        => $this->exportPatients($request),
+            'validate'      => $this->previewImport($request),
+            'confirm'       => $this->confirmImport($request),
+            default => abort(404),
+        };
+    }
+
+
+    // ACTIONS & LOGIC
 
     public function table(Request $request)
     {
-        if (!$request->ajax()) return;
-
-        $draw   = (int) $request->get('draw', 1);
-        $start  = (int) $request->get('start', 0);
-        $length = (int) $request->get('length', 20);
-
-        $base = DB::table('records')
-            ->leftJoin('patients', 'patients.id', '=', 'records.patient_id')
-            ->leftJoin('status', 'status.id', '=', 'records.status_id')
-            ->leftJoin('generated_reports', 'generated_reports.id', '=', 'records.generated_id')
-            ->where('records.is_archived', false)
-            ->select(
-                'records.*',
-                'records.status_id',
-                'records.created_at as create',
-                'patients.*',
-                'records.id as record_id',
-
-                'status.status_name',
-                'generated_reports.id as generated_id'
-            );
-
-        /* ================= TOTAL ================= */
-        $recordsTotal = (clone $base)->count();
-
-        /* ================= SEARCH ================= */
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $base->where(function ($q) use ($search) {
-                $q->where('patients.last_name', 'like', "%{$search}%")
-                    ->orWhere('patients.first_name', 'like', "%{$search}%")
-                    ->orWhere('patients.unit', 'like', "%{$search}%");
-            });
+        if (!$request->ajax()) {
+            abort(404);
         }
 
-        /* ================= STATUS FILTER ================= */
-        if ($request->filled('status') && $request->status !== 'all') {
-            $base->where('status.status_name', $request->status);
-        }
+        $status = $request->get('status');
+        $unit = $request->get('unit');
+        $year = $request->get('year');
+        $archived = filter_var($request->get('archived', 'false'), FILTER_VALIDATE_BOOLEAN);
 
-        /* ================= YEAR FILTER ================= */
-        if ($request->filled('year') && $request->year !== 'all') {
-            $base->whereYear('records.created_at', $request->year);
-        }
-
-        $recordsFiltered = (clone $base)->count();
-
-        /* ================= PAGINATION ================= */
-        $rows = $base
-            ->orderBy('records.created_at', 'desc')
-            ->skip($start)
-            ->take($length)
-            ->get();
-
-        /* ================= FORMAT ================= */
-        $data = [];
-        $counter = 0;
-        foreach ($rows as $row) {
-
-            $doctor = $row->approved_by;
-
-
-            /* Status badge */
-            $color = match (strtolower($row->status_name)) {
-                'approved' => 'badge-approved',
-                'pending'  => 'badge-pending',
-                default    => 'badge-not-evaluated',
-            };
-
-
-            $doctorName = '';
-            if ($doctor) {
-                $doctorName = '
-            <div class="text-[11px] text-gray-400 mt-1">
-                by ' . e($doctor) . '
-            </div>
-        ';
-            }
-
-            $status = '
-        <div class="flex flex-col items-center">
-            <span class="badge ' . $color . '">
-                ' . e($row->status_name) . '
-            </span>
-            ' . $doctorName . '
-        </div>
-    ';
-
-
-            /* Created */
-            $created = \Carbon\Carbon::parse($row->create,)
-                ->format('F d, Y');
-
-            $data[] = [
-                'id' => $row->record_id,
-                'counter' => $counter,
-                // patient
-                'patient' => [
-                    'unit'       => $row->unit,
-                    'last_name'  => $row->last_name,
-                    'first_name' => $row->first_name,
-                    'middle_name'=> $row->middle_name,
-                    'suffix'    =>$row->suffix,
-                    'birthday'     => $row->birth_date,
-                    'age'        => $row->age,
-                    'height'    => $row->height,
-                    'weight'    => $row->weight,
-                    'bmi'       => $row->bmi,
-                    'contact'   => $row->phone_number
-                ],
-
-                'staff' => $row->staff_id,
-                'doctor' => $doctor,
-
-                // metrics (used by dropdown)
-                'cholesterol'     => $row->cholesterol,
-                'hdl_cholesterol' => $row->hdl_cholesterol,
-                'systolic_bp'     => $row->systolic_bp,
-                'fbs'             => $row->fbs,
-                'hba1c'           => $row->hba1c,
-
-                // risks
-                'hypertension' => (bool) $row->hypertension,
-                'diabetes'     => (bool) $row->diabetes,
-                'smoking'      => (bool) $row->smoking,
-
-                // status
-                'status' => [
-                    'status_name' => $status,
-                ],
-                'status_id' => $row->status_id,
-
-                'created_at'   => $created,
-                'generated_id' => $row->generated_id,
-            ];
-
-            $counter++;
-
-        }
+        $tableData = VRecords::datatable($request, auth()->user());
 
         return response()->json([
-            'draw'            => $draw,
-            'recordsTotal'    => $recordsTotal,
-            'recordsFiltered' => $recordsFiltered,
-            'data'            => $data,
+            'draw'            => $tableData['draw'],
+//            'recordsTotal'    => $tableData['recordsTotal'],
+            'recordsFiltered' => $tableData['recordsFiltered'],
+            'data'            => $tableData['data'],
+            'statuses'        => Status::withRecordCount($unit,$status,$year, $archived)->get(),
         ]);
+    }
+
+    private function handleUpdate(Request $request, int $id)
+    {
+        $validated = $request->validate([
+            'total_cholesterol' => 'nullable|numeric',
+            'hdl_cholesterol'   => 'nullable|numeric',
+            'systolic_bp'       => 'nullable|numeric',
+            'fbs'               => 'nullable|numeric',
+            'hba1c'             => 'nullable|numeric',
+            'hypertension'   => 'nullable|boolean',
+            'diabetes'        => 'nullable|boolean',
+            'smoking'            => 'nullable|boolean',
+        ]);
+
+        $record = $this->recordService->update($id, $validated);
+
+        return response()->json([
+            'success' => true,
+            'record'  => $record
+        ]);
+    }
+
+    /**
+     * @throws Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+    public function exportPatients(Request $request)
+    {
+        return Excel::download(
+            new PatientsExport($request->unit_code),
+            $request->unit_code . '.xlsx'
+        );
+    }
+
+
+    // IMPORT FILE
+    public function previewImport(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:xlsx|max:5120',
+        ]);
+
+        $file = $request->file('file');
+
+        $spreadsheet = IOFactory::load($file->getPathname());
+        $sheet = $spreadsheet->getActiveSheet();
+
+        $signature = $sheet->getCell('Z1')->getValue();
+        $unit_code = $sheet->getCell('Z2')->getValue();
+
+        if ($signature !== 'HEART_HEALTH_INITIATIVE_2026' || !$unit_code) {
+            return response()->json([
+                'message' => 'Invalid template file. Please use the official system template.'
+            ], 422);
+        }
+
+        $preview = new PatientsPreviewImport($unit_code);
+        Excel::import($preview, $file);
+
+        return response()->json([
+            'valid_rows' => $preview->validCount,
+            'invalid_rows' => $preview->invalidCount,
+            'errors' => $preview->errors,
+            'data' => $preview->previewData,
+        ]);
+    }
+
+    public function confirmImport(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:xlsx',
+        ]);
+
+        Excel::import(new PatientsImport, $request->file('file'));
+
+        return back()->with('success', 'Import completed successfully.');
     }
 }

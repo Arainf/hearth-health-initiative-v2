@@ -53,13 +53,14 @@
         <div class="flex justify-between items-center mb-6">
             <h1 class="text-2xl font-semibold text-gray-900">Create Account</h1>
 
-            <x-secondary-button onclick="window.location='{{ route('account') }}'">
+            <x-secondary-button
+                onclick="window.location='{{ route('page' , [ 'token' => $encryption->encrypt('account')]) }}'">>
                 Back
             </x-secondary-button>
         </div>
 
         {{-- Form --}}
-        <form method="POST" action="{{ route('accounts.store') }}"
+        <form method="POST" action="{{ route('store', [ 'token' => $encryption->encrypt('account') , 'mode' => $encryption->encrypt('save') ]) }}"
               class="bg-white rounded-xl shadow p-6 space-y-4">
             @csrf
 
@@ -106,7 +107,7 @@
             {{-- Actions --}}
             <div class="flex justify-end gap-3 pt-6 border-t">
                 <x-secondary-button type="button"
-                                    onclick="window.location='{{ route('account') }}'">
+                    onclick="window.location='{{ route('page' , [ 'token' => $encryption->encrypt('account')]) }}'">
                     Cancel
                 </x-secondary-button>
 
@@ -156,7 +157,7 @@
                 </x-secondary-button>
 
                 <x-secondary-button
-                    onclick="window.location='{{ route('account') }}'">
+                    onclick="window.location='{{ route('page' , [ 'token' => $encryption->encrypt('account')]) }}'">
                     Back to Accounts
                 </x-secondary-button>
             </div>
