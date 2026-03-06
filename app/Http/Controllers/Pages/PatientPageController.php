@@ -116,8 +116,8 @@ class PatientPageController extends Controller
 
             'birth_date'    => 'required|date|before:today',
             'sex'           => 'required|in:Male,Female',
-            'weight'        => 'required|numeric|min:0',
-            'height'        => 'required|numeric|min:0',
+            'weight'        => 'required|numeric|min:0|max:700',
+            'height'        => 'required|numeric|min:0|max:300',
             'unit_code'          => 'nullable|string|max:255',
             'phone_number'  => 'nullable|string|max:50',
         ]);
