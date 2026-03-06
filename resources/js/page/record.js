@@ -33,23 +33,26 @@ function setPatientReadonly(isReadonly, type = null) {
 
     // radio inputs (visual only)
     form.find('input[type="radio"]')
-        .prop('disabled', isReadonly)  // 🔥 actually disable them
+        .prop('disabled', isReadonly)
         .toggleClass('radio-readonly', isReadonly);
-
+        
     // 🔥 select dropdowns
     form.find('select')
         .prop('disabled', isReadonly);
 
-    // Button + icon logic
+    // Button + icon logic (Lucide: toggle lock vs pen icon visibility)
     if (type) {
         $('#editPatientBtn').addClass('hidden');
-        $('#patientIcon').addClass('fa-lock').removeClass('fa-pen-to-square');
+        $('#patientIconLock').removeClass('hidden');
+        $('#patientIconEdit').addClass('hidden');
     } else {
         if (isReadonly) {
             $('#editPatientBtn').removeClass('hidden');
-            $('#patientIcon').addClass('fa-lock').removeClass('fa-pen-to-square');
+            $('#patientIconLock').removeClass('hidden');
+            $('#patientIconEdit').addClass('hidden');
         } else {
-            $('#patientIcon').removeClass('fa-lock').addClass('fa-pen-to-square');
+            $('#patientIconLock').addClass('hidden');
+            $('#patientIconEdit').removeClass('hidden');
         }
     }
 }
@@ -60,13 +63,16 @@ function setFamilyReadonly(isReadonly, type) {
 
     if (type){
         $('#editFamilyBtn').addClass('hidden');
-        $('#familyIcon').addClass('fa-lock').removeClass('fa-pen-to-square');
+        $('#familyIconLock').removeClass('hidden');
+        $('#familyIconEdit').addClass('hidden');
     } else {
         if (isReadonly) {
             $('#editFamilyBtn').removeClass('hidden');
-            $('#familyIcon').addClass('fa-lock').removeClass('fa-pen-to-square');
+            $('#familyIconLock').removeClass('hidden');
+            $('#familyIconEdit').addClass('hidden');
         } else {
-            $('#familyIcon').removeClass('fa-lock').addClass('fa-pen-to-square');
+            $('#familyIconLock').addClass('hidden');
+            $('#familyIconEdit').removeClass('hidden');
         }
     }
 }
@@ -98,11 +104,24 @@ async function submitFormAjax() {
     const action = form.getAttribute('action') || window.location.href;
     const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
+    // Some fields (like patient demographics) are visually locked using `disabled`,
+    // but we still want their values to be submitted for validation.
+    const temporarilyEnabled = [];
+    form.querySelectorAll('input:disabled, select:disabled, textarea:disabled').forEach(el => {
+        el.disabled = false;
+        temporarilyEnabled.push(el);
+    });
+
     const formDataObj = {};
     const fd = new FormData(form);
     for (const [k, v] of fd.entries()) {
         formDataObj[k] = v;
     }
+
+    // Restore disabled state after we've captured the values
+    temporarilyEnabled.forEach(el => {
+        el.disabled = true;
+    });
 
     clearValidationErrors();
     showLoading();
@@ -152,6 +171,7 @@ async function submitFormAjax() {
 
 
 function showValidationErrors(errors) {
+    const form = document.getElementById('patientForm');
     Object.keys(errors).forEach(field => {
         const input = document.querySelector(`[name="${field}"]`);
         if (!input) return;
@@ -163,7 +183,23 @@ function showValidationErrors(errors) {
             'text-xs text-red-500 mt-1 validation-error';
         msg.innerText = errors[field][0];
 
-        const wrapper = input.closest('.w-full');
+        //const wrapper = input.closest('.w-full');
+
+        // Prefer the field's grid cell (direct child of #patientForm) so errors show under the right field.
+        // Otherwise .closest('.w-full') can hit the column div and show e.g. sex error below unit_code.
+        let wrapper = null;
+        if (form) {
+            let cell = input;
+            while (cell && cell.parentElement && cell.parentElement !== form) {
+                cell = cell.parentElement;
+            }
+            if (cell && cell.parentElement === form) {
+                wrapper = cell;
+            }
+        }
+        if (!wrapper) {
+            wrapper = input.closest('.w-full');
+        }
         if (wrapper) {
             wrapper.appendChild(msg);
         }
@@ -308,21 +344,21 @@ function clearPatientForm() {
     $('#suffix').val('');
     $('#age').val('');
     $('#birth_date').val('');
-    $('#unit').val('');
     $('#contact').val('');
     $('#weight').val('');
     $('#height').val('');
     $('#bmi').val('');
     $('input[name="sex"]').prop('checked', false);
-    $('#familyForm input[type="radio"]').prop('checked', false);
+    $('input[name^="family_"][value="n"]').prop('checked', true);
     $('#total_cholesterol').val('');
     $('#hdl_cholesterol').val('');
     $('#systolic_bp').val('');
     $('#fbs').val('');
     $('#hba1c').val('');
-    $('input[name="hypertension_tx"]').prop('checked', false);
-    $('input[name="diabetes_m"]').prop('checked', false);
-    $('input[name="smoker"]').prop('checked', false);
+    $('select[name="unit_code"]').val('').trigger('change');
+    $('input[name="hypertension_tx"][value="n"]').prop('checked', true);
+    $('input[name="diabetes_m"][value="n"]').prop('checked', true);
+    $('input[name="smoker"][value="n"]').prop('checked', true);
     setPatientReadonly(false, 1);
     setFamilyReadonly(false, 1);
     $('#record-search-input, #magnifying').removeClass('hidden');
