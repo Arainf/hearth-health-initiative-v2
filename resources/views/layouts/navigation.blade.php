@@ -2,8 +2,8 @@
     $currentPage = request()->route('token') ? $encryption->decrypt(request()->route('token')) : null;
 @endphp
 
-<nav :class="sidebarCollapsed ? 'w-[80px]' : 'w-full'"
-     class="bg-[var(--clr-surface-a0)] border-[var(--clr-surface-a30)] h-full rounded-xl border shadow-lg flex flex-col justify-between transition-all duration-300">
+<nav :class="sidebarCollapsed ? 'sm:w-[60px] md:w-[60px] lg:w-[80px]' : 'w-full'"
+     class="navigation h-full rounded-xl border shadow-lg flex flex-col justify-between transition-all duration-300">
 
     <div class="flex flex-col p-5 gap-5 h-full">
         <div class="flex items-center justify-between h-12">
@@ -13,7 +13,7 @@
                 </div>
             </div>
 
-            <button @click="sidebarCollapsed = !sidebarCollapsed; setTimeout(() => { window.table?.columns.adjust(); }, 320);"
+            <button @click="sidebarCollapsed = !sidebarCollapsed;"
                     class="p-2 rounded-lg hover:bg-[var(--clr-surface-a20)] transition"
                     :class="!sidebarCollapsed ? ' ml-3' : 'ml-0'"
                     title="Toggle sidebar">
@@ -28,15 +28,15 @@
                                        :active="$currentPage === 'doctor' || $currentPage === 'compare'"
                                        :style="5">
                     <div class="relative group flex items-center w-full">
-                        <x-lucide-stethoscope class="w-4 flex-shrink-0 transition-colors {{ $currentPage === 'doctor' ? 'text-[var(--accent-5)]' : 'text-[var(--badge-disabled-text)] group-hover:text-[var(--accent-5)]' }}"/>
+                        <x-lucide-stethoscope class="w-4 flex-shrink-0 nav-icon transition-colors {{ $currentPage === 'doctor' ? 'text-[var(--accent-5)]' : 'text-[var(--badge-disabled-text)] group-hover:text-[var(--accent-5)]' }}"/>
                         <span :class="!sidebarCollapsed ? '' : 'text-transparent'"
                               class="ml-4 text-sm font-medium transition-all ease-in duration-150">
                             Doctor
                         </span>
 
                         <div x-show="sidebarCollapsed" x-transition.opacity
-                             class="absolute left-full top-1/2 -translate-y-1/2 ml-[4px] pointer-events-none z-[100]">
-                            <div class="flex items-center bg-[var(--clr-surface-a20)] text-white text-xs font-medium rounded-r-lg origin-left scale-x-0 opacity-0 group-hover:scale-x-100 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300 ease-[cubic-bezier(.4,0,.2,1)] px-4 h-11 whitespace-nowrap shadow-xl">
+                             class="absolute left-full top-1/2 -translate-y-1/2 ml-[18px] pointer-events-none z-[100]">
+                            <div class="flex items-center floating-nav  text-xs font-medium rounded-lg origin-left scale-x-0 opacity-0 group-hover:scale-x-100 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300 ease-[cubic-bezier(.4,0,.2,1)] px-4 h-11 whitespace-nowrap shadow-xl">
                                 Doctor
                             </div>
                         </div>
@@ -48,14 +48,14 @@
                                    :active="$currentPage === 'dashboard'"
                                    :style="1">
                 <div class="relative group flex items-center w-full">
-                    <x-lucide-folder-open class="w-4 flex-shrink-0 transition-colors {{ $currentPage === 'dashboard' ? 'text-[var(--accent-1)]' : 'text-[var(--badge-disabled-text)] group-hover:text-[var(--accent-1)]' }}"/>
+                    <x-lucide-folder-open class="w-4 flex-shrink-0 nav-icon transition-colors {{ $currentPage === 'dashboard' ? 'text-[var(--accent-1)]' : 'text-[var(--badge-disabled-text)] group-hover:text-[var(--accent-1)]' }}"/>
                     <span :class="!sidebarCollapsed ? '' : 'text-transparent'"
                           class="ml-4 text-sm font-medium transition-all ease-in duration-150">
                         Records
                     </span>
                     <div x-show="sidebarCollapsed" x-transition.opacity
-                         class="absolute left-full top-1/2 -translate-y-1/2 ml-[4px] pointer-events-none z-[100]">
-                        <div class="flex items-center bg-[var(--clr-surface-a20)] text-white text-xs font-medium rounded-r-lg origin-left scale-x-0 opacity-0 group-hover:scale-x-100 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300 ease-[cubic-bezier(.4,0,.2,1)] px-4 h-11 whitespace-nowrap shadow-xl">
+                         class="absolute left-full top-1/2 -translate-y-1/2 ml-[18px] pointer-events-none z-[100]">
+                        <div class="flex items-center floating-nav  text-xs font-medium rounded-lg origin-left scale-x-0 opacity-0 group-hover:scale-x-100 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300 ease-[cubic-bezier(.4,0,.2,1)] px-4 h-11 whitespace-nowrap shadow-xl">
                             Records
                         </div>
                     </div>
@@ -66,14 +66,14 @@
                                    :active="$currentPage === 'patient'"
                                    :style="3">
                 <div class="relative group flex items-center w-full">
-                    <x-lucide-users class="w-4 flex-shrink-0 transition-colors {{ $currentPage === 'patient' ? 'text-[var(--accent-3)]' : 'text-[var(--badge-disabled-text)] group-hover:text-[var(--accent-3)]' }}"/>
+                    <x-lucide-users class="w-4 flex-shrink-0 nav-icon transition-colors {{ $currentPage === 'patient' ? 'text-[var(--accent-3)]' : 'text-[var(--badge-disabled-text)] group-hover:text-[var(--accent-3)]' }}"/>
                     <span :class="!sidebarCollapsed ? '' : 'text-transparent'"
                           class="ml-4 text-sm font-medium transition-all ease-in duration-150">
                         Patients
                     </span>
                     <div x-show="sidebarCollapsed" x-transition.opacity
-                         class="absolute left-full top-1/2 -translate-y-1/2 ml-[5px] pointer-events-none z-[100]">
-                        <div class="flex items-center bg-[var(--clr-surface-a20)] text-white text-xs font-medium rounded-r-lg origin-left scale-x-0 opacity-0 group-hover:scale-x-100 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300 ease-[cubic-bezier(.4,0,.2,1)] px-4 h-11 whitespace-nowrap shadow-xl">
+                         class="absolute left-full top-1/2 -translate-y-1/2 ml-[18px] pointer-events-none z-[100]">
+                        <div class="flex items-center floating-nav text-xs font-medium rounded-lg origin-left scale-x-0 opacity-0 group-hover:scale-x-100 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300 ease-[cubic-bezier(.4,0,.2,1)] px-4 h-11 whitespace-nowrap shadow-xl">
                             Patients
                         </div>
                     </div>
@@ -85,14 +85,14 @@
                                        :active="$currentPage === 'account'"
                                        :style="4">
                     <div class="relative group flex items-center w-full">
-                        <x-lucide-shield-user class="w-4 flex-shrink-0 transition-colors {{ $currentPage === 'account' ? 'text-[var(--accent-4)]' : 'text-[var(--badge-disabled-text)] group-hover:text-[var(--accent-4)]' }}"/>
+                        <x-lucide-shield-user class="w-4 flex-shrink-0 nav-icon transition-colors {{ $currentPage === 'account' ? 'text-[var(--accent-4)]' : 'text-[var(--badge-disabled-text)] group-hover:text-[var(--accent-4)]' }}"/>
                         <span :class="!sidebarCollapsed ? '' : 'text-transparent'"
                               class="ml-4 text-sm font-medium transition-all ease-in duration-150">
                             Accounts
                         </span>
                         <div x-show="sidebarCollapsed" x-transition.opacity
-                             class="absolute left-full top-1/2 -translate-y-1/2 ml-[5px] pointer-events-none z-[100]">
-                            <div class="flex items-center bg-[var(--clr-surface-a20)] text-white text-xs font-medium rounded-r-lg origin-left scale-x-0 opacity-0 group-hover:scale-x-100 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300 ease-[cubic-bezier(.4,0,.2,1)] px-4 h-11 whitespace-nowrap shadow-xl">
+                             class="absolute left-full top-1/2 -translate-y-1/2 ml-[18px] pointer-events-none z-[100]">
+                            <div class="flex items-center floating-nav  text-xs font-medium rounded-lg origin-left scale-x-0 opacity-0 group-hover:scale-x-100 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300 ease-[cubic-bezier(.4,0,.2,1)] px-4 h-11 whitespace-nowrap shadow-xl">
                                 Accounts
                             </div>
                         </div>
@@ -103,14 +103,14 @@
                                        :active="$currentPage === 'archive'"
                                        :style="2">
                     <div class="relative group flex items-center w-full">
-                        <x-lucide-package class="w-4 flex-shrink-0 transition-colors {{ $currentPage === 'archive' ? 'text-purple-600' : 'text-[var(--badge-disabled-text)] group-hover:text-purple-600' }}"/>
+                        <x-lucide-package class="w-4 flex-shrink-0 nav-icon transition-colors {{ $currentPage === 'archive' ? 'text-purple-600' : 'text-[var(--badge-disabled-text)] group-hover:text-purple-600' }}"/>
                         <span :class="!sidebarCollapsed ? '' : 'text-transparent'"
                               class="ml-4 text-sm font-medium transition-all ease-in duration-150">
                             Archive
                         </span>
                         <div x-show="sidebarCollapsed" x-transition.opacity
-                             class="absolute left-full top-1/2 -translate-y-1/2 ml-[4px] pointer-events-none z-[100]">
-                            <div class="flex items-center bg-[var(--clr-surface-a20)] text-white text-xs font-medium rounded-r-lg origin-left scale-x-0 opacity-0 group-hover:scale-x-100 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300 ease-[cubic-bezier(.4,0,.2,1)] px-4 h-11 whitespace-nowrap shadow-xl">
+                             class="absolute left-full top-1/2 -translate-y-1/2 ml-[18px] pointer-events-none z-[100]">
+                            <div class="flex items-center floating-nav text-xs font-medium rounded-lg origin-left scale-x-0 opacity-0 group-hover:scale-x-100 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300 ease-[cubic-bezier(.4,0,.2,1)] px-4 h-11 whitespace-nowrap shadow-xl">
                                 Archive
                             </div>
                         </div>
@@ -121,14 +121,14 @@
                                        :active="$currentPage === 'unit'"
                                        :style="3">
                     <div class="relative group flex items-center w-full">
-                        <x-lucide-building-2 class="w-4 flex-shrink-0 transition-colors {{ $currentPage === 'unit' ? 'text-[var(--accent-6)]' : 'text-[var(--badge-disabled-text)] group-hover:text-[var(--accent-6)]' }}"/>
+                        <x-lucide-building-2 class="w-4 flex-shrink-0 nav-icon transition-colors {{ $currentPage === 'unit' ? 'text-[var(--accent-6)]' : 'text-[var(--badge-disabled-text)] group-hover:text-[var(--accent-6)]' }}"/>
                         <span :class="!sidebarCollapsed ? '' : 'text-transparent'"
                               class="ml-4 text-sm font-medium transition-all ease-in duration-150">
                             Units
                         </span>
                         <div x-show="sidebarCollapsed" x-transition.opacity
-                             class="absolute left-full top-1/2 -translate-y-1/2 ml-[4px] pointer-events-none z-[100]">
-                            <div class="flex items-center bg-[var(--clr-surface-a20)] text-white text-xs font-medium rounded-r-lg origin-left scale-x-0 opacity-0 group-hover:scale-x-100 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300 ease-[cubic-bezier(.4,0,.2,1)] px-4 h-11 whitespace-nowrap shadow-xl">
+                             class="absolute left-full top-1/2 -translate-y-1/2 ml-[18px] pointer-events-none z-[100]">
+                            <div class="flex items-center floating-nav text-xs font-medium rounded-lg origin-left scale-x-0 opacity-0 group-hover:scale-x-100 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300 ease-[cubic-bezier(.4,0,.2,1)] px-4 h-11 whitespace-nowrap shadow-xl">
                                 Units
                             </div>
                         </div>
@@ -155,19 +155,19 @@
 
         <div x-show="sidebarCollapsed" x-transition:enter.delay.225ms class="flex flex-col gap-2 justify-center">
             <a href="{{ route('page', ['token' => $encryption->encrypt('record')]) }}"
-               class="relative group flex items-center justify-center bg-[var(--clr-surface-a20)] p-2 rounded-lg hover:rounded-tr-none hover:rounded-br-none z-[50] hover:z-[100] transition-all duration-300">
+               class="relative group flex items-center justify-center bg-[var(--clr-surface-a20)] p-2 rounded-lg hover:rounded-tr-none hover:rounded-br-none  hover:z-[100] transition-all duration-300" style="z-index: 10">
                 <x-lucide-user-plus class="w-5 h-5 text-[var(--accent-1)] z-10"/>
-                <div class="absolute left-full ml-[-4] overflow-hidden pointer-events-none z-[100]">
-                    <div class="flex items-center bg-[var(--clr-surface-a20)] text-white text-xs font-medium rounded-tr-lg rounded-br-lg px-0 opacity-0 h-9 group-hover:w-auto group-hover:px-4 group-hover:opacity-100 transition-all duration-300 whitespace-nowrap shadow-xl">
+                <div class="absolute left-full ml-[-4] overflow-hidden pointer-events-none" style="z-index: 10">
+                    <div class="flex items-center bg-[var(--clr-surface-a20)]  text-xs font-medium rounded-tr-lg rounded-br-lg px-0 opacity-0 h-9 group-hover:w-auto group-hover:px-4 group-hover:opacity-100 transition-all duration-300 whitespace-nowrap shadow-xl">
                         New Record
                     </div>
                 </div>
             </a>
             <a href="{{ route('page', ['token' => $encryption->encrypt('compare')]) }}"
-               class="relative group flex items-center justify-center bg-[var(--clr-surface-a20)] p-2 rounded-lg hover:rounded-tr-none hover:rounded-br-none z-[50] hover:z-[100] transition-all duration-300">
-                <x-lucide-component class="w-5 h-5 text-[var(--accent-2)] z-10"/>
-                <div class="absolute left-full ml-[-4] overflow-hidden pointer-events-none z-[100]">
-                    <div class="flex items-center bg-[var(--clr-surface-a20)] text-white text-xs font-medium rounded-tr-lg rounded-br-lg px-0 opacity-0 h-9 group-hover:w-auto group-hover:px-4 group-hover:opacity-100 transition-all duration-300 whitespace-nowrap shadow-xl">
+               class="relative group flex items-center justify-center bg-[var(--clr-surface-a20)] p-2 rounded-lg hover:rounded-tr-none hover:rounded-br-none  hover:z-[100] transition-all duration-300" style="z-index: 10">
+                <x-lucide-component class="w-5 h-5 text-[var(--accent-2)] z-10" />
+                <div class="absolute left-full ml-[-4] overflow-hidden pointer-events-none" >
+                    <div class="flex items-center bg-[var(--clr-surface-a20)]  text-xs font-medium rounded-tr-lg rounded-br-lg px-0 opacity-0 h-9 group-hover:w-auto group-hover:px-4 group-hover:opacity-100 transition-all duration-300 whitespace-nowrap shadow-xl">
                         Compare
                     </div>
                 </div>
@@ -177,7 +177,7 @@
 
     <div class="m-5">
         <div class="flex flex-col gap-2 mb-3">
-            <a href="{{ route('profile.edit') }}"
+            <a href="{{ route('page' , [ 'token' => $encryption->encrypt('profile')]) }}"
                class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-[var(--text-primary)] hover:bg-[var(--clr-surface-a20)] transition">
                 <x-lucide-user class="w-5 text-[var(--badge-disabled-text)]"/>
                 <span x-show="!sidebarCollapsed" x-transition>Profile</span>
@@ -201,8 +201,8 @@
                 <span class="text-xs truncate text-[var(--badge-disabled-text)]">{{ Auth::user()->occupation }}</span>
             </div>
 
-            <div x-show="sidebarCollapsed" class="absolute left-full top-1/2 -translate-y-1/2 ml-[4px] pointer-events-none z-[100]">
-                <div class="flex flex-col justify-center bg-[var(--clr-surface-a20)] text-white rounded-r-lg origin-left scale-x-0 opacity-0 group-hover:scale-x-100 group-hover:opacity-100 transition-all duration-300 px-4 h-12 shadow-xl whitespace-nowrap">
+            <div x-show="sidebarCollapsed" class="absolute left-full top-1/2 -translate-y-1/2 ml-[18px] pointer-events-none z-[100]">
+                <div class="flex flex-col justify-center bg-[var(--clr-surface-a20)]  rounded-lg origin-left scale-x-0 opacity-0 group-hover:scale-x-100 group-hover:opacity-100 transition-all duration-300 px-4 h-12 shadow-xl whitespace-nowrap">
                     <span class="text-xs font-bold">{{ Auth::user()->name }}</span>
                     <span class="text-[10px] opacity-70">{{ Auth::user()->occupation }}</span>
                 </div>

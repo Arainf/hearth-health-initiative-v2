@@ -1,127 +1,116 @@
-/* ===============================
-   BASE BADGE
-================================ */
+/* BADGE.CSS */
+/* Colors  → colors.css    */
+/* Sizes   → variables.css */
+
+/* ── Base ── */
 .badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    padding: 0.35rem 0.75rem;
+    display:       inline-flex;
+    align-items:   center;
+    gap:           var(--badge-gap);
+    padding:       var(--badge-padding);
     border-radius: 9999px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    line-height: 1;
-    white-space: nowrap;
-    border: 1px solid transparent;
+    font-size:     var(--badge-font-size);
+    font-weight:   var(--badge-font-weight);
+    line-height:   1;
+    white-space:   nowrap;
+    border:        1px solid transparent;
+    scale: var(--badge-scale) ;
 }
 
-/* optional icon size */
-.badge i {
-    font-size: 0.8rem;
+.badge i { font-size: var(--badge-icon-size); }
+
+/* ── Size variants ── */
+.badge-sm {
+    font-size: var(--badge-sm-font-size);
+    padding:   var(--badge-sm-padding);
 }
 
-/* ===============================
-   GENDER
-================================ */
+.badge-lg {
+    font-size: var(--badge-lg-font-size);
+    padding:   var(--badge-lg-padding);
+}
+
+/* ── Outline variant ── */
+.badge-outline { background: transparent; }
+
+/* ── Gender ── */
+.badge-male,
+.badge-female {
+    min-width: var(--badge-min-width-gender);
+}
+
 .badge-male {
-   min-width: 80px;
-    background: var(--badge-male-bg);
-    color: var(--badge-male-text);
+    background:   var(--badge-male-bg);
+    color:        var(--badge-male-text);
     border-color: var(--badge-male-border);
 }
 
 .badge-female {
-   min-width: 80px;
-    background: var(--badge-female-bg);
-    color: var(--badge-female-text);
+    background:   var(--badge-female-bg);
+    color:        var(--badge-female-text);
     border-color: var(--badge-female-border);
 }
 
-/* ===============================
-   STATUS
-================================ */
-.badge-approved {
-    background: var(--badge-approved-bg);
-    color: var(--badge-approved-text);
+/* ── Status ── */
+.badge-approved,
+.badge-enabled {
+    background:   var(--badge-approved-bg);
+    color:        var(--badge-approved-text);
     border-color: var(--badge-approved-border);
 }
 
 .badge-pending {
-    background: var(--badge-pending-bg);
-    color: var(--badge-pending-text);
+    background:   var(--badge-pending-bg);
+    color:        var(--badge-pending-text);
     border-color: var(--badge-pending-border);
 }
 
-.badge-not-evaluated {
-    background: var(--badge-neutral-bg);
-    color: var(--badge-neutral-text);
+.badge-not-evaluated,
+.badge-disabled {
+    background:   var(--badge-neutral-bg);
+    color:        var(--badge-neutral-text);
     border-color: var(--badge-neutral-border);
 }
 
 .badge-needs-attention {
-    background: var(--badge-danger-bg);
-    color: var(--badge-danger-text);
+    background:   var(--badge-danger-bg);
+    color:        var(--badge-danger-text);
     border-color: var(--badge-danger-border);
 }
 
-.badge-enabled {
-    background: var(--badge-approved-bg);
-    color: var(--badge-approved-text);
-    border-color: var(--badge-approved-border);
-}
-
-.badge-disabled {
-    background: var(--badge-neutral-bg);
-    color: var(--badge-neutral-text);
-    border-color: var(--badge-neutral-border);
-}
-
+/* ── Roles ── */
 .badge-admin {
-    background: var(--badge-admin-bg);
-    color: var(--badge-danger-text);
+    background:   var(--badge-admin-bg);
+    color:        var(--badge-admin-text);
     border-color: var(--badge-admin-border);
 }
 
 .badge-user {
-    background: var(--badge-user-bg);
-    color: var(--badge-user-text);
+    background:   var(--badge-user-bg);
+    color:        var(--badge-user-text);
     border-color: var(--badge-user-border);
 }
 
 .badge-doctor {
-    background: var(--badge-doctor-bg);
-    color: var(--badge-doctor-text);
+    background:   var(--badge-doctor-bg);
+    color:        var(--badge-doctor-text);
     border-color: var(--badge-doctor-border);
 }
 
-/* ===============================
-   OPTIONAL STATES
-================================ */
-.badge-outline {
-    background: transparent;
-}
-
-.badge-sm {
-    font-size: 0.7rem;
-    padding: 0.25rem 0.6rem;
-}
-
-.badge-lg {
-    font-size: 0.85rem;
-    padding: 0.45rem 0.9rem;
-}
-
+/* ── Eval order badge ── */
 .eval-order-badge {
-    position: absolute;
-    top: -4px;
-    right: -4px;
-    background: #ef4444;
-    color: white;
-    font-size: 10px;
-    font-weight: 600;
-    border-radius: 9999px;
-    width: 18px;
-    height: 18px;
-    display: flex;
-    align-items: center;
+    position:        absolute;
+    top:             -4px;
+    right:           -4px;
+    background:      var(--badge-danger-bg);
+    color:           var(--badge-danger-text);
+    font-size:       var(--eval-badge-font-size);
+    font-weight:     600;
+    border-radius:   9999px;
+    width:           var(--eval-badge-size);
+    height:          var(--eval-badge-size);
+    display:         flex;
+    align-items:     center;
     justify-content: center;
+    border:          1px solid var(--badge-danger-border);
 }

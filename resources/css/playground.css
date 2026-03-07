@@ -1,394 +1,304 @@
-/* ===============================
-   COMPACT BORDERED CARD TABLE
-   WITH FULL GRID (VERTICAL + HORIZONTAL)
-   =============================== */
-
-/* Light mode (default) */
-:root {
-  --dt-bg: #ffffff;
-  --dt-bg-header: #f8fafc;
-  --dt-text: #0f172a;
-  --dt-text-header: #64748b;
-  --dt-border: #e5e7eb;
-  --dt-border-left: #e5e7eb;
-  --dt-hover: #f9fafb;
-  --dt-bg-odd: #f9fafb;
-  --dt-bg-even: #ffffff;
-  --dt-bg-paginate: #f3f4f6;
-  --dt-text-paginate: #4b5563;
-  --dt-border-paginate: #d1d5db;
-}
-
-/* Dark mode */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --dt-bg: #1e1e1e;
-    --dt-bg-header: #2d2d2d;
-    --dt-text: #e5e7eb;
-    --dt-text-header: #9ca3af;
-    --dt-border: #374151;
-    --dt-border-left: #121212;
-    --dt-hover: #2d3748;
-    --dt-bg-odd: #1a1a1a;
-    --dt-bg-even: #1e1e1e;
-    --dt-bg-paginate: #1f2937;
-    --dt-text-paginate: #d1d5db;
-    --dt-border-paginate: #4b5563;
-  }
-}
-
-.dt-scroll-head {
-  will-change: width;
-}
-
-.dt-scroll-body {
-  will-change: scroll-position;
-}
+/* PLAYGROUND.CSS — DataTables styles */
+/* Color tokens live in colors.css  |  Size tokens live in variables.css */
 
 /* ================= WRAPPER ================= */
 .dataTables_wrapper {
-  position: relative;
-  height: 100%;
-  color: var(--dt-text);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    height: 100%;
+    color: var(--table-header-text);
 }
 
 /* Scrollable body */
 .dataTables_scrollBody {
-  max-height: calc(100vh - 260px);
-  overflow-y: auto !important;
+    max-height: calc(100vh - 260px);
+    overflow-y: auto !important;
 }
 
-/* ================= HEADER ================= */
-.dt-scroll-head table.dataTable {
-  border-collapse: collapse !important;
+.datatable-body {
+    flex: 1;
+    overflow-y: auto;
 }
 
-.dt-info {
-    @apply
-    mt-2 font-inter font-semibold text-gray-400 absolute
+/* ================= LAYOUT ROWS ================= */
+.dt-layout-row {
+    position: sticky;
+    bottom: 0;
+    z-index: 20;
+    background: var(--bg-light);
+    border-top: solid 1px var(--border);
+    padding: 10px 12px;
 }
 
-.dt-scroll-head table.dataTable thead th {
-  background: var(--clr-surface-a20);
-  color: var(--clr-text-a30);
-  font-size: 12px;
-  font-weight: 600;
-  text-transform: uppercase;
-  padding: 10px 12px;
-  text-align: start;
-  border-top: 1px solid var(--clr-surface-a30);
-  border-bottom: 1px solid var(--clr-surface-a30);
-  border-right: 1px solid var(--clr-surface-a30);
+.dt-layout-row .dt-layout-cell {
+    display: flex;
+    align-items: center;
 }
 
-.dt-scroll-head table.dataTable thead th:first-child {
-  border-left: 1px solid var(--clr-surface-a30);
-  text-align: center;
-}
-
-/* ================= TABLE BASE ================= */
-table.dataTable {
-  background: transparent;
-  color: var(--clr-text-a0);
-}
-
-/* ================= ROW ================= */
-table.dataTable tbody tr {
-  background: transparent !important;
-}
-
-/* ================= CELLS ================= */
-table.dataTable tbody tr > td {
-  background: var(--clr-surface-a10);
-  padding: 5px 12px ;
-  font-size: 13px;
-  color: var(--clr-text-a0);
-  vertical-align: middle;
-  text-align: start;
-  border-top: 1px solid var(--clr-surface-a30);
-  border-bottom: 1px solid var(--clr-surface-a30);
-  border-right: 1px solid var(--clr-surface-a30);
-  transition: background .15s ease;
-}
-
-table.dataTable tbody tr > td[colspan="6"]  {
+/* Kill empty layout rows */
+.dt-layout-row:empty {
+    display: none !important;
+    height: 0 !important;
     padding: 0 !important;
     margin: 0 !important;
 }
 
-/* Left border */
-table.dataTable tbody tr > td:first-child {
-  border-left: 3px solid var(--clr-surface-a30);
-  text-align: left;
+.dt-layout-start { justify-content: flex-start; }
+.dt-layout-end   { justify-content: flex-end; }
+
+/* ================= SCROLL HEAD ================= */
+.dt-scroll-head {
+    overflow: hidden;
+    will-change: width;
 }
 
-/* Hover state */
-table.dataTable tbody tr:hover > td {
-  background: var(--clr-surface-a30);
+.dt-scroll-body {
+    will-change: scroll-position;
 }
 
-/* Striped rows */
-table.dataTable.stripe tbody tr.odd > td {
-  background-color: var(--dt-bg-odd);
-}
-
-table.dataTable.stripe tbody tr.even > td {
-  background-color: var(--dt-bg-even);
-}
-
-/* Pagination */
-.dataTables_wrapper .dataTables_paginate {
-  margin-top: 1rem;
-  padding-top: 0.5rem;
-  border-top: 1px solid var(--dt-border);
-}
-
-.dataTables_wrapper .dataTables_paginate .paginate_button {
-  color: var(--dt-text-paginate) !important;
-  border: 1px solid var(--dt-border-paginate) !important;
-  background: var(--dt-bg-paginate) !important;
-  margin: 0 2px;
-  padding: 0.25rem 0.75rem;
-  border-radius: 0.25rem;
-}
-
-.dataTables_wrapper .dataTables_paginate .paginate_button.current,
-.dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
-  background: var(--dt-bg-header) !important;
-  color: var(--dt-text-header) !important;
-  border: 1px solid var(--dt-border) !important;
-  font-weight: 600;
-}
-
-/* Search box */
-.dataTables_filter input {
-  border: 1px solid var(--dt-border) !important;
-  background: var(--dt-bg) !important;
-  color: var(--dt-text) !important;
-  padding: 0.25rem 0.5rem;
-  border-radius: 0.25rem;
-}
-
-/* Length menu */
-.dataTables_length select {
-  border: 1px solid var(--dt-border) !important;
-  background: var(--dt-bg) !important;
-  color: var(--dt-text) !important;
-  padding: 0.25rem;
-  border-radius: 0.25rem;
-}
-
-/* Responsive adjustments */
-@media (max-width: 1024px) {
-  .dt-scroll-head table.dataTable thead th {
-    padding: 8px 8px;
-  }
-
-  table.dataTable tbody tr > td {
-    padding: 4px 8px !important;
-  }
-}
-
-.dt-scroll-head table.dataTable thead th:last-child {
-  text-align: start;
-}
-
-/* Hide duplicate header in body */
+/* Hide duplicate header in scroll body */
 .dt-scroll-body thead {
-  display: none !important;
+    display: none !important;
 }
 
-/* Accent bar on hover */
+/* ================= TABLE BASE ================= */
+.dt-scroll-head table.dataTable,
+.dt-scroll-body table.dataTable {
+    width: 100% !important;
+}
+
+.dt-scroll-head table.dataTable { border-collapse: collapse !important; }
+.dt-scroll-body table.dataTable { table-layout: fixed; }
+
+table.dataTable { background: transparent; }
+
+/* ================= HEADER ================= */
+.dt-scroll-head table.dataTable thead th {
+    background:      var(--table-header-bg);
+    color:           var(--table-header-text);
+    font-size:       var(--table-header-font-size);
+    font-weight:     var(--table-header-font-weight);
+    text-transform:  var(--table-header-transform);
+    padding:         var(--table-header-padding);
+    text-align:      start;
+    white-space:     normal !important;
+    line-height:     1.3;
+    word-break:      break-word;
+}
+
+.dt-scroll-head table.dataTable thead th:last-child { text-align: start; }
+
+/* Hide DataTables sort icons */
+table.dataTable thead .sorting::before,
+table.dataTable thead .sorting_asc::before,
+table.dataTable thead .sorting_desc::before,
+table.dataTable thead .sorting_asc_disabled::before,
+table.dataTable thead .sorting_desc_disabled::before,
+table.dataTable thead .sorting::after,
+table.dataTable thead .sorting_asc::after,
+table.dataTable thead .sorting_desc::after,
+table.dataTable thead .sorting_asc_disabled::after,
+table.dataTable thead .sorting_desc_disabled::after {
+    display: none !important;
+}
+
+/* ================= ROWS ================= */
+table.dataTable tbody tr {
+    background: transparent !important;
+    height: 48px;
+}
+
+table.dataTable tbody tr.shown { background-color: var(--table-row-alt-bg) !important; }
+
+/* ================= CELLS ================= */
+table.dataTable tbody tr > td {
+    background:      var(--table-row-alt-bg);
+    padding:         var(--table-cell-padding);
+    font-size:       var(--table-cell-font-size);
+    color:           var(--table-header-text);
+    vertical-align:  var(--table-cell-v-align);
+    text-align:      start;
+    border:          1px solid var(--border);
+    transition:      background 0.15s ease;
+}
+
+table.dataTable tbody tr > td:first-child { text-align: left; }
+
+/* Colspan cells (e.g. expanded rows) */
+table.dataTable tbody tr > td[colspan="6"] {
+    padding: 0 !important;
+    margin:  0 !important;
+}
+
+/* ================= HOVER ================= */
+table.dataTable tbody tr:hover > td {
+    background: var(--table-row-hover-bg);
+    color:      var(--table-row-hover-text);
+}
+
+/* Accent left-border on hover */
 table.dataTable tbody tr:hover > td:first-child {
-  border-left-color: var(--clr-surface-a30);
+    border-left-color: var(--clr-surface-a30);
 }
 
-/* ================= NUMERIC ================= */
-table.dataTable td.dt-type-numeric {
-  text-align: start;
-  font-variant-numeric: tabular-nums;
+/* ================= STRIPED ================= */
+table.dataTable.stripe tbody tr.odd  > td { background-color: var(--dt-bg-odd); }
+table.dataTable.stripe tbody tr.even > td { background-color: var(--dt-bg-even); }
+
+/* ================= INFO TEXT ================= */
+.dt-info {
+    font-size:   11px;
+    font-weight: 500;
+    color:       var(--text-muted);
+    white-space: nowrap;
 }
 
 /* ================= ACTIONS ================= */
 td.text-end {
-  text-align: right;
-  vertical-align: middle;
+    display:         flex;
+    align-items:     center;
+    justify-content: center;
+    height:          100%;
+    text-align:      right;
+    vertical-align:  middle;
 }
 
-/* Inner flex only */
 .dt-actions {
-  display: inline-flex;
-  gap: 6px;
-  align-items: center;
-  justify-content: flex-end;
+    display:         inline-flex;
+    gap:             6px;
+    align-items:     center;
+    justify-content: flex-end;
 }
+
+/* Ensure table stays below modal backdrops */
+.dataTable { z-index: 1; }
 
 
 /* ================= PAGINATION ================= */
-.dataTables_paginate {
-  position: sticky;
-  bottom: 0;
-  background: #ffffff;
-  padding: 8px 0;
-  border-top: 1px solid #e5e7eb;
-  z-index: 10;
-}
 
-/* Pagination buttons */
-.dataTables_paginate .paginate_button {
-  border-radius: 6px !important;
-  border: 1px solid #e5e7eb !important;
-  padding: 4px 10px !important;
-  margin: 0 3px;
-  font-size: 13px;
-  background: white !important;
-}
-
-.dataTables_paginate .paginate_button.current {
-  background: #2563eb !important;
-  color: white !important;
-  border-color: #2563eb !important;
-}
-
-/* ================= SEARCH & LENGTH ================= */
-.dataTables_filter input,
-.dataTables_length select {
-  border-radius: 6px;
-  border: 1px solid #e5e7eb;
-  padding: 5px 10px;
-  font-size: 13px;
-}
-
-/* ================= BADGES ================= */
-.dt-badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 3px 8px;
-  font-size: 11px;
-  font-weight: 600;
-  border-radius: 999px;
-}
-
-.dt-badge-success { background: #dcfce7; color: #166534; }
-.dt-badge-warning { background: #fef3c7; color: #92400e; }
-.dt-badge-danger  { background: #fee2e2; color: #991b1b; }
-
-
-
-/* ===============================
-   RESPONSIVE TABLE HEADER FIX
-   =============================== */
-
-/* Prevent header overflow */
-.dt-scroll-head {
-  overflow: hidden;
-}
-
-/* Allow wrapping in header */
-.dt-scroll-head table.dataTable thead th {
-  white-space: normal !important;
-  line-height: 1.3;
-  word-break: break-word;
-}
-
-/* Keep body cells aligned with header */
-.dt-scroll-body table.dataTable {
-  table-layout: fixed;
-}
-
-/* Ensure consistent column widths */
-.dt-scroll-head table.dataTable,
-.dt-scroll-body table.dataTable {
-  width: 100% !important;
-}
-
-/* ===============================
-   MOBILE / SMALL SCREENS
-   =============================== */
-@media (max-width: 1024px) {
-
-  /* Reduce padding to save space */
-  .dt-scroll-head table.dataTable thead th {
-    padding: 8px 8px;
-    font-size: 11px;
-  }
-
-  table.dataTable tbody tr > td {
-    padding: 6px 8px !important;
-    font-size: 12px;
-  }
-
-  /* Make action column tighter */
-  table.dataTable tbody tr > td:last-child,
-  .dt-scroll-head table.dataTable thead th:last-child {
-    width: 110px !important;
-    min-width: 110px !important;
-    max-width: 110px !important;
-  }
-}
-
-/* ===============================
-   ACTION BUTTON CONSISTENCY
-   =============================== */
-td.text-end {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-}
-
-/* Prevent uneven row heights */
-table.dataTable tbody tr {
-  height: 48px;
-}
-
-
-.dt-layout-start {
-    justify-content: flex-start;
-}
-
-.dt-layout-end {
-    justify-content: flex-end;
-}
-
-
-
-/* Pagination container */
-.dt-paging nav {
+.datatable-top {
     display: flex;
-    gap: 6px;
-    align-items: center;
-    margin-top: 15px;
-    justify-content: flex-end;
+    position: absolute;
+    top: -8.5vh;
+    transition: top 0.3s ease;
 }
 
-/* Pagination buttons */
+@media (min-width: 1024px) {
+    .datatable-top {
+        top: -5.5vh;
+    }
+}
+
+
+
+.dt-paging nav {
+    display:         flex;
+    gap:             6px;
+    align-items:     center;
+    justify-content: flex-end;
+    background-color: transparent !important;
+}
+
+/* Base button */
 .dt-paging-button {
-    min-width: 32px;
-    height: 32px;
-    padding: 0 10px;
-    border-radius: 6px;
-    border: 1px solid var(--clr-surface-a30);
-    background: var(--clr-surface-a10);
-    color: var(--clr-text-a0);
-    cursor: pointer;
-    transition: all 0.2s;
+    display:         inline-flex;
+    align-items:     center;
+    justify-content: center;
+    min-width:       28px;
+    height:          28px;
+    padding:         0 8px;
+    font-size:       11px;
+    font-weight:     500;
+    border-radius:   6px;
+    border:          1px solid var(--clr-surface-a30);
+    background:      var(--clr-surface-a10);
+    color:           var(--clr-text-a0);
+    cursor:          pointer;
+    user-select:     none;
+    line-height:     1;
+    transition:      background 180ms ease, border-color 180ms ease,
+    color 180ms ease, transform 120ms ease, box-shadow 180ms ease;
+}
+
+@media (min-width: 1024px) {
+    .dt-paging-button {
+        min-width:     32px;
+        height:        32px;
+        padding:       0 10px;
+        font-size:     13px;
+        border-radius: 7px;
+    }
 }
 
 /* Hover */
-.dt-paging-button:hover:not(.disabled):not(.current) {
-    background: var(--clr-surface-a20);
+.dt-paging-button:not(.current):not(.disabled):hover {
+    background:    var(--clr-surface-a20);
+    border-color:  var(--clr-surface-a40, var(--clr-surface-a30));
+    transform:     translateY(-1px);
+    box-shadow:    0 2px 6px -1px rgba(0, 0, 0, 0.08);
 }
 
-/* Active page */
-.dt-paging-button.current {
-    background: var(--accent-primary);
-    color: var(--clr-surface-a0);
-    border-color: var(--accent-primary);
+/* Active / current page */
+.dt-paging-button.current,
+.dt-paging-button.current:hover {
+    background:   var(--primary-btn-background);
+    border-color: var(--primary-btn-background);
+    color:        var(--primary-color);
+    font-weight:  600;
+    transform:    none;
+    box-shadow:   0 2px 8px -2px color-mix(in srgb, var(--primary-btn-background) 40%, transparent);
 }
 
 /* Disabled */
-.dt-paging-button.disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
+.dt-paging-button.disabled,
+.dt-paging-button.disabled:hover {
+    opacity:      0.35;
+    cursor:       not-allowed;
+    background:   var(--clr-surface-a10);
+    border-color: var(--clr-surface-a30);
+    transform:    none;
+    box-shadow:   none;
+}
+
+/* Arrow buttons (first / prev / next / last) */
+.dt-paging-button.first,
+.dt-paging-button.previous,
+.dt-paging-button.next,
+.dt-paging-button.last {
+    font-size:    13px;
+    background:   transparent;
+    border-color: transparent;
+    min-width:    26px;
+    padding:      0 6px;
+}
+
+.dt-paging-button.first:not(.disabled):hover,
+.dt-paging-button.previous:not(.disabled):hover,
+.dt-paging-button.next:not(.disabled):hover,
+.dt-paging-button.last:not(.disabled):hover {
+    background:   var(--clr-surface-a20);
+    border-color: var(--clr-surface-a30);
+    box-shadow:   none;
+    transform:    none;
+}
+
+/* ================= OVERFLOW ================= */
+.dataTables_scrollBody,
+.dt-scroll-body {
+    overflow-x: auto !important;
+    overflow-y: auto !important;
+}
+
+.dt-scroll-head {
+    overflow-x: hidden !important; /* header tracks body scroll, no own scrollbar */
+}
+
+.dataTables_wrapper {
+    overflow-x: auto;
+}
+
+.dt-scroll-body table.dataTable,
+.dt-scroll-head table.dataTable {
+    min-width: 700px; /* adjust to taste */
 }

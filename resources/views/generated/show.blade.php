@@ -1,8 +1,8 @@
 <x-app-layout>
 @vite(['resources/css/rich-editor/editor.css', 'resources/css/app.css', 'resources/js/app.js',])
-<div class="flex flex-col h-screen bg-[var(--clr-surface-a20)] overflow-hidden font-inter relative">
+<div class="flex flex-col bg-[var(--bg)] h-full overflow-hidden font-inter relative">
 
-    <div class="flex items-center justify-between px-6 py-2 border-b bg-[var(--clr-surface-a30)] z-20 shadow-sm">
+    <div class="flex items-center justify-between px-6 py-2 border-b bg-[var(--bg-light)] z-20 shadow-sm">
         <div class="flex items-center gap-4">
             <div>
                 <h3 class="text-lg font-semibold text-gray-800">Generated Report</h3>

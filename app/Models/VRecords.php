@@ -48,7 +48,7 @@ class VRecords extends Model
         }
 
         if ($request->filled('status') && $request->status !== 'all') {
-            $query->where('status_name', $request->status);
+            $query->where('status_id', $request->status);
         }
 
         if ($request->filled('year') && $request->year !== 'all') {
@@ -59,7 +59,6 @@ class VRecords extends Model
             $query->where('unit_name', $request->unit);
         }
 
-        $recordsTotal    = static::where('is_archived', 0)->count();
         $recordsFiltered = $query->count();
 
         $rows = $query
@@ -91,7 +90,7 @@ class VRecords extends Model
             };
 
             $doctorNote = $row->approved_by
-                ? '<div class="text-[11px] text-gray-400 mt-1">by '.e($row->approved_by).'</div>'
+                ? '<div class="text-[length:var(--s-paragraph)] text-gray-400 mt-1">by '.e($row->approved_by).'</div>'
                 : '';
 
             $statusHtml = '
@@ -103,10 +102,10 @@ class VRecords extends Model
 
             $patientHtml = '
                 <div class="leading-tight relative">
-                    <div class="font-semibold font-inter text-md">
+                    <div class=" font-intertext-[length:var(--s-sub-header)]">
                         '.e($row->last_name).', '.e($row->first_name).' '.e($row->middle_name).'
                     </div>
-                    <div class="absolute text-xs text-gray-500 right-0 top-3">
+                    <div class="absolute text-[length:var(--s-paragraph)] text-[var(--secondary-color)] right-0 top-3">
                         <strong>'.e($row->age).'</strong> y.o.
                     </div>
                 </div>
@@ -123,47 +122,50 @@ class VRecords extends Model
                     'mode'  => auth()->user()->is_Doctor() ? $enc->encrypt('edit') : $enc->encrypt('show')
                 ]);
 
-
                 $viewBtn = '<a class="hhi-btn hhi-btn-view icon-only view-generated-btn"
                     title="View Evaluation"
                     href="'.$viewUrl.'">
-                    <i data-lucide="search" class="w-4 h-4"></i>
-                   </a>';
+                    <i data-lucide="search" class="w-[var(--s-icon)] h-[var(--s-icon)]"></i>
+                    <span class="btn-label">View</span>
+                </a>';
             }
 
 
             $evaluateBtn = (!$hasGenerated && $aiAccess && $aiReady)
                 ? '<button class="hhi-btn hhi-btn-evaluate icon-only evaluate-btn relative"
-                    title="Evaluate with AI"
-                    data-record-id="'.$enc->encrypt($row->record_id).'"
-                    data-record-mode="'.$enc->encrypt('evaluate').'">
-                    <i data-lucide="brain" class="w-4 h-4"></i>
-                   </button>'
+                        title="Evaluate with AI"
+                        data-record-id="'.$enc->encrypt($row->record_id).'"
+                        data-record-mode="'.$enc->encrypt('evaluate').'">
+                        <i data-lucide="brain" class="w-[var(--s-icon)] h-[var(--s-icon)]"></i>
+                        <span class="btn-label">Evaluate</span>
+                    </button>'
                 : '';
 
             $printBtn = ($hasGenerated && $hasDoctorApproval)
-                ? '<a href="'. $printUrl .'"
-                     target="_blank"
-                     class="hhi-btn hhi-btn-print icon-only"
-                     title="Print">
-                        <i data-lucide="printer" class="w-4 h-4"></i>
-                   </a>'
+                ? '<a href="'.$printUrl.'"
+                        target="_blank"
+                        class="hhi-btn hhi-btn-print icon-only"
+                        title="Print">
+                        <i data-lucide="printer" class="w-[var(--s-icon)] h-[var(--s-icon)]"></i>
+                        <span class="btn-label">Print</span>
+                    </a>'
                 : '';
 
             $actionsHtml = '
-                <div class="flex flex-col items-center gap-1">
+                <div class="flex items-center justify-center gap-1">
                     <div class="actions-btn">
-                        '.$viewBtn.'
-                        '.$evaluateBtn.'
-                        '.$printBtn.'
+                        ' . $viewBtn . '
+                        ' . $evaluateBtn . '
+                        ' . $printBtn . '
                         <button
                             class="hhi-btn hhi-btn-secondary icon-only row-toggle"
-                            data-url="'.$detailsUrl.'">
-                            <i data-lucide="chevron-down" class="w-4 h-4"></i>
+                            data-url="' . $detailsUrl . '">
+                            <i data-lucide="chevron-down" class="w-[var(--s-icon)] h-[var(--s-icon)]"></i>
                         </button>
                     </div>
                 </div>
             ';
+
 
             return [
                 'id'         => $enc->encrypt($row->record_id),

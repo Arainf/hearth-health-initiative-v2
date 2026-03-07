@@ -16,7 +16,7 @@
 
         <!-- RIGHT: Signature -->
         <td width="35%" style="text-align:right; vertical-align:bottom; font-size:12px; justify-items: right;">
-            <img src="{{ asset("img/tex_signature.jpg") }}" style="height:0.8in;"><br>
+            <img src="{{ asset('storage/'. auth()->user()->signature) }}" style="height:0.8in;"><br>
             Fr. Alberto B. Paurom MD SJ<br>
             Lic# 60679
         </td>

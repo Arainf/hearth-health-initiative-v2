@@ -4,19 +4,24 @@
     'width' => 'w-64',
 ])
 
-<div class="relative {{ $width }}" {{$attributes}}>
+<div class="relative h-full   {{ $width }}" {{$attributes}} >
     <input
         id="{{ $id }}"
         type="text"
         placeholder="{{ $placeholder }}"
-        class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 pl-9
-               focus:ring-1 focus:ring-gray-500 focus:outline-none text-sm
-               bg-white dark:bg-[#212121] text-gray-900 dark:text-gray-200
-               placeholder-gray-500 dark:placeholder-gray-500
-               transition-colors"
+        class="w-full h-full border-[2px] rounded-lg md:rounded-lg lg:rounded-xl px-3 py-2 pl-7 lg:pl-9
+                focus:outline-none
+                border-[var(--primary-border)]
+               font-inter
+               bg-[var(--tertiary-system-background)]
+               placeholder-[var(--secondary-color)]
+               placeholder:font-normal
+               transition-colors
+               text-[length:var(--s-sub-header)]
+               "
     >
     <svg xmlns="http://www.w3.org/2000/svg"
-         class="absolute left-2.5 top-2.5 h-5 w-5 text-gray-500 dark:text-gray-500"
+         class="absolute left-[var(--pos-search-icon)] top-[var(--pos-search-icon)] w-[var(--s-icon)] h-[var(--s-icon)]"
          fill="none" viewBox="0 0 24 24"
          stroke="currentColor"
          stroke-width="2">

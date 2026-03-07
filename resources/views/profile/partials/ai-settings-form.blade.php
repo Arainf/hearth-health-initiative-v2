@@ -1,84 +1,73 @@
-<section class="bg-[#121212] rounded-xl shadow-sm p-6">
-    <header class="mb-4">
-        <h2 class="text-lg font-semibold text-white">
+<section class="space-y-6">
+
+    <header>
+        <h2 class="text-xl font-semibold">
             AI Settings
         </h2>
-        <p class="text-sm text-gray-400">
-            Configure your OpenAI API key and default prompt.
+
+        <p class="text-sm text-[var(--text-muted)]">
+            Configure your AI assistant.
         </p>
     </header>
 
-    {{-- Toggle --}}
-    <div class="flex items-center justify-between mb-4">
-        <span class="text-sm font-medium text-gray-400">
-            Enable editing
-        </span>
+    <div class="flex items-center justify-between">
+
+    <span class="text-sm text-[var(--text-muted)]">
+        Enable Editing
+    </span>
 
         <label class="relative inline-flex items-center cursor-pointer">
             <input type="checkbox" id="aiToggle" class="sr-only peer">
-            <div class="w-11 h-6 bg-gray-500 rounded-full peer
-                        peer-focus:outline-none
-                        peer-checked:bg-blue-600
-                        after:content-['']
-                        after:absolute after:top-[2px] after:left-[2px]
-                        after:bg-[#121212] after:rounded-full
-                        after:h-5 after:w-5
-                        after:transition-all
-                        peer-checked:after:translate-x-full">
-            </div>
+            <div class="w-10 h-5 bg-gray-500 rounded-full peer-checked:bg-blue-600
+after:content-[''] after:absolute after:top-[2px] after:left-[2px]
+after:bg-white after:h-4 after:w-4 after:rounded-full
+after:transition peer-checked:after:translate-x-5"></div>
         </label>
+
     </div>
 
-    <form method="POST" action="{{ route('profile.update') }}" class="space-y-4">
+    <form method="POST"
+          action="{{ route('profile',['token'=>$encryption->encrypt('edit')]) }}"
+          class="space-y-4">
+
         @csrf
         @method('PATCH')
 
         <input type="hidden" name="section" value="ai">
 
-        {{-- Locked fields --}}
-        <fieldset id="aiFieldset" disabled
-                  class="opacity-50 pointer-events-none transition">
+        <fieldset id="aiFieldset" disabled class="opacity-50 transition">
 
             <div>
-                <label class="block text-sm font-medium text-gray-400 mb-1">
-                    OpenAI API Key
-                </label>
+                <x-input-label for="openai_api_key" value="OpenAI API Key"/>
                 <input
                     type="password"
                     name="openai_api_key"
-                    placeholder="sk-********************************"
-                    class="w-full rounded-lg bg-[#121212] border-gray-400/20
-                           focus:border-blue-500 focus:ring-blue-500"
-                />
-                <p class="text-xs text-gray-500 mt-1">
-                    Leave blank to keep existing key.
-                </p>
+                    class="w-full rounded-lg bg-[var(--bg-light)]  "
+                    placeholder="sk-********************************"/>
+
             </div>
 
-            <div>
-                <label class="block text-sm font-medium text-gray-400 mb-1">
-                    Default Prompt
-                </label>
+            <div class="mt-2">
+                <x-input-label for="ai_prompt" value="Default Prompt"/>
                 <textarea
                     name="ai_prompt"
                     rows="4"
-                    class="w-full rounded-lg bg-[#121212] border-gray-400/20
-                           focus:border-blue-500 focus:ring-blue-500"
-                    placeholder="You are a helpful medical assistant..."
-                >{{ old('ai_prompt', auth()->user()->ai_prompt) }}</textarea>
+                    class="w-full rounded-lg bg-[var(--bg-light)] ">{{ old('ai_prompt',auth()->user()->ai_prompt) }}</textarea>
+
             </div>
+
         </fieldset>
 
         <div class="flex justify-end">
-            <x-secondary-button
-                type="submit"
-                id="saveAiBtn"
-                disabled
-                class="opacity-50">
+
+            <x-secondary-button id="saveAiBtn" disabled>
                 Save AI Settings
             </x-secondary-button>
+
         </div>
+
     </form>
+
 </section>
 
 {{-- SCRIPT --}}

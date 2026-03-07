@@ -11,7 +11,7 @@
 
             {{-- Left Icon --}}
             @if($leftIcon)
-                <span class="absolute left-3 top-3 flex items-center self-center text-slate-400">
+                <span class="absolute left-3 top-3 flex items-center self-center text-[var(--text-muted)]">
                     {!! $leftIcon !!}
                 </span>
             @endif
@@ -26,7 +26,7 @@
                     "px-3",
                     "text-sm",
                     "transition-all",
-                    "bg-white",
+                    "bg-[var(--bg-light)]",
                     "focus:outline-none",
                     "disabled:cursor-not-allowed disabled:opacity-50",
 
@@ -46,7 +46,7 @@
 
             {{-- Right Icon --}}
             @if($rightIcon)
-                <span class="absolute right-3 top-3 flex items-center self-center text-slate-400">
+                <span class="absolute right-3 top-3 flex items-center self-center text-[var(--text-muted)]">
                     {!! $rightIcon !!}
                 </span>
             @endif

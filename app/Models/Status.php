@@ -32,7 +32,7 @@ class Status extends Model
                 }
 
                 if ($status && $status !== 'all') {
-                    $q->where('status_name', $status);
+                    $q->where('status_id', $status);
                 }
 
                 if ($unit && $unit !== 'all') {

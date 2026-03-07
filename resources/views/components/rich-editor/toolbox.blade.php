@@ -5,7 +5,8 @@
         z-10
         items-center justify-center gap-1
         px-4 py-2
-        bg-[var(--clr-surface-a10)]
+        bg-[var(--bg-light)]
+        text-[var(--text-muted)]
     "
 >
 
@@ -76,9 +77,9 @@
     </div>
 
     <!-- LIST DROPDOWN -->
-    <div x-data="{ open: false }" class="relative">
-        <button @click="open = !open" class="toolbar-btn">
-            <x-lucide-list class="w-4 h-4 dark:invert" />
+    <div x-data="{ open: false }" class="relative ">
+        <button @click="open = !open" class="toolbar-btn group">
+            <x-lucide-list class="w-4 h-4 text-[var(--text)]" />
             <x-lucide-chevron-down class="w-3 h-3 rotate-[270deg]" />
         </button>
 
@@ -89,12 +90,12 @@
             @click.outside="open = false"
             class="toolbar-dropdown"
         >
-            <button @click="window.ReportEditor.toggleBulletList(); open=false" class="dropdown-item dark:text-white">
-                <x-lucide-list class="w-4 h-4 dark:invert" />
+            <button @click="window.ReportEditor.toggleBulletList(); open=false" class="dropdown-item ">
+                <x-lucide-list class="w-4 h-4 text-[var(--text)]" />
                 Bullet list
             </button>
-            <button @click="window.ReportEditor.toggleOrderedList(); open=false" class="dropdown-item dark:text-white">
-                <x-lucide-list-ordered class="w-4 h-4 dark:invert" />
+            <button @click="window.ReportEditor.toggleOrderedList(); open=false" class="dropdown-item ">
+                <x-lucide-list-ordered class="w-4 h-4 text-[var(--text)]" />
                 Numbered list
             </button>
         </div>
@@ -104,19 +105,19 @@
 
     <!-- FORMATTING -->
     <button @click="window.ReportEditor.toggleBold()" class="toolbar-btn">
-        <x-lucide-bold class="w-4 h-4 dark:invert" />
+        <x-lucide-bold class="w-4 h-4 text-[var(--text)]" />
     </button>
 
     <button @click="window.ReportEditor.toggleItalic()" class="toolbar-btn">
-        <x-lucide-italic class="w-4 h-4 dark:invert" />
+        <x-lucide-italic class="w-4 h-4 text-[var(--text)]" />
     </button>
 
     <button @click="window.ReportEditor.toggleUnderline()" class="toolbar-btn">
-        <x-lucide-underline class="w-4 h-4 dark:invert" />
+        <x-lucide-underline class="w-4 h-4 text-[var(--text)]" />
     </button>
 
     <button @click="window.ReportEditor.toggleStrike()" class="toolbar-btn">
-        <x-lucide-strikethrough class="w-4 h-4 dark:invert" />
+        <x-lucide-strikethrough class="w-4 h-4 text-[var(--text)]" />
     </button>
 
     <div class="toolbar-divider"></div>
@@ -124,7 +125,7 @@
     <!-- ALIGN DROPDOWN -->
     <div x-data="{ open: false }" class="relative">
         <button @click="open = !open" class="toolbar-btn">
-            <x-lucide-align-left class="w-4 h-4 dark:invert" />
+            <x-lucide-align-left class="w-4 h-4 text-[var(--text)]" />
         </button>
 
         <div
@@ -135,15 +136,15 @@
             class="toolbar-dropdown"
         >
             <button @click="window.ReportEditor.setAlign('left'); open=false" class="dropdown-item">
-                <x-lucide-align-left class="w-4 h-4 dark:invert" />
+                <x-lucide-align-left class="w-4 h-4 text-[var(--text)]" />
                 Left
             </button>
             <button @click="window.ReportEditor.setAlign('center'); open=false" class="dropdown-item">
-                <x-lucide-align-center class="w-4 h-4 dark:invert" />
+                <x-lucide-align-center class="w-4 h-4 text-[var(--text)]" />
                 Center
             </button>
             <button @click="window.ReportEditor.setAlign('right'); open=false" class="dropdown-item">
-                <x-lucide-align-right class="w-4 h-4 dark:invert" />
+                <x-lucide-align-right class="w-4 h-4 text-[var(--text)]" />
                 Right
             </button>
         </div>

@@ -3,7 +3,7 @@
     'required' => false
 ])
 
-<label {{ $attributes->merge(['class' => 'block font-medium font-inter text-[14px] text-black']) }}>
+<label {{ $attributes->merge(['class' => 'block font-medium font-inter text-[14px] text-[var(--text-muted)]']) }}>
     {{ $value ?? $slot }}
 
     @if($required)

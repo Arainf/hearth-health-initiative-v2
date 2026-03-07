@@ -16,21 +16,27 @@ const generatingRecords = new Set();
 
 
 function showSkeleton(){
-    $('#approved-skeleton').removeClass('hidden');
-    $('#approved-content').addClass('opacity-0');
-    $('#not-evaluated-skeleton').removeClass('hidden');
-    $('#not-evaluated-content').addClass('opacity-0');
-    $('#pending-skeleton').removeClass('hidden');
-    $('#pending-content').addClass('opacity-0');
+    $('#search-button').html(`<i data-lucide="loader-circle" class="w-[var(--s-icon)]  h-[var(--s-icon)] animate-spin"></i>`)
+        .prop('disabled', true)
+        .addClass("primary-btn-disabled")
+        .removeClass("bg-[var(--btn-background)]");
+    $('#reset-filters').html(`<i data-lucide="ban" class="w-[var(--s-icon)]  h-[var(--s-icon)] stroke-[2px]"></i>`)
+        .addClass("secondary-btn-disabled")
+        .prop('disabled', true)
+        .removeClass("bg-[var(--secondary-btn-background)]");
+    createIcons({ icons });
 }
 
 function hideSkeleton(){
-    $('#approved-skeleton').addClass('hidden');
-    $('#approved-content').removeClass('opacity-0');
-    $('#not-evaluated-skeleton').addClass('hidden');
-    $('#not-evaluated-content').removeClass('opacity-0');
-    $('#pending-skeleton').addClass('hidden');
-    $('#pending-content').removeClass('opacity-0');
+    $('#search-button').html(`<i data-lucide="search" class="w-[var(--s-icon)]  h-[var(--s-icon)] stroke-[2px]"></i>`)
+        .prop('disabled', false)
+        .removeClass("primary-btn-disabled")
+        .addClass("bg-[var(--btn-background)]");
+    $('#reset-filters').html(`<i data-lucide="rotate-ccw" class="w-[var(--s-icon)]  h-[var(--s-icon)] stroke-[2px]"></i>`)
+        .removeClass("secondary-btn-disabled")
+        .prop('disabled', false)
+        .addClass("bg-[var(--secondary-btn-background)]");
+    createIcons({ icons });
 }
 
 
@@ -49,12 +55,14 @@ $(document).on('click', '.year-filter-dropdown-item', function () {
 const table = $("#records-table").DataTable({
     serverSide: true,
     processing: true,
-    pageLength: 20,
+    pageLength: 15,
 
-    scrollY: "calc(100vh - 400px)",
+    scrollY:  "calc(100vh - 30%)",
+    scrollX: true,
     scrollCollapse: true,
+    responsive: true,
 
-    autoWidth: true,
+    autoWidth: false,
     paging: true,
     info: true,
     lengthChange: false,
@@ -63,8 +71,9 @@ const table = $("#records-table").DataTable({
     },
     dom: `
         <"datatable-wrapper"
-            <"datatable-body" t>
-            <"datatable-footer"i p>
+            <"datatable-top"p >
+            <"datatable-body"t>
+
         >
     `,
 
@@ -87,8 +96,6 @@ const table = $("#records-table").DataTable({
                 let notEvaluated = 0;
                 let approved = 0;
 
-
-
                 json.statuses.forEach(status => {
                     const count = status.count || 0;
                     const name = status.status_name?.toLowerCase() || '';
@@ -100,18 +107,12 @@ const table = $("#records-table").DataTable({
                     } else if (name === 'approved') {
                         approved = count;
                     }
+
+                    $("#pending-count").text(pending);
+                    $("#not-evaluated-count").text(notEvaluated);
+                    $("#approved-count").text(approved);
                 });
-
-                $("#pending-count").text(pending);
-                $("#not-evaluated-count").text(notEvaluated);
-                $("#approved-count").text(approved);
             }
-
-            $('#pendingYear , #evaluatedYear , #approveYear').text(yearFilterValue);
-            $('#pendingUnit, #evaluateUnit, #approveUnit')
-                .text($('#unit_office').val() || 'All Units');
-
-
             return json.data;
         },
 
@@ -119,12 +120,12 @@ const table = $("#records-table").DataTable({
 
 
     columnDefs: [
-        { targets: 0, width: "35%" },
-        { targets: 1, width: "15%" },
-        { targets: 2, width: "15%" },
-        { targets: 3, width: "10%" },
-        { targets: 4, width: "20%" },
-        { targets: 5, width: "20%" }
+        { targets: 0, width: "23vw" },
+        { targets: 1, width: "23vw" },
+        { targets: 2, width: "12vw" },
+        { targets: 3, width: "11vw" },
+        { targets: 4, width: "11vw" },
+        { targets: 5, width: "12vw" }
     ],
 
     columns: [
@@ -138,6 +139,42 @@ const table = $("#records-table").DataTable({
 
 
 });
+
+const $paging = $('.dt-paging');
+$('#datatable-pagination').append($paging);
+
+table.on('draw.dt', function () {
+    const $paging = $('.dt-paging');
+    if ($('#datatable-pagination').find('.dt-paging').length === 0) {
+        $('#datatable-pagination').append($paging);
+    }
+});
+
+let resizeTimer;
+window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+        table.columns.adjust();
+    }, 150);
+});
+
+table.on('draw', () => {
+    const body = document.querySelector('.datatable-body .dt-scroll-body');
+    if (!body) return;
+
+    // Animate new rows appearing
+    const rows = body.querySelectorAll('tbody tr');
+    rows.forEach((row, i) => {
+        row.style.opacity = '0';
+        row.style.transform = 'translateY(6px)';
+        row.style.transition = `opacity 180ms ease ${i * 18}ms, transform 180ms ease ${i * 18}ms`;
+        requestAnimationFrame(() => {
+            row.style.opacity = '1';
+            row.style.transform = 'translateY(0)';
+        });
+    });
+});
+
 
 $('#records-table').on('draw.dt', function () {
     createIcons({ icons });
@@ -191,7 +228,7 @@ $("#records-table tbody").on("click", ".row-toggle", function (e) {
         row.child.hide();
         tr.removeClass("shown");
 
-        button.html(`<i data-lucide="chevron-down" class="w-4 h-4"></i>`);
+        button.html(`<i data-lucide="chevron-down" class="w-[var(--s-icon)]  h-[var(--s-icon)]"></i>`);
         createIcons({ icons });
         return;
     }
@@ -202,7 +239,7 @@ $("#records-table tbody").on("click", ".row-toggle", function (e) {
 
     // LOADER
     button.html(`
-        <i data-lucide="loader" class="w-4 h-4 animate-spin"></i>
+        <i data-lucide="loader" class="w-[var(--s-icon)]  h-[var(--s-icon)] animate-spin"></i>
     `);
     createIcons({ icons });
 
@@ -214,7 +251,7 @@ $("#records-table tbody").on("click", ".row-toggle", function (e) {
 
             // Restore chevron rotated
             button.html(`
-                <i data-lucide="chevron-down" class="w-4 h-4 rotate-180"></i>
+                <i data-lucide="chevron-down" class="w-[var(--s-icon)]  h-[var(--s-icon)] rotate-180"></i>
             `);
             createIcons({ icons });
         })
@@ -417,104 +454,85 @@ let evaluationQueue = [];
 $(document).on('click', '.evaluate-btn', async function (e) {
     e.stopPropagation();
 
-    const recordId = $(this).data('record-id');
+    const recordId   = $(this).data('record-id');
     const recordMode = $(this).data('record-mode');
-    const $btn = $(this);
+    const $btn       = $(this);
 
-    // Prevent double-click on same row
     if (generatingRecords.has(recordId)) return;
 
     generatingRecords.add(recordId);
 
-    // 🆕 Add to queue
     evaluationQueue.push(recordId);
     updateQueueBadges();
 
-    // 🔥 Immediate UI Feedback
-    $(`#generateBtn-${recordId}`).addClass("is-active").removeClass("hidden");
-    $(`#actionsBtn-${recordId}`).addClass("is-hidden");
-
-    // Make button relative for badge positioning
-    $btn.addClass('relative');
-
-    // Spinner
-    $btn.prop('disabled', true)
-        .html(`
-            <i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i>
-        `);
+    $btn.addClass('relative').prop('disabled', true).html(`
+        <i data-lucide="loader-2" class="w-[var(--s-icon)] h-[var(--s-icon)] animate-spin"></i>
+        <span class="btn-label">Evaluating...</span>
+    `);
 
     createIcons({ icons });
 
     try {
-        await $.ajax({
+        const response = await $.ajax({
             url: `/store/` + window.page.token,
             method: 'POST',
             contentType: "application/json",
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr("content")
-            },
-            data: JSON.stringify({
-                id: recordId,
-                mode: recordMode
-            })
+            headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr("content") },
+            data: JSON.stringify({ id: recordId, mode: recordMode })
         });
 
-        finishEvaluation(recordId, $btn);
-
-        // Reload table without resetting pagination
-        table.ajax.reload(null, false);
+        const viewUrl = response.view_url ?? null;
+        finishEvaluation(recordId, $btn, false, viewUrl);
 
     } catch (xhr) {
-
         const errorMsg =
-            xhr.responseJSON?.error ||
+            xhr.responseJSON?.error   ||
             xhr.responseJSON?.message ||
             'Failed to generate evaluation';
 
         alert(errorMsg);
-
         finishEvaluation(recordId, $btn, true);
     }
 });
 
-function finishEvaluation(recordId, $btn, isError = false) {
+function finishEvaluation(recordId, $btn, isError = false, viewUrl = null) {
 
     generatingRecords.delete(recordId);
-
-    // Remove from queue
     evaluationQueue = evaluationQueue.filter(id => id !== recordId);
+    updateQueueBadges();
 
-    // Restore UI
-    $(`#generateBtn-${recordId}`).removeClass("is-active").addClass("hidden");
-    $(`#actionsBtn-${recordId}`).removeClass("is-hidden");
-
-    // Restore button icon
-    $btn.prop('disabled', false)
-        .html(`
-            <i data-lucide="brain" class="w-4 h-4"></i>
+    if (!isError && viewUrl) {
+        // Replace evaluate button with view button — no table reload
+        $btn.replaceWith(`
+            <a class="hhi-btn hhi-btn-view icon-only view-generated-btn"
+               title="View Evaluation"
+               href="${viewUrl}">
+                <i data-lucide="search" class="w-[var(--s-icon)] h-[var(--s-icon)]"></i>
+                <span class="btn-label">View</span>
+            </a>
         `);
+    } else {
+        // Restore evaluate button on error
+        $btn.prop('disabled', false).html(`
+            <i data-lucide="brain" class="w-[var(--s-icon)] h-[var(--s-icon)]"></i>
+            <span class="btn-label">Evaluate</span>
+        `);
+    }
 
     createIcons({ icons });
-
-    updateQueueBadges();
 }
 
 function updateQueueBadges() {
-
     $('.evaluate-btn').each(function () {
-
-        const $btn = $(this);
-        const id = $btn.data('record-id');
+        const $btn  = $(this);
+        const id    = $btn.data('record-id');
         const index = evaluationQueue.indexOf(id);
 
-        // Remove old badge
         $btn.find('.eval-order-badge').remove();
 
         if (index !== -1) {
             $btn.append(`
-                <span class="eval-order-badge absolute -top-1 -right-1
-                             bg-red-500 text-white text-[10px] font-semibold
-                             rounded-full w-4 h-4 flex items-center justify-center">
+                <span class="eval-order-badge">
                     ${index + 1}
                 </span>
             `);
@@ -523,166 +541,165 @@ function updateQueueBadges() {
 }
 
 
-
 /**
  * Open Panel Logic
  * */
 
-$(document).on("click", ".view-generated-btn", function (e) {
-    e.stopPropagation();
+// $(document).on("click", ".view-generated-btn", function (e) {
+//     e.stopPropagation();
+//
+//     const btn = $(this);
+//
+//     $('.hhi-btn-view').prop('disabled', true);
+//
+//     btn
+//         .addClass('is-loading')
+//         .html(`
+//             <i data-lucide="loader" class="w-4 h-4 animate-spin"></i>
+//             <span class="ml-1">Preparing</span>
+//         `)
+//         .prop('disabled', true);
+//
+//     createIcons({ icons }); // re-render lucide icons
+//
+//
+//     const url = btn.data('url');
+//
+//
+//     setPanelLoading(true);
+//     contentFillers(false);
+//
+//     fetch(url)
+//         .then(res => res.json())
+//         .then(res => {
+//             originalPanelContent = res.generated_text || "No generated content.";
+//             reportEditor.setContent(originalPanelContent);
+//             currentRecordId = res.record_id;
+//             modeSave = res.mode_save;
+//             modeSaveApprove = res.mode_save_and_approve;
+//             setSection(res);
+//             openGeneratedPanel();
+//
+//             const isApproved = res.status_id === 1;
+//             if (isApproved) {
+//                 $("#panelSaveApproveBtn").addClass("hidden").prop('disabled', true);
+//             } else {
+//                 $("#panelSaveApproveBtn").removeClass("hidden").prop('disabled', false);
+//             }
+//
+//             $('.hhi-btn-view').prop('disabled', false);
+//
+//             btn
+//                 .removeClass('is-loading')
+//                 .html(`<i data-lucide="search" class="w-4 h-4"></i>`)
+//                 .prop('disabled', false);
+//
+//             createIcons({ icons }); // re-render icon again
+//         })
+//         .catch(() => {
+//             $("#panelContent").text("Failed to load content.");
+//
+//             btn
+//                 .removeClass('is-loading')
+//                 .html(`<i data-lucide="search" class="w-4 h-4"></i>`)
+//                 .prop('disabled', false);
+//
+//             createIcons({ icons });
+//         });
+// });
 
-    const btn = $(this);
-
-    $('.hhi-btn-view').prop('disabled', true);
-
-    btn
-        .addClass('is-loading')
-        .html(`
-            <i data-lucide="loader" class="w-4 h-4 animate-spin"></i>
-            <span class="ml-1">Preparing</span>
-        `)
-        .prop('disabled', true);
-
-    createIcons({ icons }); // re-render lucide icons
-
-
-    const url = btn.data('url');
-
-
-    setPanelLoading(true);
-    contentFillers(false);
-
-    fetch(url)
-        .then(res => res.json())
-        .then(res => {
-            originalPanelContent = res.generated_text || "No generated content.";
-            reportEditor.setContent(originalPanelContent);
-            currentRecordId = res.record_id;
-            modeSave = res.mode_save;
-            modeSaveApprove = res.mode_save_and_approve;
-            setSection(res);
-            openGeneratedPanel();
-
-            const isApproved = res.status_id === 1;
-            if (isApproved) {
-                $("#panelSaveApproveBtn").addClass("hidden").prop('disabled', true);
-            } else {
-                $("#panelSaveApproveBtn").removeClass("hidden").prop('disabled', false);
-            }
-
-            $('.hhi-btn-view').prop('disabled', false);
-
-            btn
-                .removeClass('is-loading')
-                .html(`<i data-lucide="search" class="w-4 h-4"></i>`)
-                .prop('disabled', false);
-
-            createIcons({ icons }); // re-render icon again
-        })
-        .catch(() => {
-            $("#panelContent").text("Failed to load content.");
-
-            btn
-                .removeClass('is-loading')
-                .html(`<i data-lucide="search" class="w-4 h-4"></i>`)
-                .prop('disabled', false);
-
-            createIcons({ icons });
-        });
-});
-
-
-
-$("#panelSaveBtn").on("click", function () {
-    if (!currentRecordId) return;
-
-    const $btn = $(this);
-    const content = reportEditor.getHTML();
-
-    if (content.trim() === originalPanelContent.trim()) {
-        alert("No changes to save.");
-        return;
-    }
-
-    $btn.prop("disabled", true).text("Saving…");
-
-    $.ajax({
-        url: `/store/` + window.page.token,
-        method: "POST",
-        contentType: "application/json",
-        headers: {
-            "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content")
-        },
-        data: JSON.stringify({ content, id : currentRecordId, mode : modeSave }), // ✅ payload in request body
-        success: function (data) {
-
-            if (!data.success && !data.updated) {
-                alert("Server did not confirm save.");
-                return;
-            }
-
-            originalPanelContent = content;
-            closeGeneratedPanel();
-
-            showSuccess("Saved", "Generated report updated.");
-            table.ajax.reload(null, false);
-        },
-        error: function (xhr) {
-            console.error("Save error:", xhr);
-            alert("Failed to save report. Please try again.");
-        },
-        complete: function () {
-            $btn.prop("disabled", false).text("Save");
-        }
-    });
-});
-
-$("#panelSaveApproveBtn").on("click", function () {
-
-    if (!currentRecordId) return;
-
-    const $btn = $(this);
-    const content = reportEditor.getHTML();
-
-    $btn.prop("disabled", true).text("Saving & approving…");
-
-    $.ajax({
-        url: `/store/` + window.page.token,
-        method: "POST",
-        contentType: "application/json",
-        headers: {
-            "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content")
-        },
-        data: JSON.stringify({
-            id: currentRecordId,
-            mode: modeSaveApprove,
-            approved: user_id,
-            content: content
-        }),
-
-        success: function (response) {
-
-            if (!response.success) {
-                alert(response.error || "Operation failed.");
-                return;
-            }
-
-            closeGeneratedPanel();
-            showSuccess("Approved", "Record saved and approved.");
-            $("#panelFooter").addClass("hidden");
-            table.ajax.reload();
-        },
-
-        error: function (xhr) {
-            console.error("Save & approve error:", xhr);
-            alert("Failed to save and approve.");
-        },
-
-        complete: function () {
-            $btn.prop("disabled", false).text("Save & Approve");
-        }
-    });
-});
+//
+//
+// $("#panelSaveBtn").on("click", function () {
+//     if (!currentRecordId) return;
+//
+//     const $btn = $(this);
+//     const content = reportEditor.getHTML();
+//
+//     if (content.trim() === originalPanelContent.trim()) {
+//         alert("No changes to save.");
+//         return;
+//     }
+//
+//     $btn.prop("disabled", true).text("Saving…");
+//
+//     $.ajax({
+//         url: `/store/` + window.page.token,
+//         method: "POST",
+//         contentType: "application/json",
+//         headers: {
+//             "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content")
+//         },
+//         data: JSON.stringify({ content, id : currentRecordId, mode : modeSave }), // ✅ payload in request body
+//         success: function (data) {
+//
+//             if (!data.success && !data.updated) {
+//                 alert("Server did not confirm save.");
+//                 return;
+//             }
+//
+//             originalPanelContent = content;
+//             closeGeneratedPanel();
+//
+//             showSuccess("Saved", "Generated report updated.");
+//             table.ajax.reload(null, false);
+//         },
+//         error: function (xhr) {
+//             console.error("Save error:", xhr);
+//             alert("Failed to save report. Please try again.");
+//         },
+//         complete: function () {
+//             $btn.prop("disabled", false).text("Save");
+//         }
+//     });
+// });
+//
+// $("#panelSaveApproveBtn").on("click", function () {
+//
+//     if (!currentRecordId) return;
+//
+//     const $btn = $(this);
+//     const content = reportEditor.getHTML();
+//
+//     $btn.prop("disabled", true).text("Saving & approving…");
+//
+//     $.ajax({
+//         url: `/store/` + window.page.token,
+//         method: "POST",
+//         contentType: "application/json",
+//         headers: {
+//             "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content")
+//         },
+//         data: JSON.stringify({
+//             id: currentRecordId,
+//             mode: modeSaveApprove,
+//             approved: user_id,
+//             content: content
+//         }),
+//
+//         success: function (response) {
+//
+//             if (!response.success) {
+//                 alert(response.error || "Operation failed.");
+//                 return;
+//             }
+//
+//             closeGeneratedPanel();
+//             showSuccess("Approved", "Record saved and approved.");
+//             $("#panelFooter").addClass("hidden");
+//             table.ajax.reload();
+//         },
+//
+//         error: function (xhr) {
+//             console.error("Save & approve error:", xhr);
+//             alert("Failed to save and approve.");
+//         },
+//
+//         complete: function () {
+//             $btn.prop("disabled", false).text("Save & Approve");
+//         }
+//     });
+// });
 /* ==========================================
    IMPORT & TEMPLATE MODAL LOGIC (jQuery)
    ========================================== */
@@ -714,7 +731,7 @@ function resetImportModal() {
     $('#import_step_2').addClass('hidden');
     $('#import_loading').addClass('hidden');
     // Shrink modal back to original size
-    $('#importModalContainer').removeClass('w-[95vw] max-w-7xl h-[85vh]').addClass('w-[520px]');
+    $('#importModalContainer').removeClass('w-screen h-screen').addClass('w-[520px] p-6').css('padding', '');
     $('#import_file').val('');
     $("#validate_import").prop("disabled", true);
 }
@@ -765,7 +782,7 @@ $('#validate_import').on('click', function () {
     formData.append("file", fileInput);
 
     const $btn = $(this);
-    $btn.html(`<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i><span class="ml-1">Validating</span>`)
+    $btn.html(`<i data-lucide="loader-2" class="w-[var(--s-icon)]  h-[var(--s-icon)] animate-spin"></i><span class="ml-1">Validating</span>`)
         .prop('disabled', true);
 
     createIcons({ icons });
@@ -792,7 +809,7 @@ $('#validate_import').on('click', function () {
             if (response.data && response.data.length > 0) {
                 response.data.forEach(function(row) {
                     html += `
-                        <tr class="hover:bg-gray-50 h-[50px] divide-x">
+                        <tr class="  divide-x" style="background-color: var(--secodary-system-background); height: 50px">
                             <td class="px-2 py-1 border-b text-center">${row.row ?? ''}</td>
                             <td class="px-2 py-1 border-b font-medium whitespace-nowrap">${row.full_name ?? ''}</td>
                             <td class="px-2 py-1 border-b">${row.birthday ?? ''}</td>
@@ -817,7 +834,7 @@ $('#validate_import').on('click', function () {
                     `;
                 });
             } else {
-                html = `<tr><td colspan="21" class="text-center py-3 text-gray-500">No valid rows to preview.</td></tr>`;
+                html = `<tr><td colspan="21" class="text-center py-3 text-[var(--secondary-text)]">No valid rows to preview.</td></tr>`;
             }
 
             $("#preview_table_body").html(html);
@@ -828,8 +845,8 @@ $('#validate_import').on('click', function () {
 
             // Replaces Alpine "expand_modal" logic
             $('#importModalContainer')
-                .removeClass('w-[520px]')
-                .addClass('w-[95vw] max-w-7xl h-[85vh]');
+                .removeClass('w-[520px] p-6')
+                .addClass('w-screen h-screen').css('padding', '64px');
 
             $("#import_loading").addClass("hidden");
         },
@@ -849,7 +866,7 @@ $('#back_to_upload').on('click', function () {
     $("#validate_import").html(`<span class="ml-1">Validate File</span>`).prop('disabled', false);
 
     // Shrink modal back
-    $('#importModalContainer').removeClass('w-[95vw] max-w-7xl h-[85vh]').addClass('w-[520px]');
+    $('#importModalContainer').removeClass('w-screen h-screen').addClass('w-[520px] p-6').css('padding', '');
 });
 
 $('#confirm_import').on('click', function () {

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Dump\trashController;
 use App\Models\Records;
 use App\Models\Generated_reports;
 use App\Models\VRecords;
@@ -321,11 +322,18 @@ class AIController extends Controller
                 'status_id' => 2,
             ]);
 
+            $enc = new trashController();
+
             return response()->json([
                 'generated' => true,
                 'record_id' => $record->id,
                 'generated_id' => $report->id,
                 'summary' => $summary,
+                'view_url' => route('page', [
+                    'token' => $enc->encrypt('generated'),
+                    'id'    => $enc->encrypt($report->id),
+                    'mode'  => $enc->encrypt('edit')
+                ])
             ]);
         } catch (\Exception $e) {
             Log::error('AI Evaluation Error', [

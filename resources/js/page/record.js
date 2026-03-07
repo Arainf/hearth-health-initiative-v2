@@ -28,7 +28,7 @@ function setPatientReadonly(isReadonly, type = null) {
     const form = $('#patientForm');
 
     // text / number / date inputs
-    form.find('input[type="text"], input[type="number"], input[type="date"]')
+        form.find('input[type="text"], input[type="number"], input[type="date"]')
         .prop('readonly', isReadonly);
 
     // radio inputs (visual only)

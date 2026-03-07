@@ -1,437 +1,357 @@
+/* BUTTON.CSS */
+/* All colors reference tokens defined in colors.css */
+
+/* ═══════════════════════════════════════
+   BASE
+═══════════════════════════════════════ */
 .hhi-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-
-    padding: 6px 14px;
-    min-height: 36px;
-
-    font-size: 13px;
-    font-weight: 500;
-
-    border-radius: 8px;
-    border: 1px solid transparent;
-
-    cursor: pointer;
-    user-select: none;
-    white-space: nowrap;
-
-    background-color: #ffffff;
+    display:          inline-flex;
+    align-items:      center;
+    gap:              6px;
+    padding:          6px 14px;
+    min-height:       36px;
+    font-size:        13px;
+    font-weight:      500;
+    border-radius:    8px;
+    border:           1px solid transparent;
+    cursor:           pointer;
+    user-select:      none;
+    white-space:      nowrap;
+    background-color: var(--white);
     transition:
         background-color 0.15s ease,
-        border-color 0.15s ease,
-        color 0.15s ease,
-        box-shadow 0.15s ease;
+        border-color     0.15s ease,
+        color            0.15s ease,
+        box-shadow       0.15s ease;
 }
 
 .hhi-btn:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.35);
+    outline:    none;
+    box-shadow: var(--focus-ring-blue);
 }
 
 .hhi-btn:disabled {
     opacity: 0.5;
-    cursor: not-allowed;
+    cursor:  not-allowed;
 }
 
-/* ===============================
-   PRIMARY / VIEW
-================================ */
-.hhi-btn-view {
-    background-color: var(--btn-view-bg);
-    color: var(--blue-900);
-    border-color: var(--blue-300);
-
-    font-weight: 600;
-    width: auto;
-    white-space: nowrap;
-
-    transition: padding 2s ease-in-out, min-width 2s ease-in-out;
-}
-
-.hhi-btn-view:hover {
-    background-color: var(--blue-200);
-}
-
-/* loading state */
-.hhi-btn-view.is-loading {
-    min-width: 100px;
-}
-/* ===============================
-   PRINT / PDF
-================================ */
-.hhi-btn-print {
-    background-color: var(--gray-300);   /* slate-700 */
-    color: var(--gray-900);              /* near-white */
-    border-color: var(--gray-200);       /* slate-800 */
-    font-weight: 600;
-}
-
-.hhi-btn-print:hover {
-    background-color: var(--gray-200);   /* slate-800 */
-}
-/* ===============================
-   SUCCESS / EDIT
-================================ */
-.hhi-btn-edit {
-    background-color: var(--sky-100);   /* sky-100 */
-    color: var(--sky-800);              /* sky-800 */
-    border-color: var(--sky-300);       /* sky-300 */
-
-    font-weight: 600;
-}
-
-.hhi-btn-edit:hover {
-    background-color: var(--sky-200);   /* sky-200 */
-}
-/* ===============================
-   DESTRUCTIVE / DELETE
-================================ */
-.hhi-btn-delete {
-    background-color: var(--red-600);
-    color: var(--red-100);
-    border-color: var(--red-700);
-}
-
-
-.hhi-btn-delete:hover {
-    background-color: var(--red-700);
-}
-
-/* ===============================
-   PRIMARY (PURPLE/BRAIN)
-================================ */
-.hhi-btn-primary {
-    background-color: #9333ea;
-    color: #faf5ff;
-    border-color: #7e22ce;
-}
-
-.hhi-btn-primary:hover {
-    background-color: #7e22ce;
-}
-
-/* ===============================
-   EVALUATE (ANALYSIS / REVIEW)
-================================ */
-.hhi-btn-evaluate {
-    background-color: var(--btn-brain-bg);   /* purple-700 */
-    color: var(--btn-brain-icon);              /* purple-50 */
-    border-color: var(--btn-brain-border);       /* purple-800 */
-    font-weight: 600;
-    transition:
-        background-color 0.2s ease,
-        color 0.2s ease,
-        border-color 0.2s ease,
-        transform 0.15s ease;
-}
-
-.hhi-btn-evaluate:hover {
-    background-color: var(--btn-brain-bg-hover);   /* purple-700 */
-    color: var(--btn-brain-icon-hover);              /* purple-50 */
-    border-color: var(--btn-brain-border-hover);
-    transform: translateY(-1px);/* purple-800 */
-}
-
-/* ===============================
-   SECONDARY (GHOST-LIKE)
-================================ */
-.hhi-btn-secondary {
-    background-color: var(--clr-surface-a10);   /* light card background */
-    color: var(--clr-text-a0);                  /* primary text */
-    border: 1px solid var(--clr-surface-a30);   /* border */
-    transition: background-color 0.2s;
-}
-
-.hhi-btn-secondary:hover {
-    background-color: var(--clr-surface-a20);   /* slightly darker on hover */
-}
-
-/* ===============================
-   OUTLINE
-================================ */
-.hhi-btn-outline {
-    background: transparent;
-    color: #020817;
-    border-color: #e5e7eb;
-}
-
-.hhi-btn-outline:hover {
-    background-color: #f1f5f9;
-}
-
-/* ===============================
-   ICON ONLY
-================================ */
-.hhi-btn.icon-only {
-   scale: 0.9;
-    width: 36px;
-    height: 36px;
-    margin: 0 4px;
-    padding: 0;
-
-    align-items: center;
-    justify-content: center;
-}
-
-/* ===============================
-   TABLE / MOBILE
-================================ */
-@media (max-width: 1024px) {
+/* ═══════════════════════════════════════
+   RESPONSIVE — small screens (< 768px)
+═══════════════════════════════════════ */
+@media (max-width: 767px) {
     .hhi-btn {
-        min-height: 40px;
+        min-height:    44px;         /* larger tap target */
+        padding:       8px 16px;
+        font-size:     14px;
+        border-radius: 10px;
+        width:         100%;         /* full-width on mobile */
+        justify-content: center;
+    }
+
+    /* Icon-only stays square, not full-width */
+    .hhi-btn.icon-only {
+        width:  44px;
+        height: 44px;
+        padding: 0;
+    }
+
+    .hhi-btn.icon-only i { font-size: 16px; }
+
+    /* Large variant */
+    .hhi-btn-lg {
+        min-height: 52px;
+        font-size:  16px;
+    }
+}
+
+/* ═══════════════════════════════════════
+   TABLET (768px – 1024px)
+═══════════════════════════════════════ */
+@media (min-width: 768px) and (max-width: 1024px) {
+    .hhi-btn {
+        min-height:    40px;
         border-radius: 10px;
     }
 
     .hhi-btn.icon-only {
-        width: 44px;
+        width:  44px;
         height: 44px;
     }
 
-    .hhi-btn.icon-only i {
-        font-size: 16px;
-    }
+    .hhi-btn.icon-only i { font-size: 16px; }
 }
 
-/* ===============================
-   BACK
-================================ */
+/* ═══════════════════════════════════════
+   SIZES
+═══════════════════════════════════════ */
+.hhi-btn-lg {
+    min-height:    48px;
+    padding:       10px 20px;
+    font-size:     15px;
+    border-radius: 12px;
+}
 
+/* ═══════════════════════════════════════
+   ICON ONLY
+═══════════════════════════════════════ */
+.hhi-btn.icon-only {
+    scale:           0.9;
+    width:           36px;
+    height:          36px;
+    margin:          0 4px;
+    padding:         0;
+    align-items:     center;
+    justify-content: center;
+}
+
+.hhi-btn.icon-only.hhi-btn-lg {
+    width:  48px;
+    height: 48px;
+}
+
+/* ═══════════════════════════════════════
+   VARIANTS
+═══════════════════════════════════════ */
+
+/* VIEW ── */
+.hhi-btn-view {
+    background-color: var(--btn-view-bg);
+    color:            var(--blue-slate-200);
+    border-color:     var(--blue-300);
+    font-weight:      600;
+    white-space:      nowrap;
+    width:            auto;
+    transition:       padding 2s ease-in-out, min-width 2s ease-in-out;
+}
+.hhi-btn-view:hover          { background-color: var(--sky-200);  color: var(--blue-800) }
+.hhi-btn-view.is-loading     { min-width: 100px; }
+
+/* PRINT ── */
+.hhi-btn-print {
+    background-color: var(--gray-300);
+    color:            var(--slate-950);
+    border-color:     var(--gray-200);
+    font-weight:      600;
+}
+.hhi-btn-print:hover { background-color: var(--gray-200); }
+
+/* EDIT ── */
+.hhi-btn-edit {
+    background-color: var(--sky-100, #e0f2fe);   /* fallback if sky-100 not defined */
+    color:            var(--sky-700);
+    border-color:     var(--sky-300);
+    font-weight:      600;
+}
+.hhi-btn-edit:hover { background-color: var(--sky-200); }
+
+/* EDIT NEUTRAL ── */
+.hhi-btn-edit-neutral {
+    background-color: var(--sky-200);
+    color:            var(--sky-700);
+    border-color:     var(--sky-300);
+}
+.hhi-btn-edit-neutral:hover { background-color: var(--sky-200); }
+
+/* DELETE ── */
+.hhi-btn-delete {
+    background-color: var(--red-600, #dc2626);
+    color:            var(--red-100);
+    border-color:     var(--red-700, #b91c1c);
+}
+.hhi-btn-delete:hover { background-color: var(--red-700, #b91c1c); }
+
+/* PRIMARY (purple) ── */
+.hhi-btn-primary {
+    background-color: var(--purple-600);
+    color:            var(--purple-50);
+    border-color:     var(--purple-700);
+}
+.hhi-btn-primary:hover { background-color: var(--purple-700); }
+
+/* EVALUATE ── */
+.hhi-btn-evaluate {
+    background-color: var(--btn-brain-bg);
+    color:            var(--btn-brain-icon);
+    border-color:     var(--btn-brain-border);
+    font-weight:      600;
+    transition:
+        background-color 0.2s ease,
+        color            0.2s ease,
+        border-color     0.2s ease,
+        transform        0.15s ease;
+}
+.hhi-btn-evaluate:hover {
+    background-color: var(--btn-brain-bg-hover);
+    color:            var(--btn-brain-icon-hover);
+    border-color:     var(--btn-brain-border-hover);
+    transform:        translateY(-1px);
+}
+
+/* SECONDARY ── */
+.hhi-btn-secondary {
+    background-color: var(--clr-surface-a10);
+    color:            var(--clr-text-a0);
+    border:           1px solid var(--clr-surface-a30);
+    transition:       background-color 0.2s;
+}
+.hhi-btn-secondary:hover { background-color: var(--clr-surface-a20); }
+
+/* OUTLINE ── */
+.hhi-btn-outline {
+    background:   transparent;
+    color:        var(--slate-950);
+    border-color: var(--gray-200);
+}
+.hhi-btn-outline:hover { background-color: var(--slate-100); }
+
+/* SAVE ── */
+.hhi-btn-save {
+    background-color: var(--blue-600);
+    color:            var(--slate-50);
+    border-color:     var(--blue-700);
+    font-weight:      600;
+}
+.hhi-btn-save:hover { background-color: var(--blue-700); }
+
+/* SAVE & APPROVE ── */
+.hhi-btn-save-approve {
+    background-color: var(--green-600, #16a34a);
+    color:            var(--green-text, var(--white));
+    border-color:     var(--green-700, #15803d);
+}
+.hhi-btn-save-approve:hover { background-color: var(--green-700, #15803d); }
+
+/* BACK ── */
 .hhi-btn-back {
-    background-color: #e5e7eb;   /* gray-200 */
-    color: #020817;              /* near-black */
-    border-color: #cbd5e1;       /* gray-300 */
+    background-color: var(--indigo-100);
+    color:            var(--indigo-800);
+    border-color:     var(--indigo-300);
+    font-weight:      600;
+}
+.hhi-btn-back:hover  {
+    background-color: var(--indigo-200);
+    border-color:     var(--indigo-400);
+}
+.hhi-btn-back:active { background-color: var(--indigo-300); }
+
+/* CANCEL ── */
+.hhi-btn-cancel {
+    background-color: var(--slate-100);
+    color:            var(--slate-700);
+    border-color:     var(--slate-300);
+}
+.hhi-btn-cancel:hover { background-color: var(--slate-200); }
+
+/* CLOSE ── */
+.hhi-btn-close {
+    background-color: transparent;
+    color:            var(--slate-500);
+    border-color:     transparent;
+}
+.hhi-btn-close:hover {
+    background-color: var(--slate-100);
+    color:            var(--slate-950);
 }
 
-.hhi-btn-back:hover {
-    background-color: #d1d5db;   /* gray-300 */
+/* CREATE ANOTHER ── */
+.hhi-btn-create-another {
+    background-color: var(--slate-100);
+    color:            var(--blue-800);
+    border-color:     var(--blue-slate-200);
+    font-weight:      600;
+}
+.hhi-btn-create-another:hover {
+    background-color: var(--slate-200);
+    border-color:     var(--blue-300);
 }
 
-
-
-/* ===============================
+/* ═══════════════════════════════════════
    RISK INDICATOR (TABLE)
-================================ */
+═══════════════════════════════════════ */
 .risk-group {
     display: inline-flex;
-    gap: 4px;
+    gap:     4px;
 }
 
 .risk-box {
-    width: 26px;
-    height: 26px;
-
-    display: inline-flex;
-    align-items: center;
+    width:           26px;
+    height:          26px;
+    display:         inline-flex;
+    align-items:     center;
     justify-content: center;
-
-    border-radius: 6px;
-    border: 1px solid #e5e7eb;
-
-    font-size: 11px;
-    font-weight: 600;
-
-    background: #f8fafc;
-    color: #020817;
-
-    cursor: default;
+    border-radius:   6px;
+    border:          1px solid var(--gray-200);
+    font-size:       11px;
+    font-weight:     600;
+    background:      var(--slate-50);
+    color:           var(--slate-950);
+    cursor:          default;
 }
 
 .risk-box.yes {
-    background: #dcfce7;
-    color: #166534;
-    border-color: #86efac;
+    background:   var(--green-100);
+    color:        var(--green-800);
+    border-color: var(--green-300);
 }
 
 .risk-box.no {
-    background: #fee2e2;
-    color: #991b1b;
-    border-color: #fecaca;
+    background:   var(--red-100);
+    color:        var(--red-800);
+    border-color: var(--red-200);
 }
 
-
-/* Shared transition base */
+/* ═══════════════════════════════════════
+   GENERATE / ACTIONS TRANSITION
+═══════════════════════════════════════ */
 .generate-btn,
 .actions-btn {
     transition:
-        opacity 0.25s ease,
-        transform 0.25s ease,
+        opacity    0.25s ease,
+        transform  0.25s ease,
         max-height 0.25s ease;
     transform-origin: center;
 }
 
-/* Initial states */
 .generate-btn {
-    opacity: 0;
-    transform: scale(0.9);
-    max-height: 0;
-    overflow: hidden;
-    pointer-events: none;
-
+    opacity:          0;
+    transform:        scale(0.9);
+    max-height:       0;
+    overflow:         hidden;
+    pointer-events:   none;
     background-color: var(--btn-brain-border);
-    color: var(--btn-brain-icon);
-    border: var(--btn-brain-border);
-    padding: 14px;
-    border-radius: 0.75rem;
-    width: 100%;
-    text-align: center;
+    color:            var(--btn-brain-icon);
+    border:           var(--btn-brain-border);
+    padding:          14px;
+    border-radius:    0.75rem;
+    width:            100%;
+    text-align:       center;
 }
 
-/* Active generating state */
 .generate-btn.is-active {
-    opacity: 1;
-    transform: scale(1);
-    max-height: 60px;
+    opacity:        1;
+    transform:      scale(1);
+    max-height:     60px;
     pointer-events: auto;
 }
 
-/* Actions visible */
 .actions-btn {
-    opacity: 1;
-    transform: scale(1);
+    display: flex;
+    flex-direction: row;
+    opacity:    1;
+    transform:  scale(1);
     max-height: 80px;
 }
 
-/* Actions hidden */
 .actions-btn.is-hidden {
-    opacity: 0;
-    transform: scale(0.9);
-    max-height: 0;
+    opacity:        0;
+    transform:      scale(0.9);
+    max-height:     0;
     pointer-events: none;
 }
 
-/* ===============================
-   EDIT (NEUTRAL / SAFE)
-================================ */
-.hhi-btn-edit-neutral {
-    background-color: #e0f2fe;   /* sky-100 */
-    color: #0369a1;              /* sky-700 */
-    border-color: #7dd3fc;       /* sky-300 */
-}
-
-.hhi-btn-edit-neutral:hover {
-    background-color: #bae6fd;   /* sky-200 */
-}
-
-
-/* ===============================
-   SAVE (BLUE – PRIMARY ACTION)
-================================ */
-.hhi-btn-save {
-    background-color: #2563eb;   /* blue-600 */
-    color: #f8fafc;
-    border-color: #1d4ed8;
-
-    font-weight: 600;
-}
-
-.hhi-btn-save:hover {
-    background-color: #1d4ed8;   /* blue-700 */
-}
-
-/* ===============================
-   BACK (NAVIGATION / CLEAR)
-================================ */
-.hhi-btn-back {
-    background-color: #e0e7ff;   /* indigo-100 */
-    color: #3730a3;              /* indigo-800 */
-    border-color: #a5b4fc;       /* indigo-300 */
-
-    font-weight: 600;
-}
-
-.hhi-btn-back:hover {
-    background-color: #c7d2fe;   /* indigo-200 */
-    border-color: #818cf8;       /* indigo-400 */
-}
-
-.hhi-btn-back:active {
-    background-color: #a5b4fc;   /* indigo-300 */
-}
-
-
-
-/* ===============================
-   SAVE & APPROVE (STRONG GREEN)
-================================ */
-.hhi-btn-save-approve {
-    background-color: var(--green-600);   /* green-600 */
-    color: var(--green-text);
-    border-color: var(--green-700);
-}
-
-.hhi-btn-save-approve:hover {
-    background-color: var(--green-700);
-}
-
-
-/* ===============================
-   CANCEL (SOFT DESTRUCTIVE)
-================================ */
-.hhi-btn-cancel {
-    background-color: #f1f5f9;   /* slate-100 */
-    color: #334155;              /* slate-700 */
-    border-color: #cbd5e1;       /* slate-300 */
-}
-
-.hhi-btn-cancel:hover {
-    background-color: #e2e8f0;   /* slate-200 */
-}
-
-
-/* ===============================
-   CLOSE / X BUTTON
-================================ */
-.hhi-btn-close {
-    background-color: transparent;
-    color: #64748b;              /* slate-500 */
-    border-color: transparent;
-}
-
-.hhi-btn-close:hover {
-    background-color: #f1f5f9;
-    color: #020817;
-}
-
-
-/* ===============================
-   LARGE / PANEL BUTTONS
-   (Doctor Panel / Tablet UX)
-================================ */
-.hhi-btn-lg {
-    min-height: 48px;
-    padding: 10px 20px;
-    font-size: 15px;
-    border-radius: 12px;
-}
-
-/* Icon-only large */
-.hhi-btn.icon-only.hhi-btn-lg {
-    width: 48px;
-    height: 48px;
-}
-
-
-
-
-/* ===============================
-   CREATE ANOTHER (LOOP / SECONDARY)
-================================ */
-.hhi-btn-create-another {
-    background-color: #f1f5f9;   /* slate-100 */
-    color: #1e40af;              /* blue-800 */
-    border-color: #cbd5f5;       /* soft blue-slate */
-
-    font-weight: 600;
-}
-
-.hhi-btn-create-another:hover {
-    background-color: #e2e8f0;   /* slate-200 */
-    border-color: #93c5fd;       /* blue-300 */
-}
-
-
-/* === TOOLBAR BUTTON === */
+/* ═══════════════════════════════════════
+   TOOLBAR BUTTONS
+═══════════════════════════════════════ */
 .toolbar-btn {
     @apply
     inline-flex items-center justify-center
@@ -439,8 +359,7 @@
     rounded-md
     transition-all duration-150 ease-out
     hover:bg-[var(--clr-surface-a30)]
-    active:bg-gray-200
-   ;
+    active:bg-gray-200;
 }
 
 .toolbar-btn1 {
@@ -451,59 +370,46 @@
     text-[var(--clr-text-a0)]
     transition-all duration-150 ease-out
     hover:bg-[var(--clr-surface-a30)]
-    active:bg-gray-200
+    active:bg-gray-200;
 }
 
-/* Active formatting (bold, italic, etc.) */
 .toolbar-btn.is-active {
     @apply bg-purple-100 text-purple-600;
 }
 
-/* Icons inside buttons */
-.toolbar-btn img {
-    @apply w-4 h-4 opacity-80;
-}
+.toolbar-btn img       { @apply w-4 h-4 opacity-80; }
+.toolbar-btn:hover img { @apply opacity-100; }
 
-.toolbar-btn:hover img {
-    @apply opacity-100;
-}
-
-/* === DROPDOWN PANEL === */
+/* ═══════════════════════════════════════
+   TOOLBAR DROPDOWN
+═══════════════════════════════════════ */
 .toolbar-dropdown {
     @apply
     absolute mt-2 min-w-[160px]
     bg-[var(--clr-surface-a20)]
     border border-gray-200
-    rounded-lg
-    shadow-lg
-    left-12
-    top-0
-    p-1
-    z-50;
+    rounded-lg shadow-lg
+    left-12 top-0
+    p-1 z-50;
 }
 
-/* Dropdown items */
 .dropdown-item {
     @apply
     flex items-center gap-3
     px-3 py-2
-    text-sm text-[var(--clr-text-a10)]
-    rounded-md
-    transition
+    text-[var(--clr-text-a10)]
+    rounded-md transition
     hover:bg-[var(--clr-surface-a30)]
     w-full text-left;
 }
 
-.dropdown-item img {
-    @apply w-4 h-4 opacity-70;
-}
+.dropdown-item img { @apply w-4 h-4 opacity-70; }
 
-/* Divider */
-.toolbar-divider {
-    @apply h-px w-8 bg-gray-300 my-1;
-}
+.toolbar-divider { @apply h-px w-8 bg-gray-300 my-1; }
 
-/* Smooth dropdown animation */
-[x-cloak] {
-    display: none !important;
+[x-cloak] { display: none !important; }
+
+/* Hide labels on medium and below — keep icon-only behavior */
+.btn-label {
+    display: none;
 }

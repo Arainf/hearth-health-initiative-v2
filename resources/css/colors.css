@@ -1,4 +1,25 @@
 :root {
+    --system-background: #ffffff;
+    --secodary-system-background: #F2F2F2;
+    --tertiary-system-background: #ffffff;
+
+    --primary-border: #c7c7c7;
+    --secondary-border: #c6c6c6;
+    --primary-hover-background: #EBEBEB;
+
+    --secondary-text: #646464;
+
+    --primary-btn-background: #163BA7;
+    --primary-disabled-background: #8BB4FF;
+    --primary-color: #FFFFFF;
+    --btn-inner-shadow: rgba(0, 0, 0, 0.25);
+
+    --secondary-btn-background: #F8F8F8;
+    --secondary-disabled-background: #E0E0E0;
+    --secondary-disabled-color: #817F7F;
+    --secondary-color: #000000;
+
+
 
     --clr-surface-a0: #ffffff;
     --clr-surface-a10: #f5f5f5;
@@ -149,6 +170,22 @@
 @media (prefers-color-scheme: dark) {
     :root {
 
+        --system-background: #000000;
+        --secodary-system-background: #19191E;
+        --tertiary-system-background: #28282D;
+        --primary-border: #19191E;
+        --secondary-border: #565656 ;
+        --primary-hover-background: #65656F;
+
+        --primary-disabled-background: #8BB4FF;
+        --secondary-btn-background: #655F64;
+        --secondary-disabled-background: #2B2B2B;
+        --secondary-disabled-color: #626263;
+        --secondary-color: #F0F0F2;
+
+        --secondary-text: #B2B3BD;
+
+
         /** Theme surface colors */
         --clr-surface-a0: #121212;
         --clr-surface-a10: #282828;
@@ -289,4 +326,260 @@
 
 
     }
+}
+
+
+
+/* COLOR.CSS */
+
+:root {
+    /* ── Base surfaces ── */
+    --bg-dark:  hsl(0 0% 78%);
+    --bg:       hsl(0 0% 90%);
+    --bg-light: hsl(0 0% 100%);
+
+    --text:       hsl(0 0% 5%);
+    --text-muted: hsl(0 0% 30%);
+
+    --border:      hsl(0 0% 30%);
+    --border-card: solid 1px var(--bg);
+    --highlight:   hsl(0 0% 100%);
+
+    --gradient:       linear-gradient(0deg, var(--bg), var(--bg-light));
+    --gradient-hover: linear-gradient(0deg, var(--bg), var(--bg-light));
+
+    /* ── Table ── */
+    --table-bg:               var(--bg-light);
+    --table-border:           solid 1px var(--border);
+    --table-header-bg:        var(--bg);
+    --table-header-text:      var(--text);
+    --table-header-border:    solid 1px var(--border);
+    --table-row-bg:           var(--bg-light);
+    --table-row-alt-bg:       hsl(0 0% 97%);
+    --table-row-hover-bg:     hsl(0 0% 93%);
+    --table-row-hover-text:   var(--text);
+    --table-row-hover-border: solid 1px var(--border);
+
+    /* ── States ── */
+    --bg-hover:    hsl(0 0% 90%);
+    --bg-active:   hsl(0 0% 85%);
+    --bg-disabled: hsl(0 0% 88%);
+
+    --text-hover:    hsl(0 0% 0%);
+    --text-disabled: hsl(0 0% 55%);
+
+    --border-hover:    hsl(0 0% 45%);
+    --border-active:   hsl(0 0% 55%);
+    --border-disabled: hsl(0 0% 80%);
+
+    --focus-ring:      0 0 0 3px hsla(210, 100%, 50%, 0.25);
+    --focus-ring-blue: 0 0 0 2px rgba(59, 130, 246, 0.35);
+
+    /* ── Button tokens ── */
+    --btn-bg:            var(--bg-light);
+    --btn-text:          var(--text);
+    --btn-border:        solid 1px var(--border);
+    --btn-hover-bg:      var(--bg-hover);
+    --btn-active-bg:     var(--bg-active);
+    --btn-disabled-bg:   var(--bg-disabled);
+    --btn-disabled-text: var(--text-disabled);
+
+    /* ── Links ── */
+    --link-color:   hsl(210 90% 45%);
+    --link-hover:   hsl(210 90% 35%);
+    --link-active:  hsl(210 90% 25%);
+    --link-visited: hsl(260 60% 50%);
+
+    /* ── Cards ── */
+    --card-bg:       var(--bg-light);
+    --card-border:   var(--border-card);
+    --card-hover-bg: var(--bg-hover);
+    --card-shadow:
+        0px 2px 2px hsla(0, 0%, 14%, 0.05),
+        0px 4px 4px hsla(0, 0%, 10%, 0.08);
+    --card-shadow-hover:
+        0px 6px 12px hsla(0, 0%, 0%, 0.12),
+        0px 10px 20px hsla(0, 0%, 0%, 0.15);
+
+    /* ── Inputs ── */
+    --input-bg:           var(--bg-light);
+    --input-border:       solid 1px var(--border);
+    --input-focus-border: hsl(210 90% 50%);
+    --input-focus-shadow: 0 0 0 3px hsla(210, 100%, 50%, 0.25);
+    --input-error:        hsl(0 70% 55%);
+    --input-success:      hsl(140 60% 40%);
+
+    /* ════════════════════════════════════════
+       COLOR PALETTE  (Tailwind scale)
+       Source: button.css
+       ════════════════════════════════════════ */
+
+    /* Slate */
+    --slate-50:  #f8fafc;
+    --slate-100: #f1f5f9;
+    --slate-200: #e2e8f0;
+    --slate-300: #cbd5e1;
+    --slate-500: #64748b;
+    --slate-700: #334155;
+    --slate-950: #020817;
+
+    /* Gray */
+    --gray-200: #e5e7eb;
+    --gray-300: #d1d5db;
+
+    /* Sky */
+    --sky-200: #bae6fd;
+    --sky-300: #7dd3fc;
+    --sky-700: #0369a1;
+
+    /* Blue */
+    --blue-300:       #93c5fd;
+    --blue-slate-200: #cbd5f5;
+    --blue-600:       #2563eb;
+    --blue-700:       #1d4ed8;
+    --blue-800:       #1e40af;
+
+    /* Indigo */
+    --indigo-100: #e0e7ff;
+    --indigo-200: #c7d2fe;
+    --indigo-300: #a5b4fc;
+    --indigo-400: #818cf8;
+    --indigo-800: #3730a3;
+
+    /* Purple */
+    --purple-50:  #faf5ff;
+    --purple-600: #9333ea;
+    --purple-700: #7e22ce;
+
+    /* Green */
+    --green-100: #dcfce7;
+    --green-300: #86efac;
+    --green-800: #166534;
+
+    /* Red */
+    --red-100: #fee2e2;
+    --red-200: #fecaca;
+    --red-800: #991b1b;
+
+    /* White */
+    --white: #ffffff;
+}
+
+/* ── Dark mode ── */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg-dark:  hsl(0 0% 0%);
+        --bg:       hsl(0 0% 10%);
+        --bg-light: hsl(0 0% 6%);
+
+        --text:       hsl(0 0% 95%);
+        --text-muted: hsl(0 0% 70%);
+
+        --border:      hsl(0 0% 30%);
+        --border-card: solid 1px var(--border);
+        --highlight:   hsl(0 0% 60%);
+
+        --gradient:       linear-gradient(0deg, var(--bg-light), var(--bg-light));
+        --gradient-hover: linear-gradient(0deg, var(--bg), var(--bg-light));
+
+        --shadow:
+            0px 2px 2px hsla(0, 0%, 0%, 0.07),
+            0px 4px 4px hsla(0, 0%, 0%, 0.15);
+
+        /* ── Table ── */
+        --table-bg:            var(--bg-light);
+        --table-border:        solid 1px var(--border);
+        --table-header-bg:     var(--bg);
+        --table-header-text:   var(--text);
+        --table-header-border: solid 1px var(--border);
+        --table-row-bg:        var(--bg-light);
+        --table-row-alt-bg:    hsl(0 0% 9%);
+        --table-row-hover-bg:     hsl(0 0% 12%);
+        --table-row-hover-text:   var(--text-hover);
+        --table-row-hover-border: solid 1px var(--border-hover);
+
+        /* ── States ── */
+        --bg-hover:    hsl(0 0% 5%);
+        --bg-active:   hsl(0 0% 14%);
+        --bg-disabled: hsl(0 0% 12%);
+
+        --text-hover:    hsl(0 0% 100%);
+        --text-disabled: hsl(0 0% 45%);
+
+        --border-hover:    hsl(0 0% 50%);
+        --border-active:   hsl(0 0% 60%);
+        --border-disabled: hsl(0 0% 20%);
+
+        --focus-ring:      0 0 0 3px hsla(210, 100%, 60%, 0.35);
+        --focus-ring-blue: 0 0 0 2px rgba(59, 130, 246, 0.5);
+
+        /* ── Buttons ── */
+        --btn-bg:            var(--bg-light);
+        --btn-text:          var(--text);
+        --btn-border:        solid 1px var(--border);
+        --btn-hover-bg:      var(--bg-hover);
+        --btn-active-bg:     var(--bg-active);
+        --btn-disabled-bg:   var(--bg-disabled);
+        --btn-disabled-text: var(--text-disabled);
+
+        /* ── Links ── */
+        --link-color:   hsl(210 90% 60%);
+        --link-hover:   hsl(210 90% 70%);
+        --link-active:  hsl(210 90% 80%);
+        --link-visited: hsl(260 60% 70%);
+
+        /* ── Cards ── */
+        --card-bg:       var(--bg-light);
+        --card-hover-bg: hsl(0 0% 14%);
+        --card-shadow:
+            0px 2px 4px hsla(0, 0%, 0%, 0.5),
+            0px 6px 12px hsla(0, 0%, 0%, 0.6);
+        --card-shadow-hover:
+            0px 10px 20px hsla(0, 0%, 0%, 0.7),
+            0px 14px 28px hsla(0, 0%, 0%, 0.8);
+
+        /* ── Inputs ── */
+        --input-bg:           var(--bg-light);
+        --input-border:       solid 1px var(--border);
+        --input-focus-border: hsl(210 90% 60%);
+        --input-focus-shadow: 0 0 0 3px hsla(210, 100%, 60%, 0.35);
+        --input-error:        hsl(0 65% 55%);
+        --input-success:      hsl(140 50% 45%);
+    }
+}
+
+/* ── Global base styles ── */
+body {
+    background: var(--bg-dark);
+    color:      var(--text-muted);
+}
+
+main, .navigation {
+    background:  var(--gradient);
+    border:      var(--border-card);
+    box-shadow:  var(--shadow);
+    color:       var(--text);
+    border-top:  solid 1px var(--highlight);
+}
+
+.floating-nav, .nav-item {
+    background: var(--bg);
+    box-shadow: var(--card-shadow);
+}
+
+.nav-item-shadow:hover,
+.nav-item-shadow:hover > div > div > div,
+.nav-item:hover > div > div > div {
+    background: var(--bg);
+    box-shadow: var(--card-shadow);
+}
+
+.nav-icon { stroke-width: 0.15rem; }
+
+.card {
+    background:  var(--bg);
+    box-shadow:  var(--card-shadow);
+    color:       var(--text);
+    border:      var(--border);
+    border-top:  solid 1px var(--highlight);
 }

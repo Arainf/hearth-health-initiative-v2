@@ -10,16 +10,14 @@
      'icon' => null,
 ])
 
-<div {{$attributes}}>
+<div {{$attributes}} class="font-inter text-[var(--secondary-color)] h-full">
     @if($label)
-        <div class="flex font-inter items-center gap-2 mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
+        <div class="flex  items-center gap-2 mb-1 text-sm ">
 
-            {{-- Icon Slot --}}
             @if(isset($iconSlot))
                 {{ $iconSlot }}
             @endif
 
-            {{-- Named Slot Override (Optional) --}}
             {{ $label }}
 
         </div>
@@ -30,7 +28,7 @@
         name="{{ $multiple ? $name.'[]' : $name }}"
         {{ $multiple ? 'multiple' : '' }}
         {{ $attributes->merge([
-            'class' => 'select2 mt-1 w-full rounded-lg border border-gray-200 text-sm shadow-lg bg-transparent dropdown-item'
+            'class' => 'select2 mt-1 w-full h-full text-[length:var(--s-sub-header)] shadow-lg dropdown-item'
         ]) }}
     >
 

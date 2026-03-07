@@ -11,12 +11,10 @@
         pr-4 py-3
         pl-3
         rounded-xl
-        text-sm font-medium
-        transition-all duration-200
-        border
-        border-transparent
-       text-[var(--sidebar-text)]
-
+        text-sm font-normal
+        transition-all duration-300
+        text-[var(--text)]
+        font-inter
     ';
 
     $accentColors = match ($style) {
@@ -29,8 +27,8 @@
     };
 
     /* Active vs Inactive */
-    $activeClasses = "bg-[var(--clr-surface-a20)] {$accentColors}";
-    $inactiveClasses = "hover:bg-[var(--clr-surface-a20)] hover:{$accentColors}";
+    $activeClasses = "nav-item {$accentColors}";
+    $inactiveClasses = "nav-item-shadow hover:{$accentColors}";
 
     $classes = $base . ' ' . ($active ? $activeClasses : $inactiveClasses);
 @endphp

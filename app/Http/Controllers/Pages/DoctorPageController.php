@@ -109,10 +109,8 @@ class DoctorPageController extends Controller
 
         return response()->json([
             'draw'            => $tableData['draw'],
-//            'recordsTotal'    => $tableData['recordsTotal'],
             'recordsFiltered' => $tableData['recordsFiltered'],
             'data'            => $tableData['data'],
-            'statuses'        => Status::withRecordCount($unit,$status,$year, $archived)->get(),
         ]);
     }
 

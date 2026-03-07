@@ -1,54 +1,86 @@
-<section>
+<section class="space-y-6">
+
     <header>
-        <h2 class="text-lg font-medium text-white">
-            {{ __('Profile Information') }}
+        <h2 class="text-xl font-semibold">
+            Profile Information
         </h2>
 
-        <p class="mt-1 text-sm text-gray-400">
-            {{ __("Update your account's profile information and email address.") }}
+        <p class="text-sm text-[var(--text-muted)]">
+            Update your account details.
         </p>
     </header>
 
-    <form id="send-verification" method="post" action="{{ route('verification.send') }}">
-        @csrf
-    </form>
+    <form method="POST"
+          action="{{ route('profile',['token'=>$encryption->encrypt('edit')]) }}"
+          enctype="multipart/form-data"
+          class="space-y-6">
 
-    <form method="post" action="{{ route('profile.update') }}" class="mt-6 space-y-6">
         @csrf
-        @method('patch')
+        @method('PATCH')
 
-        <div>
-            <x-input-label for="name" :value="__('Name')" class="!text-gray-400" />
-            <x-text-input id="name" name="name" type="text" class="mt-1 block w-full bg-[#121212] border-gray-400/20" :value="old('name', $user->name)" required autofocus autocomplete="name" />
-            <x-input-error class="mt-2" :messages="$errors->get('name')" />
+        <div class="grid sm:grid-cols-2 gap-4">
+
+            <div>
+                <x-input-label for="name" value="Name" />
+                <x-text-input
+                    id="name"
+                    name="name"
+                    type="text"
+                    class="mt-1 w-full"
+                    :value="old('name',$user->name)"
+                    required />
+                <x-input-error :messages="$errors->get('name')" class="mt-2"/>
+            </div>
+
+            <div>
+                <x-input-label for="username" value="Username" />
+                <x-text-input
+                    id="username"
+                    name="username"
+                    type="text"
+                    class="mt-1 w-full"
+                    :value="old('username',$user->username)"
+                    required />
+                <x-input-error :messages="$errors->get('username')" class="mt-2"/>
+            </div>
+
         </div>
 
-        <div>
-            <x-input-label for="email" :value="__('Email')" class="!text-gray-400" />
-            <x-text-input id="email" name="email" type="email" class="mt-1 block w-full bg-[#121212] border-gray-400/20" :value="old('email', $user->email)" required autocomplete="username" />
-            <x-input-error class="mt-2" :messages="$errors->get('email')" />
+        {{-- Signature --}}
+        <div class="space-y-2">
 
-            @if ($user instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && ! $user->hasVerifiedEmail())
-                <div>
-                    <p class="text-sm mt-2 text-gray-800">
-                        {{ __('Your email address is unverified.') }}
+            <x-input-label for="signature" value="Signature"/>
 
-                        <button form="send-verification" class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                            {{ __('Click here to re-send the verification email.') }}
-                        </button>
-                    </p>
+            <div class="flex flex-col sm:flex-row gap-4 items-start">
 
-                    @if (session('status') === 'verification-link-sent')
-                        <p class="mt-2 font-medium text-sm text-green-600">
-                            {{ __('A new verification link has been sent to your email address.') }}
-                        </p>
-                    @endif
-                </div>
-            @endif
+                <input
+                    type="file"
+                    name="signature"
+                    accept="image/png,image/jpeg,image/webp"
+                    class="block w-full text-sm text-gray-400
+                        file:mr-4 file:py-2 file:px-4
+                        file:rounded-lg file:border-0
+                        file:text-sm file:font-semibold
+                        file:bg-gray-700 file:text-white
+                        hover:file:bg-gray-600" />
+
+                @if($user->signature)
+                    <img
+                        src="{{ asset('storage/'.$user->signature) }}"
+                        class="h-16 min-w-16 bg-white p-2 rounded border border-gray-600"/>
+                @endif
+
+            </div>
+
+            <x-input-error :messages="$errors->get('signature')" class="mt-2"/>
+
         </div>
 
         <div class="flex items-center gap-4">
-            <x-secondary-button>{{ __('Save') }}</x-secondary-button>
+
+            <x-secondary-button type="submit">
+                Save Changes
+            </x-secondary-button>
 
             @if (session('status') === 'profile-updated')
                 <p
@@ -56,9 +88,13 @@
                     x-show="show"
                     x-transition
                     x-init="setTimeout(() => show = false, 2000)"
-                    class="text-sm text-gray-600"
-                >{{ __('Saved.') }}</p>
+                    class="text-sm text-green-500">
+                    Saved
+                </p>
             @endif
+
         </div>
+
     </form>
+
 </section>

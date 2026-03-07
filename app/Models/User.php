@@ -27,6 +27,7 @@ class User extends Authenticatable
         'is_doctor',
         'is_admin',
         'ai_access',
+        'signature'
     ];
 
     /**
@@ -37,7 +38,6 @@ class User extends Authenticatable
         'is_admin'  => 'boolean',
         'is_doctor' => 'boolean',
         'password'  => 'hashed',
-        'email_verified_at' => 'datetime',
     ];
 
     /**

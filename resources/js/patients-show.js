@@ -49,34 +49,3 @@ table.on('draw', function() {
 });
 
 window.table = table;
-
-/* DATE FILTER */
-$('#apply-date').on('click', () => {
-    table.ajax.reload();
-});
-
-// patients-show.js (ADD / UPDATE THESE PARTS ONLY)
-
-$(document).on('click', '.view-record', function () {
-    const id = $(this).data('id');
-
-    $('#reportModal').removeClass('hidden');
-    if(!id){
-        $('#modalContent').text('No generated content.');
-        return;
-    }
-    $('#modalContent').text('Loading…');
-
-    $.get(`/api/getGeneratedContent/${id}`, res => {
-        $('#modalContent').text(res.generated_text|| 'No generated content.');
-    });
-});
-
-$('#closeModal').on('click', () => {
-    $('#reportModal').addClass('hidden');
-});
-
-
-$('#closeDrawer').on('click', () => {
-    $('#reportDrawer').addClass('translate-x-full');
-});

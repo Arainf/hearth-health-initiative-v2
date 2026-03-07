@@ -8,11 +8,11 @@
         z-50
         transform translate-x-full
         transition-transform duration-300 ease-in-out
-        flex flex-col bg-[var(--clr-surface-a20)]
+        flex flex-col bg-[var(--bg)]
     "
 >
     <!-- HEADER -->
-    <div class="flex font-inter items-center justify-between px-6 py-2 border-b bg-[var(--clr-surface-a30)]">
+    <div class="flex font-inter items-center justify-between px-6 py-2 border-b bg-[var(--bg)]">
         <div>
             <h3 class="text-lg font-semibold">Generated Report</h3>
             <p class="text-sm text-[var(--text-secondary)]" id="panelRecordId"></p>
