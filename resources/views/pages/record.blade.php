@@ -76,8 +76,13 @@
                             <div class="flex flex-row items-center">
                                 <h2 class="text-xl font-bold">Patient’s Demographics</h2>
                                 <div id="editPatientBtn"
-                                     class="bg-transparent hhi-btn icon-only text-sm text-gray-400 hidden z-20">
-                                    <i id="patientIcon" class="fa-solid fa-lock mr-2"></i>
+                                     class="hhi-btn-back hhi-btn icon-only text-sm text-gray-400 hidden z-20">
+                                    <span id="patientIconLock" class="inline-flex">
+                                        <x-lucide-lock class="m-2 h-4 w-4"/>
+                                    </span>
+                                    <span id="patientIconEdit" class="hidden inline-flex">
+                                        <x-lucide-pen class="m-2 h-4 w-4"/>
+                                    </span>
                                 </div>
                             </div>
                             <p class="text-sm text-gray-500 mt-1">
@@ -95,7 +100,7 @@
 
                         <div >
                             <x-input-label for="first_name" value="First Name" required/>
-                            <x-text-input id="first_name" name="first_name" class="w-full" placeholder="e.g Juan">
+                            <x-text-input type="text" id="first_name" name="first_name" class="w-full" placeholder="e.g Juan">
                                 <x-slot:rightIcon>
                                     <x-lucide-case-sensitive class="w-5 h-5 text-slate-400" />
                                 </x-slot:rightIcon>
@@ -114,7 +119,7 @@
                         <div class="flex flex-row gap-4">
                             <div class="data-[invalid=true]:text-destructive flex w-[80%] flex-col *:w-full ">
                                 <x-input-label for="last_name" value="Last Name" required />
-                                <x-text-input id="last_name" name="last_name" class="w-full" placeholder="e.g Dela Cruz">
+                                <x-text-input type="text" id="last_name" name="last_name" class="w-full" placeholder="e.g Dela Cruz">
                                     <x-slot:rightIcon>
                                         <x-lucide-case-sensitive class="w-5 h-5 text-slate-400" />
                                     </x-slot:rightIcon>
@@ -130,7 +135,7 @@
 
                         <div>
                             <x-input-label for="contact" value="Contact Number"/>
-                            <x-text-input id="contact" name="contact" class="w-full" placeholder="e.g 09123456789">
+                            <x-text-input type="text" id="contact" name="contact" class="w-full" placeholder="e.g 09123456789">
                                 <x-slot:rightIcon>
                                     <x-lucide-phone class="w-4 h-4 text-slate-400" />
                                 </x-slot:rightIcon>
@@ -215,8 +220,13 @@
                         <div class="flex flex-row items-center">
                             <h2 class="text-xl font-bold">Family History</h2>
                             <div id="editFamilyBtn"
-                                 class="bg-transparent hhi-btn icon-only text-sm text-gray-400 hidden z-20">
-                                <i id="familyIcon" class="fa-solid fa-lock mr-2"></i>
+                                 class="hhi-btn-back hhi-btn icon-only text-sm text-gray-400 hidden z-20">
+                                <span id="familyIconLock" class="inline-flex">
+                                    <x-lucide-lock class="m-2 h-4 w-4"/>
+                                </span>
+                                <span id="familyIconEdit" class="hidden inline-flex">
+                                    <x-lucide-pen class="m-2 h-4 w-4"/>
+                                </span>
                             </div>
                         </div>
 
@@ -228,7 +238,7 @@
                 </div>
 
                 <div class="w-full lg:w-[70%]">
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <div id="familyForm" class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                         @foreach(['Hypertension','Diabetes Mellitus','Heart attack under 60y','Cholesterol'] as $history)
                             @php $fieldName = 'family_' . Str::slug($history); @endphp
                             <div>

@@ -70,13 +70,15 @@ class VRecords extends Model
         $data = $rows->map(function ($row) use ($aiAccess, $aiReady, $enc) {
 
             $detailsUrl = route('page', [
-                'token' => $enc->encrypt('doctor'),
+                //'token' => $enc->encrypt('doctor'),
+                'token' => request()->route('token'),
                 'id'    => $enc->encrypt($row->record_id),
                 'mode'  => $enc->encrypt('instance')
             ]);
 
             $printUrl = route('page', [
-                'token' => $enc->encrypt('doctor'),
+                //'token' => $enc->encrypt('doctor'),
+                'token' => request()->route('token'),
                 'id'    => $enc->encrypt($row->record_id),
                 'mode'  => $enc->encrypt('print')
             ]);

@@ -117,15 +117,24 @@ class DoctorPageController extends Controller
     private function handleUpdate(Request $request, int $id)
     {
         $validated = $request->validate([
+            'cholesterol'     => 'nullable|numeric',
+            'hdl_cholesterol' => 'nullable|numeric',
+            'systolic_bp'     => 'nullable|numeric',
+            'fbs'             => 'nullable|numeric',
+            'hba1c'           => 'nullable|numeric',
+            'hypertension'    => 'nullable|boolean',
+            'diabetes'       => 'nullable|boolean',
+            'smoking'         => 'nullable|boolean',
+
+            // also accept legacy key from other controllers / forms
             'total_cholesterol' => 'nullable|numeric',
-            'hdl_cholesterol'   => 'nullable|numeric',
-            'systolic_bp'       => 'nullable|numeric',
-            'fbs'               => 'nullable|numeric',
-            'hba1c'             => 'nullable|numeric',
-            'hypertension'   => 'nullable|boolean',
-            'diabetes'        => 'nullable|boolean',
-            'smoking'            => 'nullable|boolean',
         ]);
+
+        // Some callers (legacy forms / controllers) use `total_cholesterol`.
+        // Normalize it into the `cholesterol` key that RecordService expects.
+        if ($request->has('total_cholesterol') && ! $request->has('cholesterol')) {
+            $validated['cholesterol'] = $request->input('total_cholesterol');
+        }
 
         $record = $this->recordService->update($id, $validated);
 

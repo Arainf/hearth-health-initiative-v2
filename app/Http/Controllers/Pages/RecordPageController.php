@@ -59,8 +59,8 @@ class RecordPageController extends Controller
                         'suffix' => 'nullable|string',
                         'birth_date' => 'required|nullable|date',
                         'sex' => 'required|nullable|string',
-                        'weight' => 'required|nullable|numeric',
-                        'height' => 'required|nullable|numeric',
+                        'weight' => 'required|numeric|min:0|max:700',
+                        'height' => 'required|numeric|min:0|max:300',
                         'unit_code' => 'required|nullable|string',
                         'contact' => 'nullable|string',
 
